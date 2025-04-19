@@ -1,0 +1,486 @@
+.mo_content[data-hasmargin='true'] {
+  margin-right: 0.222em;
+  margin-left: 0.222em;
+}
+
+.mo_content[data-content='('] > span {
+  padding: 0.78em 0 0.25em 0;
+}
+
+.mo_content[data-content=')'] > span {
+  padding: 0.78em 0 0.25em 0;
+}
+
+.mo_content[data-content='='] > span {
+  padding: 0.5em 0 0em 0;
+}
+
+.mo_content[data-content='−'] > span {
+  padding: 0.5em 0 0 0;
+}
+
+.mo_content[data-content='+'] > span {
+  padding: 0.68em 0 0.14em 0;
+}
+
+.mo_content[data-content='≠'] > span {
+  padding: 0.7em 0 0.2em 0;
+}
+
+.mo_content[data-content='>'] > span {
+  padding: 0.6em 0 0.1em 0;
+}
+
+.mo_content[data-content='<'] > span {
+  padding: 0.6em 0 0.15em 0;
+}
+
+.mo_content[data-content='≥'] > span {
+  padding: 0.7em 0 0.16em 0;
+}
+
+.mo_content[data-content='≤'] > span {
+  padding: 0.7em 0 0.16em 0;
+}
+
+.mo_content[data-content='⊥'] > span {
+  padding: 0.7em 0 0.1em 0;
+}
+
+.mo_content[data-content='≡'] > span {
+  padding: 0.5em 0 0.1em 0;
+}
+
+.mo_content[data-content='∼'] > span {
+  padding: 0.4em 0 0em 0;
+}
+
+.mo_content[data-content='≌'] > span {
+  padding: 0.6em 0 0em 0;
+}
+
+.mo_content[data-content='×'] > span {
+  padding: 0.6em 0 0.1em 0;
+}
+
+.mo_content[data-content='/'] > span {
+  padding: 0.8em 0 0.3em 0;
+}
+
+.mo_content[data-content='÷'] > span {
+  padding: 0.6em 0 0.1em 0;
+}
+
+.mo_content[data-content='{'] > span {
+  padding: 0.8em 0 0.3em 0;
+}
+
+.mo_content[data-content='}'] > span {
+  padding: 0.8em 0 0.3em 0;
+}
+
+.mo_content[data-content='||'] > span {
+  padding: 0.8em 0 0.3em 0;
+}
+
+.mo_content[data-content='⌈'] > span {
+  padding: 0.8em 0 0.3em 0;
+}
+
+.mo_content[data-content='⌉'] > span {
+  padding: 0.8em 0 0.3em 0;
+}
+
+.mo_content[data-content='^'] > span {
+  padding: 0.7em 0 0.1em 0;
+}
+
+.mo_content[data-content='¯'] > span {
+  padding: 0.7em 0 0.1em 0;
+}
+
+.mo_content[data-content='.'] > span {
+  padding: 0.1em 0 0px 0px;
+}
+
+.mo_content[data-content='.'] + .mo_content[data-content='.'] {
+  margin-right: 0.167em;
+}
+
+.mo_content[data-content='·'] > span {
+  padding: 0.7em 0 0px 0px;
+}
+
+.mo_content[data-content='⟨'] > span {
+  padding: 0.7em 0 0.3em 0;
+}
+
+.mo_content[data-content='⟩'] > span {
+  padding: 0.7em 0 0.3em 0;
+}
+
+.mo_content[data-content='|'] > span {
+  padding: 0.8em 0 0.3em 0;
+}
+
+.mo_content[data-content='['],
+.mo_content[data-content=']'] {
+  &[data-font='s0'] {
+    font-family: MJXZERO, MJXTEX;
+    > span {
+      padding: 0.8em 0 0.3em 0;
+    }
+  }
+  &[data-font='s1'] {
+    font-family: MJXZERO, MJXTEX-S1;
+    > span {
+      padding: 0.85em 0 0.4em 0;
+    }
+  }
+  &[data-font='s2'] {
+    font-family: MJXZERO, MJXTEX-S2;
+    > span {
+      padding: 1.15em 0 0.65em 0;
+    }
+  }
+  &[data-font='s3'] {
+    font-family: MJXZERO, MJXTEX-S3;
+    > span {
+      padding: 1.5em 0 1em 0;
+    }
+  }
+  &[data-font='s4'] {
+    font-family: MJXZERO, MJXTEX-S4;
+    > span {
+      padding: 1.8em 0 1.25em 0;
+    }
+  }
+}
+
+.mo_content[data-fenced='true'][data-font='any'] {
+  min-height: 1em;
+  font-size: 1em;
+  &[data-content='['],
+  &[data-content=']'] {
+    width: 0.375em;
+    position: relative;
+    &::before,
+    &::after {
+      content: '';
+      width: 0.3em;
+      height: 0.125em;
+      position: absolute;
+      background-color: black;
+    }
+
+    &[data-content='['] {
+      border-left: 0.125em solid black;
+      margin-left: 0.1em;
+    }
+    &[data-content=']'] {
+      border-right: 0.125em solid black;
+      margin-right: 0.1em;
+    }
+    &[data-content='[']::before {
+      top: 0;
+      left: 0;
+    }
+    &[data-content=']']::before {
+      top: 0;
+      right: 0;
+    }
+
+    &[data-content='[']::after {
+      bottom: 0;
+      left: 0;
+    }
+    &[data-content=']']::after {
+      bottom: 0;
+      right: 0;
+    }
+  }
+}
+
+.mo_content[data-content=','] {
+  padding-right: 0.2em;
+  > span {
+    padding: 0.1em 0 0.2em 0;
+  }
+}
+
+.mo_content[data-content='∫'],
+.mo_content[data-content='∫∫'],
+.mo_content[data-content='∫∫∫'],
+.mo_content[data-content='∮'],
+.mo_content[data-content='∮∮'],
+.mo_content[data-content='∮∮∮'],
+.mo_content[data-content='∬'],
+.mo_content[data-content='∭'] {
+  > span {
+    padding: 1.36em 0.4em 0.85em 0;
+  }
+}
+
+.mo_content[data-content='∑'] > span {
+  padding: 1em 0 0.5em 0;
+}
+
+.mo_content[data-content='∏'] > span {
+  padding: 1em 0 0.5em 0;
+}
+
+.mo_content[data-content='∂'] > span {
+  padding: 0.75em 0.05em 0em 0;
+}
+
+.mo_content[data-content='′'] > span {
+  padding: 0.6em 0 0em 0;
+}
+
+.mo_content[data-content='~'] > span {
+  padding: 0.5em 0 0 0;
+}
+
+.mo_content[data-content='⋅'] > span {
+  padding: 0.4em 0 0;
+}
+
+.mo_content[data-content='≈'] > span {
+  padding: 0.5em 0 0 0;
+}
+
+.mo_content[data-content='∞'] > span {
+  padding: 0.5em 0 0.05em 0;
+}
+
+.mo_content[data-content='∴'] > span {
+  padding: 0.6em 0 0.05em 0;
+}
+
+.mo_content[data-content='∵'] > span {
+  padding: 0.6em 0 0em 0;
+}
+
+.mo_content[data-content='∇'] > span {
+  padding: 0.7em 0 0.1em 0;
+}
+
+.mo_content[data-content='°'] > span {
+  padding: 0.9em 0 0em 0;
+}
+
+.mo_content[data-content='±'] > span {
+  padding: 0.7em 0 0.05em 0;
+}
+
+.mo_content[data-content='²'] > span {
+  padding: 0.8em 0 0.05em 0;
+}
+
+.mo_content[data-content='³'] > span {
+  padding: 0.8em 0 0.05em 0;
+}
+
+.mo_content[data-content='₂'] > span {
+  padding: 0.5em 0 0.05em 0;
+}
+
+.mo_content[data-content='₃'] > span {
+  padding: 0.5em 0 0.05em 0;
+}
+
+.mo_content[data-content='⊂'] > span {
+  padding: 0.6em 0 0.05em 0;
+}
+
+.mo_content[data-content='⊃'] > span {
+  padding: 0.6em 0 0.05em 0;
+}
+
+.mo_content[data-content='∩'] > span {
+  padding: 0.6em 0 0.05em 0;
+}
+
+.mo_content[data-content='∪'] > span {
+  padding: 0.6em 0 0.05em 0;
+}
+
+.mo_content[data-content='∧'] > span {
+  padding: 0.6em 0 0.05em 0;
+}
+
+.mo_content[data-content='∨'] > span {
+  padding: 0.6em 0 0.05em 0;
+}
+
+.mo_content[data-content='￢'] > span {
+  padding: 0.6em 0 0em 0;
+}
+
+.mo_content[data-content='⇒'] > span {
+  padding: 0.5em 0 0.05em 0;
+}
+
+.mo_content[data-content='⇔'] > span {
+  padding: 0.55em 0 0.08em 0;
+}
+
+.mo_content[data-content='!'] > span {
+  padding: 0.7em 0 0.05em 0;
+}
+
+.mo_content[data-content='⊕'] > span {
+  padding: 0.6em 0 0.15em 0;
+}
+
+.mo_content[data-content='⊗'] > span {
+  padding: 0.6em 0 0.15em 0;
+}
+
+.mo_content[data-content='∅'] > span {
+  padding: 0.8em 0 0.15em 0;
+}
+
+.mo_content[data-content='∈'] > span {
+  padding: 0.6em 0 0.15em 0;
+}
+
+.mo_content[data-content='∉'] > span {
+  padding: 0.7em 0 0.25em 0;
+}
+
+.mo_content[data-content='∠'] > span {
+  padding: 0.7em 0 0.05em 0;
+}
+
+.mo_content[data-content='∥'] > span {
+  padding: 0.8em 0 0.25em 0;
+}
+
+.mo_content[data-content='∝'] > span {
+  padding: 0.5em 0 0.1em 0;
+}
+
+.mo_content[data-content='←'] > span {
+  padding: 0.5em 0 0.05em 0;
+}
+
+.mo_content[data-content='→'] > span {
+  padding: 0.5em 0 0.05em 0;
+}
+
+.mo_content[data-content='↑'] > span {
+  padding: 0.7em 0 0.25em 0;
+}
+
+.mo_content[data-content='↓'] > span {
+  padding: 0.7em 0 0.25em 0;
+}
+
+.mo_content[data-content='⇐'] > span {
+  padding: 0.5em 0 0.05em 0;
+}
+
+.mo_content[data-content='⇑'] > span {
+  padding: 0.7em 0 0.25em 0;
+}
+
+.mo_content[data-content='⇓'] > span {
+  padding: 0.7em 0 0.25em 0;
+}
+
+.mo_content[data-content='Α'] > span {
+  padding: 0.7em 0 0em 0;
+}
+
+.mo_content[data-content='Β'] > span {
+  padding: 0.7em 0 0em 0;
+}
+
+.mo_content[data-content='Γ'] > span {
+  padding: 0.7em 0 0em 0;
+}
+
+.mo_content[data-content='Δ'] > span {
+  padding: 0.7em 0 0em 0;
+}
+
+.mo_content[data-content='Ε'] > span {
+  padding: 0.7em 0 0em 0;
+}
+
+.mo_content[data-content='Ζ'] > span {
+  padding: 0.7em 0 0em 0;
+}
+
+.mo_content[data-content='Η'] > span {
+  padding: 0.7em 0 0em 0;
+}
+
+.mo_content[data-content='Θ'] > span {
+  padding: 0.7em 0 0.05em 0;
+}
+
+.mo_content[data-content='Ι'] > span {
+  padding: 0.7em 0 0.05em 0;
+}
+
+.mo_content[data-content='Κ'] > span {
+  padding: 0.7em 0 0.05em 0;
+}
+
+.mo_content[data-content='Λ'] > span {
+  padding: 0.7em 0 0em 0;
+}
+
+.mo_content[data-content='Μ'] > span {
+  padding: 0.7em 0 0em 0;
+}
+
+.mo_content[data-content='Ν'] > span {
+  padding: 0.7em 0 0em 0;
+}
+
+.mo_content[data-content='Ξ'] > span {
+  padding: 0.7em 0 0em 0;
+}
+
+.mo_content[data-content='Ο'] > span {
+  padding: 0.7em 0 0em 0;
+}
+
+.mo_content[data-content='Π'] > span {
+  padding: 0.7em 0 0em 0;
+}
+
+.mo_content[data-content='Ρ'] > span {
+  padding: 0.7em 0 0em 0;
+}
+
+.mo_content[data-content='Σ'] > span {
+  padding: 0.75em 0 0em 0;
+}
+
+.mo_content[data-content='Τ'] > span {
+  padding: 0.75em 0 0em 0;
+}
+
+.mo_content[data-content='Υ'] > span {
+  padding: 0.75em 0 0em 0;
+}
+
+.mo_content[data-content='Φ'] > span {
+  padding: 0.75em 0 0em 0;
+}
+
+.mo_content[data-content='Χ'] > span {
+  padding: 0.75em 0 0em 0;
+}
+
+.mo_content[data-content='Ψ'] > span {
+  padding: 0.75em 0 0em 0;
+}
+
+.mo_content[data-content='Ω'] > span {
+  padding: 0.75em 0 0em 0;
+}

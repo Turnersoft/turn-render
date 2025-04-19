@@ -1,0 +1,799 @@
+@font-face {
+  font-family: MJXZERO;
+  src: url('./fonts/mathjax/MathJax_Zero.woff') format('woff');
+  font-display: swap;
+}
+
+@font-face {
+  font-family: MJXTEX;
+  src: url('./fonts/mathjax/MathJax_Main-Regular.woff') format('woff');
+  font-display: swap;
+}
+
+@font-face {
+  font-family: MJXTEX-B;
+  src: url('./fonts/mathjax/MathJax_Main-Bold.woff') format('woff');
+  font-display: swap;
+}
+
+@font-face {
+  font-family: MJXTEX-I;
+  src: url('./fonts/mathjax/MathJax_Math-Italic.woff') format('woff');
+  font-display: swap;
+}
+
+@font-face {
+  font-family: MJXTEX-MI;
+  src: url('./fonts/mathjax/MathJax_Main-Italic.woff') format('woff');
+  font-display: swap;
+}
+
+@font-face {
+  font-family: MJXTEX-BI;
+  src: url('./fonts/mathjax/MathJax_Math-BoldItalic.woff') format('woff');
+  font-display: swap;
+}
+
+@font-face {
+  font-family: MJXTEX-S1;
+  src: url('./fonts/mathjax/MathJax_Size1-Regular.woff') format('woff');
+  font-display: swap;
+}
+
+@font-face {
+  font-family: MJXTEX-S2;
+  src: url('./fonts/mathjax/MathJax_Size2-Regular.woff') format('woff');
+  font-display: swap;
+}
+
+@font-face {
+  font-family: MJXTEX-S3;
+  src: url('./fonts/mathjax/MathJax_Size3-Regular.woff') format('woff');
+  font-display: swap;
+}
+
+@font-face {
+  font-family: MJXTEX-S4;
+  src: url('./fonts/mathjax/MathJax_Size4-Regular.woff') format('woff');
+  font-display: swap;
+}
+
+@font-face {
+  font-family: MJXTEX-A;
+  src: url('./fonts/mathjax/MathJax_AMS-Regular.woff') format('woff');
+  font-display: swap;
+}
+
+@font-face {
+  font-family: MJXTEX-C;
+  src: url('./fonts/mathjax/MathJax_Calligraphic-Regular.woff') format('woff');
+  font-display: swap;
+}
+
+@font-face {
+  font-family: MJXTEX-CB;
+  src: url('./fonts/mathjax/MathJax_Calligraphic-Bold.woff') format('woff');
+  font-display: swap;
+}
+
+@font-face {
+  font-family: MJXTEX-FR;
+  src: url('./fonts/mathjax/MathJax_Fraktur-Regular.woff') format('woff');
+  font-display: swap;
+}
+
+@font-face {
+  font-family: MJXTEX-FRB;
+  src: url('./fonts/mathjax/MathJax_Fraktur-Bold.woff') format('woff');
+  font-display: swap;
+}
+
+@font-face {
+  font-family: MJXTEX-SS;
+  src: url('./fonts/mathjax/MathJax_SansSerif-Regular.woff') format('woff');
+  font-display: swap;
+}
+
+@font-face {
+  font-family: MJXTEX-SSB;
+  src: url('./fonts/mathjax/MathJax_SansSerif-Bold.woff') format('woff');
+  font-display: swap;
+}
+
+@font-face {
+  font-family: MJXTEX-SSI;
+  src: url('./fonts/mathjax/MathJax_SansSerif-Italic.woff') format('woff');
+  font-display: swap;
+}
+
+@font-face {
+  font-family: MJXTEX-SC;
+  src: url('./fonts/mathjax/MathJax_Script-Regular.woff') format('woff');
+  font-display: swap;
+}
+
+@font-face {
+  font-family: MJXTEX-T;
+  src: url('./fonts/mathjax/MathJax_Typewriter-Regular.woff') format('woff');
+  font-display: swap;
+}
+
+@font-face {
+  font-family: MJXTEX-V;
+  src: url('./fonts/mathjax/MathJax_Vector-Regular.woff') format('woff');
+  font-display: swap;
+}
+
+@font-face {
+  font-family: MJXTEX-VB;
+  src: url('./fonts/mathjax/MathJax_Vector-Bold.woff') format('woff');
+  font-display: swap;
+}
+
+.math_content {
+  display: inline-block;
+  margin: 10px 80px 0;
+  flex: 1;
+  font-size: 1em;
+  border-bottom: 3px solid rgba(198, 201, 198, 0.065);
+  text-align: start;
+  font-size: 80%;
+  > span {
+    font-size: 1.2em;
+  }
+  & * {
+    letter-spacing: normal;
+    white-space: nowrap;
+  }
+}
+
+.editable_span {
+  cursor: pointer;
+}
+
+.tstrut {
+  display: inline-block;
+  height: 1em;
+  vertical-align: -0.25em;
+  background-color: red;
+}
+
+.gap {
+  display: inline-block;
+  height: auto;
+  font-size: 1em;
+  line-height: 1;
+}
+
+.math_with_explanation {
+  display: flex;
+  flex-direction: column;
+}
+
+.mi_content {
+  display: inline-block;
+  font-family: MJXZERO, MJXTEX-I;
+  color: black;
+  font-size: 1em;
+  > span {
+    font-size: 1em;
+    height: 0;
+    line-height: 0;
+    display: block;
+  }
+}
+
+.mn_content {
+  display: inline-block;
+  font-family: MJXZERO, MJXTEX;
+  color: black;
+  font-size: 1em;
+  > span {
+    font-size: 1em;
+    height: 0;
+    line-height: 0;
+    display: block;
+  }
+}
+
+.mo_content {
+  font-size: 1em;
+  display: inline-block;
+  font-family: MJXZERO, MJXTEX;
+  color: black;
+  > span {
+    font-size: 1em;
+    height: 0;
+    line-height: 0;
+    display: block;
+  }
+}
+
+.mo_content[data-font2='true'] {
+  font-family: MJXZERO, MJXTEX-S2 !important;
+}
+
+.mrow_content {
+  display: inline-block;
+  line-height: 0;
+  height: auto;
+  font-size: 1em;
+}
+
+.msub_content {
+  font-size: 1em;
+  display: inline-block;
+  & > .msub_content_item {
+    font-size: 1em;
+    display: inline-block;
+  }
+  & > .msub_content_sub {
+    font-size: 70.7%;
+    display: inline-block;
+    vertical-align: sub;
+  }
+}
+
+.msup_content {
+  font-size: 1em;
+  display: inline-block;
+  & > .msup_content_item {
+    font-size: 1em;
+    display: inline-block;
+  }
+
+  & > .msup_content_sup {
+    display: inline-block;
+    font-size: 70.7%;
+    vertical-align: super;
+  }
+}
+
+.msubsup_content {
+  font-size: 1em;
+  display: inline-block;
+  padding-right: 0.05em;
+  padding-left: 0.033em;
+  margin-left: 0.05em;
+
+  & > .msubsup_content_sup {
+    display: block;
+    font-size: 70.7%;
+    text-align: left;
+    > .mo_content[data-content=','] {
+      margin: 0;
+    }
+  }
+
+  & > .msubsup_content_sub {
+    display: block;
+    font-size: 70.7%;
+    text-align: left;
+    > span {
+      display: inline-table;
+
+      > .msubsup_center_gap {
+        display: block;
+        padding-top: 0.18em;
+      }
+
+      > .sub {
+        display: table-row;
+        > * {
+          display: table-cell;
+          > .mo_content[data-content=','] {
+            padding: 0;
+          }
+        }
+      }
+    }
+  }
+}
+
+.msubsup_content[data-content='V'] {
+  & > .msubsup_content_sub {
+    margin-left: -0.4em;
+  }
+}
+.msubsup_content[data-content='C'] {
+  & > .msubsup_content_sub {
+    margin-left: -0.2em;
+  }
+}
+
+.msubsup_content:has(> .msubsup_content_item > span[data-fonts2='true']) {
+  &:has(div[data-content='∫']),
+  &:has(div[data-content='∫∫']),
+  &:has(div[data-content='∫∫∫']),
+  &:has(div[data-content='∮']),
+  &:has(div[data-content='∮∮']),
+  &:has(div[data-content='∮∮∮']) {
+    > .msubsup_content_sup {
+      align-items: flex-start;
+      margin-left: 0.2em;
+      margin-top: -0.3em;
+    }
+    > .msubsup_content_sub {
+      align-items: flex-end;
+      margin-left: -0.5em;
+      height: auto;
+      margin-bottom: -0.25em;
+    }
+  }
+}
+
+.msup_content .mfrac_content {
+  & .mi_content,
+  & .mo_content,
+  & .mn_content {
+    font-size: 74.3%;
+  }
+  > .line {
+    margin: 0.06em -0.1em;
+  }
+}
+
+.mtext_content {
+  display: inline-block;
+  max-width: 100%;
+  font-family: MJXZERO, MJXTEX;
+  word-break: break-all;
+  text-align: left;
+  font-size: 1em;
+
+  padding: 5px;
+  margin-top: 10px;
+  margin-left: 0;
+}
+
+.math_content .mtext_content {
+  margin-top: 0;
+  margin-left: 0.278em;
+  line-height: 0;
+  padding: 0.7em 0 0.25em 0;
+}
+
+.math_content > .mtext_content {
+  margin-top: 5px;
+}
+
+.msqrt_content {
+  display: inline-block;
+  font-size: 1em;
+  font-family: MJXZERO, MJXTEX;
+  text-align: left;
+  > span {
+    padding-top: 0.07em;
+    display: inline-block;
+    > .surd {
+      display: inline-block;
+      vertical-align: top;
+      > span {
+        display: inline-block;
+        text-align: left;
+        > .sqrt_mo[data-font='s0'] {
+          display: block;
+          text-align: left;
+          padding: 0.85em 0em 0.2em 0;
+          font-family: MJXZERO, MJXTEX;
+        }
+        > .sqrt_mo[data-font='s1'] {
+          display: block;
+          text-align: left;
+          padding: 0.9em 0em 0.3em 0;
+          font-family: MJXZERO, MJXTEX-S1;
+        }
+        > .sqrt_mo[data-font='s2'] {
+          display: block;
+          text-align: left;
+          padding: 1.22em 0em 0.7em 0;
+          font-family: MJXZERO, MJXTEX-S2;
+        }
+        > .sqrt_mo[data-font='s3'] {
+          display: block;
+          text-align: left;
+          padding: 1.45em 0em 0.9em 0;
+          font-family: MJXZERO, MJXTEX-S3;
+        }
+        > .sqrt_mo[data-font='s4'] {
+          display: block;
+          text-align: left;
+          padding: 1.82em 0em 1.3em 0;
+          font-family: MJXZERO, MJXTEX-S4;
+        }
+        > .stretchy_v {
+          display: inline-block;
+          > span > span {
+            transform: scaleY(1);
+            transform-origin: left center;
+            overflow: hidden;
+          }
+          > .beg {
+            display: block;
+            height: 0;
+            > span {
+              display: inline-block;
+              font-family: MJXZERO, MJXTEX-S1, MJXTEX-S4, MJXTEX, MJXTEX-A !important;
+              &::before {
+                content: '';
+                padding: 0.605em 1.056em 0.014em 0px;
+                display: block;
+                width: 0;
+              }
+            }
+          }
+
+          > .ext {
+            border-top-width: 0.589em;
+            border-bottom-width: 1.79em;
+            display: block;
+            height: 0;
+            box-sizing: border-box;
+            border: 0px solid transparent;
+            overflow: visible clip;
+            > span {
+              display: inline-block;
+              transform: scaleY(500) translateY(0.075em);
+              overflow: visible;
+              font-family: MJXZERO, MJXTEX-S1, MJXTEX-S4, MJXTEX, MJXTEX-A !important;
+              &::before {
+                content: '';
+                width: 1.056em;
+                display: block;
+              }
+            }
+          }
+
+          > .end {
+            margin-top: -1.82em;
+            display: block;
+            > span {
+              display: block;
+              font-family: MJXZERO, MJXTEX-S1, MJXTEX-S4, MJXTEX, MJXTEX-A !important;
+              &::before {
+                content: '⎷';
+                padding: 0.935em 1.056em 0.885em 0px;
+                display: block;
+                width: 0;
+              }
+            }
+          }
+
+          > .mark {
+            display: inline-block;
+            height: 0;
+          }
+        }
+      }
+    }
+    > .msqrt_item {
+      display: inline-block;
+      padding-left: 0.1em;
+      border-top: 0.07em solid;
+      padding-top: 0.18em;
+      &[data-font='any'] {
+        padding-left: 0.3em;
+        margin-left: -0.3em;
+        padding-top: 0.28em;
+      }
+    }
+  }
+}
+
+.mroot_content {
+  position: relative;
+  .n {
+    position: absolute;
+    top: 0;
+    right: 100%;
+    font-size: 0.6em;
+    transform: translate(-0.2em, -50%);
+    width: fit-content;
+    height: fit-content;
+    .mrow_content {
+      flex-wrap: nowrap;
+    }
+  }
+}
+
+.mfrac_content {
+  padding: 0 0.22em;
+  font-size: 1em;
+  display: inline-block;
+  vertical-align: 0.04em;
+
+  & > .mfrac_content_numerator {
+    display: block;
+    text-align: center;
+  }
+  & > .mfrac_content_denominator {
+    display: block;
+    > span {
+      display: inline-table;
+      width: 100%;
+      > .line {
+        display: block;
+        box-sizing: border-box;
+        min-height: 1px;
+        height: 0.06em;
+        border-top: 0.06em solid;
+        margin: 0.06em -0.1em;
+        overflow: hidden;
+        margin: 0.18em -0.1em;
+      }
+      > span + span {
+        display: table-row;
+        > span {
+          display: table-cell;
+          text-align: center;
+        }
+      }
+    }
+  }
+}
+
+.mfrac_content .mfrac_content {
+  & .mi_content,
+  & .mo_content,
+  & .mn_content {
+    font-size: 70.7%;
+  }
+}
+
+.mtable_content {
+  display: table;
+  border-collapse: collapse;
+  max-width: 100%;
+}
+
+.mtablerow_content {
+  display: table-row !important;
+}
+
+.mtablecell_content {
+  display: table-cell !important;
+  padding-bottom: 0.15em;
+}
+
+.mtablerow_content:nth-of-type(n) {
+  .mtablecell_content {
+    padding-top: 0.15em;
+  }
+}
+
+.mtablerow_content:nth-of-type(1) {
+  .mtablecell_content {
+    padding-top: 0;
+  }
+}
+
+.mtable_content[data-ismatrix='true'] {
+  .mo_content {
+    margin: 0;
+  }
+  .mtablecell_content {
+    padding: 0.2em 0.5em;
+    text-align: center;
+  }
+  .mtablerow_content {
+    .mtablecell_content:first-child {
+      padding-left: 0;
+    }
+    .mtablecell_content:last-child {
+      padding-right: 0;
+    }
+  }
+
+  .mtablerow_content:first-child {
+    .mtablecell_content {
+      padding-top: 0;
+    }
+  }
+  .mtablerow_content:last-child {
+    .mtablecell_content {
+      padding-bottom: 0;
+    }
+  }
+}
+
+.mtable_content[data-ismatrix='false'] {
+  // & > .mtablerow_content > .mtablecell_content {
+  //     vertical-align: middle;
+  // }
+  & > .mtablerow_content > .mtablecell_content:first-child {
+    & > .mrow_content {
+      text-align: right;
+    }
+  }
+}
+
+.munder_content {
+  font-size: 1em;
+  display: inline-table;
+  text-align: left;
+
+  > span {
+    display: table-row;
+    > * {
+      display: table-cell;
+    }
+  }
+  > span + span {
+    > span > span {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+  }
+}
+
+.munder_content[data-islimsum='false'] {
+  > span + span {
+    > span > span {
+      > .mrow_content {
+        width: 90%;
+        overflow: clip visible;
+      }
+    }
+  }
+  .mo_content[data-content='–'] {
+    font-family: MJXZERO, MJXTEX-S1, MJXTEX-S4, MJXTEX, MJXTEX-A !important;
+    width: 100%;
+    > span {
+      padding: 0.3em 0 0;
+      transform: scaleX(500);
+      margin-bottom: -0.19em;
+    }
+  }
+  .under {
+    /* no style */
+    opacity: 1;
+  }
+  .underContent {
+    opacity: 1;
+  }
+}
+
+.mover_content {
+  font-size: 1em;
+  display: inline-block;
+  padding-top: 0.1em;
+}
+
+.mover_content[data-islimsum='false'] {
+  & > .over > span {
+    display: flex;
+    flex-direction: column;
+    text-align: center;
+    .mo_content[data-content='¯'] {
+      height: 0.2em;
+      > span {
+        padding: 0.65em 0 0 0;
+      }
+    }
+
+    .mo_content[data-content='.'] {
+      margin: 0;
+      height: 0.2em;
+      display: block;
+      > span {
+        padding: 0.1em 0 0em;
+      }
+    }
+
+    & span:has(> .mo_content[data-content='.']) {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .mo_content[data-content='^'] {
+      height: 0.15em;
+
+      > span {
+        padding-top: 0.75em;
+      }
+    }
+
+    .mo_content[data-content='~'] {
+      height: 0.26em;
+      > span {
+        padding: 0.4em 0 0;
+      }
+    }
+  }
+
+  & > .over[data-isitalic='true'] > span {
+    transform: translateX(0.16em);
+  }
+}
+
+// .munderover_content {
+//     font-size: 1em;
+//     display: flex !important;
+//     flex-direction: column;
+//     align-items: center;
+//     > .content {
+//         font-size: 1em;
+//         display: flex;
+//         align-items: center;
+//     }
+
+//     > .over,
+//     .under {
+//         font-size: 70.7%;
+//         > .mrow_content {
+//             display: flex !important;
+//             flex-direction: column;
+//             align-items: center;
+//             width: fit-content;
+//             height: fit-content;
+//         }
+//         .mo_content {
+//             margin: 0;
+//         }
+//     }
+
+//     > .over {
+//         &:has(.mo_content[data-content="⋅"]),
+//         &:has(.mo_content[data-content="¯"]),
+//         &:has(.mo_content[data-content="~"]) {
+//             font-size: 100%;
+//         }
+//     }
+//     > .under {
+//         &:has(.mo_content[data-content="⋅"]),
+//         &:has(.mo_content[data-content="¯"]),
+//         &:has(.mo_content[data-content="~"]) {
+//             padding-top: 0.1em;
+//         }
+//     }
+
+//     > .over[data-isitalic="true"] {
+//         text-align: right;
+//         transform: translateX(0.2em);
+//     }
+// }
+
+// .munderover_content[data-islimsum="false"] {
+//     > .under {
+//         .mrow_content:has(> .mo_content[data-content="¯"]) {
+//             overflow: hidden;
+//             text-align: center;
+//             width: 100%;
+//             > .mo_content[data-content="¯"] {
+//                 transform: scaleX(500);
+//                 height: 0.3em;
+//             }
+//         }
+//     }
+
+//     > .under {
+//         .mo_content[data-content="¯"] {
+//             font-family: MJXZERO, MJXTEX-S1, MJXTEX-S4, MJXTEX, MJXTEX-A !important;
+//         }
+//     }
+
+//     > .over {
+//         .mo_content[data-content="¯"] {
+//             height: 0.35em;
+//             display: block;
+//         }
+
+//         .mo_content[data-content="⋅"] {
+//             display: block;
+//             height: 0.2em;
+//             line-height: 0.74;
+//         }
+
+//         .mo_content[data-content="~"] {
+//             height: 0.2em;
+//             display: block;
+//             line-height: 0.74;
+//         }
+//     }
+// }
+
+@import url(./mi.module.scss);
+@import url(./mn.modules.scss);
+@import url(./mo.module.scss);
