@@ -27,19 +27,114 @@ const hasMarginList = [
     '·',
 ];
 
-const _operator = {
-    IsEqual: '=',
-    Equal: '=',
-    NotEqual: '≠',
-    Greater: '>',
-    Less: '<',
-    GreaterEqual: '≥',
-    LessEqual: '≤',
-    Collinear: '=',
-    Perpendicular: '⊥',
-    Equivalent: '≡',
-    Similar: '∼',
-    Congruent: '≌',
+const _relationOperator: {[key: string]: string} = {
+    // Binary relations
+
+    // Basic equality and inequality
+    IsEqual: "=",
+    Equal: "=",
+    NotEqual: "≠",
+    Greater: ">",
+    Less: "<",
+    GreaterEqual: "≥",
+    LessEqual: "≤",
+
+    // Geometry binary relations
+    Collinear: "||",
+    Perpendicular: "⊥",
+    Equivalent: "≡",
+    Similar: "∼",
+    Congruent: "≅",
+
+    // Set Theory binary relations
+    ElementOf: "∈",
+    NotElementOf: "∉",
+    SubsetOf: "⊆",
+    ProperSubsetOf: "⊂",
+    SupersetOf: "⊇",
+    ProperSupersetOf: "⊃",
+    Disjoint: "⊥",
+    Union: "∪",
+    Intersection: "∩",
+    CartesianProduct: "×",
+    SameCardinality: "≈",
+
+    // Number Theory binary relations
+    Divides: "|",
+    NotDivides: "∤",
+    CongruentMod: "≡",
+    NotCongruentMod: "≢",
+    AreCoprime: "Coprime",
+
+    // Group Theory binary relations
+    IsSubgroupOf: "≤",
+    IsNormalSubgroupOf: "◁",
+    IsIsomorphicTo: "≅",
+    IsHomomorphicTo: "→",
+    IsQuotientOf: "/",
+    IsInCenterOf: "∈Z",
+    AreConjugateIn: "~",
+
+    // Ring Theory binary relations
+    IsSubringOf: "⊆",
+    IsIdealOf: "◁",
+
+    // Topology binary relations
+    IsOpenIn: "Open",
+    IsClosedIn: "Closed",
+    IsHomeomorphicTo: "≃",
+    IsDense: "Dense",
+
+    // Category Theory binary relations
+    IsMorphismBetween: "→",
+    IsIsomorphismIn: "≅",
+    IsMonomorphismIn: "↪",
+    IsEpimorphismIn: "↠",
+    IsNaturalTransformationBetween: "⇒",
+    IsAdjunctionBetween: "⊣",
+    ComposesTo: "∘",
+
+    // Logic relations
+    Implies: "⇒",
+    Iff: "⇔",
+};
+
+const _unaryRelationOperator: {[key: string]: string} = {
+    // Number Theory unary relations
+    IsPrime: "Prime",
+    IsComposite: "Comp",
+    
+    // Group Theory unary relations
+    HasOrderInGroup: "|·|",
+    HasUniqueInverse: "¹",
+
+    // Ring Theory unary relations
+    IsPrimeIdeal: "Prime◁",
+    IsMaximalIdeal: "Max◁",
+    IsPrincipalIdeal: "⟨·⟩",
+    IsUnit: "Unit",
+    IsIrreducible: "Irr",
+    IsPrimeElement: "Prime",
+    IsField: "Field",
+    IsIntegralDomain: "ID",
+    IsUFD: "UFD",
+    IsPID: "PID",
+
+    // Topology unary relations
+    IsCompact: "Compact",
+    IsConnected: "Conn",
+    IsContinuous: "Cont",
+    Converges: "→",
+    IsHausdorff: "Haus",
+
+    // Category Theory unary relations
+    IsObjectIn: "∈Ob",
+    IsEndomorphismIn: "⟲",
+    IsAutomorphismIn: "≅",
+
+    // Set Theory unary operations
+    Complement: "ᶜ",
+    PowerSet: "P",
 };
 
 const _RefinedMulOrDivOperation = {
@@ -1963,9 +2058,35 @@ const renderMathNode = (node: MathNode, primes = 0): React.ReactNode => {
                 >
                     {renderMathNode(Relationship.lhs)}
                     <Component type="Mo">
-                        {Relationship.operator in _operator ? _operator[Relationship.operator] : ''}
+                        {Relationship.operator in _relationOperator ? _relationOperator[Relationship.operator] : ''}
                     </Component>
                     {renderMathNode(Relationship.rhs)}
+                </Component>
+            );
+        case 'UnaryRelationship':
+            const { UnaryRelationship } = node.content as Extract<
+                MathNodeContent,
+                { UnaryRelationship: any }
+            >;
+            return (
+                <Component
+                    type="Mrow"
+                    _props={{
+                        id: node.id,
+                        _classNames: styles.editable_span,
+                    }}
+                >
+                    <Component type="Mrow">
+                        {UnaryRelationship && UnaryRelationship.predicate && _unaryRelationOperator[UnaryRelationship.predicate] && _unaryRelationOperator[UnaryRelationship.predicate].length > 2 
+                            ? <Component type="Mtext">{_unaryRelationOperator[UnaryRelationship.predicate]}</Component>
+                            : UnaryRelationship && UnaryRelationship.predicate && _unaryRelationOperator[UnaryRelationship.predicate] 
+                              ? <Component type="Mo">{_unaryRelationOperator[UnaryRelationship.predicate]}</Component>
+                              : null
+                        }
+                    </Component>
+                    <Component type="Mo">(</Component>
+                    {UnaryRelationship && UnaryRelationship.subject ? renderMathNode(UnaryRelationship.subject) : null}
+                    <Component type="Mo">)</Component>
                 </Component>
             );
         case 'VariableDefinition':

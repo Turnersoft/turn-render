@@ -5,6 +5,9 @@ use ts_rs::TS;
 #[derive(Debug, Clone, Eq, PartialEq, Hash, Serialize, Deserialize, TS)]
 #[ts(export)]
 pub enum RelationOperatorNode {
+    // Binary relations
+
+    // Basic equality and inequality
     IsEqual,
     Equal,
     NotEqual,
@@ -12,11 +15,111 @@ pub enum RelationOperatorNode {
     Less,
     GreaterEqual,
     LessEqual,
+
+    // Geometry binary relations
     Collinear,
     Perpendicular,
     Equivalent, // this is expression equivlence under "math", todo: this context can vary
     Similar,
-    Congruent,
+    Congruent, // Geometric congruence
+
+    // Set Theory binary relations
+    ElementOf,        // ∈
+    NotElementOf,     // ∉
+    SubsetOf,         // ⊆
+    ProperSubsetOf,   // ⊂
+    SupersetOf,       // ⊇
+    ProperSupersetOf, // ⊃
+    Disjoint,         // A ∩ B = ∅
+    Union,            // ∪
+    Intersection,     // ∩
+    CartesianProduct, // ×
+    SameCardinality,  // |A| = |B|
+
+    // Number Theory binary relations
+    Divides,         // |
+    NotDivides,      // ∤
+    CongruentMod,    // ≡ (modular congruence)
+    NotCongruentMod, // ≢
+    AreCoprime,
+
+    // Group Theory binary relations
+    IsSubgroupOf,
+    IsNormalSubgroupOf,
+    IsIsomorphicTo, // ≅
+    IsHomomorphicTo,
+    IsQuotientOf,
+    IsInCenterOf,
+    AreConjugateIn,
+
+    // Ring Theory binary relations
+    IsSubringOf,
+    IsIdealOf,
+
+    // Topology binary relations
+    IsOpenIn,
+    IsClosedIn,
+    IsHomeomorphicTo,
+    IsDense,
+
+    // Category Theory binary relations
+    IsMorphismBetween,
+    IsIsomorphismIn,
+    IsMonomorphismIn,
+    IsEpimorphismIn,
+    IsNaturalTransformationBetween,
+    IsAdjunctionBetween,
+    ComposesTo,
+
+    // Logic relations
+    Implies, // →
+    Iff,     // ↔
+
+    // Custom relations
+    Custom(String), // For custom notation not covered by built-in operators
+}
+
+#[derive(Debug, Clone, Eq, PartialEq, Hash, Serialize, Deserialize, TS)]
+#[ts(export)]
+pub enum UnaryRelationOperatorNode {
+    // Number Theory unary relations
+    IsPrime,
+    IsComposite,
+
+    // Group Theory unary relations
+    HasOrderInGroup,
+    HasUniqueInverse,
+
+    // Ring Theory unary relations
+    IsPrimeIdeal,
+    IsMaximalIdeal,
+    IsPrincipalIdeal,
+    IsUnit,
+    IsIrreducible,
+    IsPrimeElement,
+    IsField,
+    IsIntegralDomain,
+    IsUFD, // Unique Factorization Domain
+    IsPID, // Principal Ideal Domain
+
+    // Topology unary relations
+    IsCompact,
+    IsConnected,
+    IsContinuous,
+    Converges,
+    IsHausdorff,
+
+    // Category Theory unary relations
+    IsObjectIn,
+    IsEndomorphismIn,
+    IsAutomorphismIn,
+
+    // Set Theory unary operations
+    Complement, // ^c
+    PowerSet,   // P()
+
+    // Custom unary relation
+    Custom(String),
 }
 
 #[derive(Debug, Clone, Eq, PartialEq, Hash, Serialize, Deserialize, TS)]
@@ -231,6 +334,35 @@ pub enum MathNodeContent {
         operator: RelationOperatorNode,
     },
 
+    UnaryRelationship {
+        subject: Box<MathNode>,
+        predicate: UnaryRelationOperatorNode,
+    },
+
+    Theorem {
+        name: String,
+        description: String,
+        goal: Box<MathNode>,
+        proofs: Vec<MathNode>, // ProofForest
+    },
+
+    ProofGoal {
+        statement: Box<MathNode>,   // The main statement being proven
+        quantifiers: Vec<MathNode>, // Quantified objects in this state
+        variables: Vec<MathNode>,   // Variables with assigned values
+    },
+
+    ProofForest {
+        // Summary of the forest state
+        roots: Vec<MathNode>, // a vec of proof trees
+    },
+
+    Quantifier {
+        quantification: QuantificationNode,
+        variable: Box<MathNode>,
+        body: Box<MathNode>,
+    },
+
     VariableDefinition {
         name: Box<MathNode>,
         definition: Option<MathNode>,
@@ -240,6 +372,25 @@ pub enum MathNodeContent {
         custom_function: Box<MathNode>,
         definition: Option<MathNode>,
     },
+}
+
+#[derive(Debug, Clone, Eq, PartialEq, Hash, Serialize, Deserialize, TS)]
+#[ts(export)]
+pub enum QuantificationNode {
+    /// Universal quantification (∀)
+    Universal,
+
+    /// Existential quantification (∃)
+    Existential,
+
+    /// Unique existential quantification (∃!)
+    UniqueExistential,
+
+    /// Object defined in terms of others
+    Defined,
+
+    /// Arbitrary but fixed object
+    Fixed,
 }
 
 #[derive(Debug, Clone, Eq, PartialEq, Hash, Serialize, Deserialize, TS)]
@@ -308,278 +459,6 @@ pub enum MulType {
     None,
 }
 
-impl MathNode {
-    pub fn to_json(&self) -> Value {
-        json!({
-            "id": self.id,
-            "content": self.content.to_json(),
-        })
-    }
-}
-
-impl MathNodeContent {
-    pub fn to_json(&self) -> Value {
-        match self {
-            MathNodeContent::Empty => json!({
-                "type": "empty",
-            }),
-            MathNodeContent::String(s) => json!(s),
-            MathNodeContent::Integration {
-                integrand,
-                variable,
-                lower_limit,
-                upper_limit,
-            } => json!({
-                "type": "integration",
-                "integrand": integrand.to_json(),
-                "variable": variable,
-                "lower_limit": lower_limit.as_ref().map(|l| l.to_json()),
-                "upper_limit": upper_limit.as_ref().map(|u| u.to_json()),
-            }),
-            MathNodeContent::Limit {
-                function,
-                variable,
-                approaching_value,
-            } => json!({
-                "type": "limit",
-                "function": function.to_json(),
-                "variable": variable,
-                "approaching_value": approaching_value.to_json(),
-            }),
-            MathNodeContent::Multiplications { terms } => json!({
-                "type": "multiplication",
-                "terms": terms.iter().map(|(op, term)| json!({
-                    "operator": match op {
-                        RefinedMulOrDivOperation::Multiplication(symbol_type) => json!({
-                            "type": "multiplication",
-                            "symbol": match symbol_type {
-                                MulSymbol::Quantity => "times",
-                                MulSymbol::Symbol => "symbol",
-                                MulSymbol::Simple => "simple",
-                                MulSymbol::None => "none",
-                            }
-                        }),
-                        RefinedMulOrDivOperation::Division(symbol_type) => json!({
-                            "type": "division",
-                            "symbol": match symbol_type {
-                                DivSymbol::Slash => "slash",
-                                DivSymbol::Divide => "divide",
-                            }
-                        }),
-                    },
-                    "term": term.to_json(),
-                })).collect::<Vec<_>>(),
-            }),
-            MathNodeContent::Additions { terms } => json!({
-                "type": "addition",
-                "terms": terms.iter().map(|(op, term)| json!({
-                    "operator": match op {
-                        AddOrSubOperatorNode::Addition => "plus",
-                        AddOrSubOperatorNode::Subtraction => "minus",
-                    },
-                    "term": term.to_json(),
-                })).collect::<Vec<_>>(),
-            }),
-            MathNodeContent::Division {
-                numerator,
-                denominator,
-                style,
-            } => json!({
-                "type": "division",
-                "numerator": numerator.to_json(),
-                "denominator": denominator.to_json(),
-                "style": match style {
-                    DivisionStyle::Fraction => "fraction",
-                    DivisionStyle::Inline => "inline",
-                    DivisionStyle::Division => "division",
-                },
-            }),
-            MathNodeContent::SumNotation {
-                summand,
-                variable,
-                lower_limit,
-                upper_limit,
-            } => json!({
-                "type": "sum",
-                "summand": summand.to_json(),
-                "variable": variable.as_ref().map(|l| l.to_json()),
-                "lower_limit": lower_limit.as_ref().map(|l| l.to_json()),
-                "upper_limit": upper_limit.as_ref().map(|u| u.to_json()),
-            }),
-            MathNodeContent::ProductNotation {
-                multiplicand,
-                variable,
-                lower_limit,
-                upper_limit,
-            } => json!({
-                "type": "product",
-                "multiplicand": multiplicand.to_json(),
-                "variable": variable.as_ref().map(|l| l.to_json()),
-                "lower_limit": lower_limit.as_ref().map(|l| l.to_json()),
-                "upper_limit": upper_limit.as_ref().map(|u| u.to_json()),
-            }),
-            MathNodeContent::Fraction {
-                numerator,
-                denominator,
-            } => json!({
-                "type": "fraction",
-                "numerator": numerator.to_json(),
-                "denominator": denominator.to_json(),
-            }),
-            MathNodeContent::Bracketed { inner, style, size } => json!({
-                "type": "bracketed".to_owned(),
-                "inner": inner.to_json(),
-                "style": match style {
-                    BracketStyle::Round => "round",
-                    BracketStyle::Square => "square",
-                    BracketStyle::Curly => "curly",
-                    BracketStyle::Angle => "angle",
-                    BracketStyle::Vertical => "vertical",
-                    BracketStyle::DoubleVertical => "double_vertical",
-                    BracketStyle::Ceiling => "ceiling",
-                    BracketStyle::Floor => "floor",
-                    BracketStyle::None => "none",
-                }.to_owned(),
-                "size": match size {
-                    BracketSize::Normal => "normal".to_owned(),
-                    BracketSize::Auto => "auto".to_owned(),
-                    BracketSize::Sized(n) => format!("sized_{}", n),
-                },
-            }),
-            MathNodeContent::Matrix { rows } => json!({
-                "type": "matrix",
-                "rows": rows.iter().map(|row|
-                    row.iter().map(|cell| cell.to_json()).collect::<Vec<_>>()
-                ).collect::<Vec<_>>(),
-            }),
-            MathNodeContent::LogFunction { base, parameter } => json!({
-                "type": "logarithmic_function",
-                "base": base,
-                "parameter": parameter.to_json(),
-            }),
-            MathNodeContent::UnaryPostfix {
-                parameter,
-                operator,
-            } => json!({
-                "type": "unary_postfix",
-                "parameter": parameter.to_json(),
-                "operator": operator,
-            }),
-            MathNodeContent::UnaryPrefix {
-                parameter,
-                operator,
-            } => json!({
-                "type": "unary_prefix",
-                "parameter": parameter.to_json(),
-                "operator": operator,
-            }),
-            MathNodeContent::Abs { parameter } => json!({
-                "type": "absolute_value",
-                "parameter": parameter.to_json(),
-            }),
-            MathNodeContent::Power { base, exponent } => json!({
-                "type": "power_function",
-                "base": base.to_json(),
-                "exponent": exponent.to_json(),
-            }),
-            MathNodeContent::CustomFunction { name, parameters } => json!({
-                "type": "custom_function",
-                "name": name.to_json(),
-                "parameters": parameters.iter().map(|p| p.to_json()).collect::<Vec<_>>(),
-            }),
-            MathNodeContent::SimpleUnaryFunction { name, parameter } => json!({
-                "type": "unary_function",
-                "name": name,
-                "parameter": parameter.to_json(),
-            }),
-            MathNodeContent::SimpleMultinaryFunction { name, parameters } => json!({
-                "type": "multinary_function",
-                "name": name,
-                "parameters": parameters.iter().map(|p| p.to_json()).collect::<Vec<_>>(),
-            }),
-            MathNodeContent::Quantity { number, unit } => json!({
-                "type": "quantity",
-                "number": number,
-                "unit": unit.as_ref().map(|u| u.to_json()),
-            }),
-            MathNodeContent::Identifier {
-                body,
-                pre_script,
-                mid_script,
-                post_script,
-                primes,
-                is_function,
-            } => json!({
-                "type": "identifier",
-                "body": body,
-                "pre_script": pre_script.as_ref().map(|p| p.to_json()),
-                "mid_script": mid_script.as_ref().map(|m| m.to_json()),
-                "post_script": post_script.as_ref().map(|p| p.to_json()),
-                "primes": primes,
-                "is_function": is_function,
-            }),
-            MathNodeContent::Script {
-                subscripts,
-                superscripts,
-            } => json!({
-                "type": "script",
-                "subscripts": subscripts.iter().map(|s| s.to_json()).collect::<Vec<_>>(),
-                "superscripts": superscripts.iter().map(|s| s.to_json()).collect::<Vec<_>>(),
-            }),
-            MathNodeContent::Unit {
-                original_form,
-                flattened_form,
-            } => json!({
-                "type": "unit",
-                "original": original_form.to_json(),
-                "is_flattened": flattened_form.to_json(),
-            }),
-            MathNodeContent::BaseUnit(string) => json!({
-                "type": "base_unit",
-                "name": string,
-            }),
-            MathNodeContent::Log2 { parameter } => todo!(),
-            MathNodeContent::Log10 { parameter } => todo!(),
-            MathNodeContent::Ln { parameter } => todo!(),
-            MathNodeContent::Text(string) => json!({
-                "type": "text",
-                "content": string,
-            }),
-            MathNodeContent::Relationship { lhs, rhs, operator } => json!({
-                "type": "relationship",
-                "lhs": lhs.to_json(),
-                "rhs": rhs.to_json(),
-                "operator": match operator {
-                    RelationOperatorNode::Equal|RelationOperatorNode::IsEqual=>"equal",
-                    RelationOperatorNode::NotEqual=>"not_equal",
-                    RelationOperatorNode::Greater=>"greater",
-                    RelationOperatorNode::Less=>"less",
-                    RelationOperatorNode::GreaterEqual=>"greater_equal",
-                    RelationOperatorNode::LessEqual=>"less_equal",
-                    RelationOperatorNode::Collinear => "collinear",
-                    RelationOperatorNode::Perpendicular => "perpendicular",
-                    RelationOperatorNode::Equivalent => "equivalent",
-                    RelationOperatorNode::Similar => "similar",
-                    RelationOperatorNode::Congruent => "congruent",
-                },
-            }),
-            MathNodeContent::VariableDefinition { name, definition } => json!({
-                "type": "variable_definition",
-                "name": name.to_json(),
-                "definition": definition.as_ref().map(|d| d.to_json()),
-            }),
-            MathNodeContent::FunctionDefinition {
-                custom_function,
-                definition,
-            } => json!({
-                "type": "function_definition",
-                "custom_function": custom_function.to_json(),
-                "definition": definition.as_ref().map(|d| d.to_json()),
-            }),
-        }
-    }
-}
-
 #[derive(Debug, Clone, Eq, PartialEq, Hash, Serialize, Deserialize)]
 pub enum UnitComponent {
     BaseUnit {
@@ -593,23 +472,4 @@ pub enum UnitComponent {
 
 pub trait ToTurnMath {
     fn to_turn_math(&self, master_id: String) -> MathNode;
-}
-
-impl SpecialMiddleScriptNode {
-    pub fn to_json(&self) -> Value {
-        json!({
-            "superscripts": self.super_script.iter().map(|s| match s {
-                SpecialMiddleScriptContentTypeNode::Bar => "bar".to_string(),
-                SpecialMiddleScriptContentTypeNode::Dot(n) => format!("dot_{}", n),
-                SpecialMiddleScriptContentTypeNode::Hat => "hat".to_string(),
-                SpecialMiddleScriptContentTypeNode::Tilde => "tilde".to_string(),
-            }).collect::<Vec<_>>(),
-            "subscripts": self.sub_script.iter().map(|s| match s {
-                SpecialMiddleScriptContentTypeNode::Bar => "bar".to_string(),
-                SpecialMiddleScriptContentTypeNode::Dot(n) => format!("dot_{}", n),
-                SpecialMiddleScriptContentTypeNode::Hat => "hat".to_string(),
-                SpecialMiddleScriptContentTypeNode::Tilde => "tilde".to_string(),
-            }).collect::<Vec<_>>(),
-        })
-    }
 }
