@@ -6,7 +6,9 @@ import { MathNodeContent } from './bindings/MathNodeContent';
 import { TurnTextLineNode } from './bindings/TurnTextLineNode';
 import { MathJaxProvider, MathJaxNode } from '@yozora/react-mathjax';
 import { RefinedMulOrDivOperation } from './bindings/RefinedMulOrDivOperation';
-import { SpecialMiddleScriptContentType } from './bindings/SpecialMiddleScriptContentType';
+import { SpecialMiddleScriptContentTypeNode } from './bindings/SpecialMiddleScriptContentTypeNode';
+import { UnaryRelationOperatorNode } from './bindings/UnaryRelationOperatorNode';
+import { RelationOperatorNode } from './bindings/RelationOperatorNode';
 
 const hasMarginList = [
     '÷',
@@ -1218,7 +1220,7 @@ const UnderOver = ({
     data,
     type,
 }: {
-    data: SpecialMiddleScriptContentType;
+    data: SpecialMiddleScriptContentTypeNode;
     type: 'under' | 'over';
 }) => {
     if (typeof data === 'string') {
@@ -1260,7 +1262,18 @@ const renderMathNode = (node: MathNode, primes = 0): React.ReactNode => {
             const { String } = node.content as Extract<MathNodeContent, { String: string }>;
             return <>{StringMapNode(String, node.id)}</>;
         case 'Integration':
-            const { Integration } = node.content as Extract<MathNodeContent, { Integration: any }>;
+            const { Integration } = node.content as Extract<MathNodeContent, { Integration: { 
+                integrand: MathNode; 
+                differentials: Array<[MathNode, MathNode | null, MathNode | null]>;
+                domain: MathNode | null;
+            }}>;
+            
+            // Extract all differentials from the Integration object
+            const differentials = Integration.differentials || [];
+            
+            // Get domain information if available
+            const domain = Integration.domain || null;
+                
             return (
                 <Component
                     type="Mrow"
@@ -1269,31 +1282,48 @@ const renderMathNode = (node: MathNode, primes = 0): React.ReactNode => {
                         _classNames: styles.editable_span,
                     }}
                 >
-                    <Component type="Msubsup">
-                        <Component type="Mo">
-                            {StringMapNode(Integration.variable, node.id)}
-                        </Component>
-                        {Integration.lower_limit && (
-                            <Component
-                                type="Mrow"
-                                _props={{
-                                    dataType: 'sub',
-                                }}
-                            >
-                                {renderMathNode(Integration.lower_limit)}
+                    {/* Render multiple integral signs based on number of differentials (in reverse order) */}
+                    {[...differentials].reverse().map((differential, index) => {
+                        const reversedIndex = differentials.length - 1 - index;
+                        return (
+                            <Component type="Msubsup" key={`integral-${reversedIndex}`}>
+                                <Component type="Mo">∫</Component>
+                                {/* Show domain under the first integral only (which is the last in reversed order) */}
+                                {index === differentials.length - 1 && domain && (
+                                    <Component
+                                        type="Mrow"
+                                        _props={{
+                                            dataType: 'sub',
+                                        }}
+                                    >
+                                        {renderMathNode(domain)}
+                                    </Component>
+                                )}
+                                {/* Render upper limit if available */}
+                                {differential[2] && (
+                                    <Component
+                                        type="Mrow"
+                                        _props={{
+                                            dataType: 'sup',
+                                        }}
+                                    >
+                                        {renderMathNode(differential[2])}
+                                    </Component>
+                                )}
+                                {/* Render lower limit if available */}
+                                {differential[1] && (
+                                    <Component
+                                        type="Mrow"
+                                        _props={{
+                                            dataType: 'sub',
+                                        }}
+                                    >
+                                        {renderMathNode(differential[1])}
+                                    </Component>
+                                )}
                             </Component>
-                        )}
-                        {Integration.upper_limit && (
-                            <Component
-                                type="Mrow"
-                                _props={{
-                                    dataType: 'sup',
-                                }}
-                            >
-                                {renderMathNode(Integration.upper_limit)}
-                            </Component>
-                        )}
-                    </Component>
+                        );
+                    })}
                     <Component
                         type="Mspace"
                         _props={{
@@ -1301,6 +1331,15 @@ const renderMathNode = (node: MathNode, primes = 0): React.ReactNode => {
                         }}
                     ></Component>
                     <Component type="Mrow">{renderMathNode(Integration.integrand)}</Component>
+                    
+                    {/* Render each differential with its variable (in normal order) */}
+                    {differentials.map((differential, index) => (
+                        <Component type="Mrow" key={`diff-${index}`}>
+                            <Component type="Mspace" _props={{ width: '0.167' }}></Component>
+                            <Component type="Mi">d</Component>
+                            {renderMathNode(differential[0])}
+                        </Component>
+                    ))}
                 </Component>
             );
 
@@ -2048,6 +2087,17 @@ const renderMathNode = (node: MathNode, primes = 0): React.ReactNode => {
                 MathNodeContent,
                 { Relationship: any }
             >;
+            
+            // Get the operator symbol based on the operator type
+            const getRelationOperatorSymbol = (operator: RelationOperatorNode): string => {
+                if (typeof operator === 'string') {
+                    return _relationOperator[operator] || '';
+                } else if (operator && typeof operator === 'object' && 'Custom' in operator) {
+                    return operator.Custom || '';
+                }
+                return '';
+            };
+            
             return (
                 <Component
                     type="Mrow"
@@ -2058,7 +2108,7 @@ const renderMathNode = (node: MathNode, primes = 0): React.ReactNode => {
                 >
                     {renderMathNode(Relationship.lhs)}
                     <Component type="Mo">
-                        {Relationship.operator in _relationOperator ? _relationOperator[Relationship.operator] : ''}
+                        {getRelationOperatorSymbol(Relationship.operator)}
                     </Component>
                     {renderMathNode(Relationship.rhs)}
                 </Component>
@@ -2066,8 +2116,18 @@ const renderMathNode = (node: MathNode, primes = 0): React.ReactNode => {
         case 'UnaryRelationship':
             const { UnaryRelationship } = node.content as Extract<
                 MathNodeContent,
-                { UnaryRelationship: any }
+                { UnaryRelationship: { subject: MathNode; predicate: UnaryRelationOperatorNode } }
             >;
+
+             // Get the operator symbol based on the operator type
+             const getUnaryRelationOperatorSymbol = (operator: UnaryRelationOperatorNode): string => {
+                if (typeof operator === 'string') {
+                    return _relationOperator[operator] || '';
+                } else if (operator && typeof operator === 'object' && 'Custom' in operator) {
+                    return operator.Custom || '';
+                }
+                return '';
+            };
             return (
                 <Component
                     type="Mrow"
@@ -2077,10 +2137,10 @@ const renderMathNode = (node: MathNode, primes = 0): React.ReactNode => {
                     }}
                 >
                     <Component type="Mrow">
-                        {UnaryRelationship && UnaryRelationship.predicate && _unaryRelationOperator[UnaryRelationship.predicate] && _unaryRelationOperator[UnaryRelationship.predicate].length > 2 
-                            ? <Component type="Mtext">{_unaryRelationOperator[UnaryRelationship.predicate]}</Component>
-                            : UnaryRelationship && UnaryRelationship.predicate && _unaryRelationOperator[UnaryRelationship.predicate] 
-                              ? <Component type="Mo">{_unaryRelationOperator[UnaryRelationship.predicate]}</Component>
+                        {UnaryRelationship && UnaryRelationship.predicate && _unaryRelationOperator[getUnaryRelationOperatorSymbol(UnaryRelationship.predicate)] && _unaryRelationOperator[getUnaryRelationOperatorSymbol(UnaryRelationship.predicate)].length > 2 
+                            ? <Component type="Mtext">{_unaryRelationOperator[getUnaryRelationOperatorSymbol(UnaryRelationship.predicate)]}</Component>
+                            : UnaryRelationship && UnaryRelationship.predicate && _unaryRelationOperator[getUnaryRelationOperatorSymbol(UnaryRelationship.predicate)] 
+                              ? <Component type="Mo">{_unaryRelationOperator[getUnaryRelationOperatorSymbol(UnaryRelationship.predicate)]}</Component>
                               : null
                         }
                     </Component>

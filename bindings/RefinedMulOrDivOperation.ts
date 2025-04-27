@@ -2,4 +2,6 @@
 import type { DivSymbol } from "./DivSymbol";
 import type { MulSymbol } from "./MulSymbol";
 
-export type RefinedMulOrDivOperation = { "Multiplication": MulSymbol } | { "Division": DivSymbol } | "None";
+export type RefinedMulOrDivOperation = { "Multiplication": MulSymbol } | {
+  "Division": DivSymbol;
+} | "None";

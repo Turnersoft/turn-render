@@ -4,6 +4,18 @@ use ts_rs::TS;
 
 #[derive(Debug, Clone, Eq, PartialEq, Hash, Serialize, Deserialize, TS)]
 #[ts(export)]
+pub enum TurnTextLineNode {
+    Math(MathNode, String),
+    Phrase(String),
+    Empty,
+    Comment(String),
+    Latex(String),
+    PageLink(String),
+    Image(String),
+}
+
+#[derive(Debug, Clone, Eq, PartialEq, Hash, Serialize, Deserialize, TS)]
+#[ts(export)]
 pub enum RelationOperatorNode {
     // Binary relations
 
@@ -124,13 +136,6 @@ pub enum UnaryRelationOperatorNode {
 
 #[derive(Debug, Clone, Eq, PartialEq, Hash, Serialize, Deserialize, TS)]
 #[ts(export)]
-pub enum AddOrSubOperatorNode {
-    Addition,
-    Subtraction,
-}
-
-#[derive(Debug, Clone, Eq, PartialEq, Hash, Serialize, Deserialize, TS)]
-#[ts(export)]
 pub struct SpecialMiddleScriptNode {
     pub super_script: Vec<SpecialMiddleScriptContentTypeNode>,
     pub sub_script: Vec<SpecialMiddleScriptContentTypeNode>,
@@ -218,9 +223,8 @@ pub enum MathNodeContent {
     String(String),
     Integration {
         integrand: Box<MathNode>,
-        variable: String,
-        lower_limit: Option<Box<MathNode>>,
-        upper_limit: Option<Box<MathNode>>,
+        differentials: Vec<(Box<MathNode>, Option<Box<MathNode>>, Option<Box<MathNode>>)>, // Array of (differential, lower_bound, upper_bound)
+        domain: Option<Box<MathNode>>, // Optional geometric domain rendered beneath the integral signs
     },
     Limit {
         function: Box<MathNode>,
@@ -231,7 +235,7 @@ pub enum MathNodeContent {
         terms: Vec<(RefinedMulOrDivOperation, MathNode)>,
     },
     Additions {
-        terms: Vec<(AddOrSubOperatorNode, MathNode)>,
+        terms: Vec<(RefinedAddOrSubOperator, MathNode)>,
     },
     Division {
         numerator: Box<MathNode>,
@@ -326,6 +330,11 @@ pub enum MathNodeContent {
         flattened_form: Box<MathNode>, // multiplication
     },
 
+    ScientificNotation {
+        magnitude: Box<MathNode>,
+        style: ScientificNotationStyle,
+    },
+
     BaseUnit(String),
 
     Relationship {
@@ -339,6 +348,22 @@ pub enum MathNodeContent {
         predicate: UnaryRelationOperatorNode,
     },
 
+    VariableDefinition {
+        name: Box<MathNode>,
+        definition: Option<MathNode>,
+    },
+
+    FunctionDefinition {
+        custom_function: Box<MathNode>,
+        definition: Option<MathNode>,
+    },
+
+    // Calculus
+    Differential {
+        target: Box<MathNode>,
+        order: Box<MathNode>,
+        diff_style: DifferentialStyle,
+    },
     Theorem {
         name: String,
         description: String,
@@ -362,15 +387,45 @@ pub enum MathNodeContent {
         variable: Box<MathNode>,
         body: Box<MathNode>,
     },
+}
 
-    VariableDefinition {
-        name: Box<MathNode>,
-        definition: Option<MathNode>,
-    },
+#[derive(Debug, Clone, Eq, PartialEq, Hash, Serialize, Deserialize, TS)]
+#[ts(export)]
+pub enum ScientificNotationStyle {
+    LowerCaseE,
+    UpperCaseE,
+    TimesTenPower,
+}
 
-    FunctionDefinition {
-        custom_function: Box<MathNode>,
-        definition: Option<MathNode>,
+#[derive(Debug, Clone, Eq, PartialEq, Hash, Serialize, Deserialize, TS)]
+#[ts(export)]
+pub enum DifferentialStyle {
+    Partial,
+    Total,
+}
+
+#[derive(Debug, Clone, Eq, PartialEq, Hash, Serialize, Deserialize, TS)]
+#[ts(export)]
+pub enum IntegralType {
+    /// Single integral: ∫
+    Single,
+    /// Double integral: ∫∫
+    Double,
+    /// Triple integral: ∫∫∫
+    Triple,
+}
+
+#[derive(Debug, Clone, Eq, PartialEq, Hash, Serialize, Deserialize, TS)]
+#[ts(export)]
+pub enum IntegralDomain {
+    /// Regular integral with no domain specification
+    Regular,
+    /// Integral over a geometric domain (e.g., ∫[C], ∫[D])
+    Geometric(Box<MathNode>),
+    /// Integral with parameter domain (e.g., ∫[C|t:R])
+    ParametricGeometric {
+        path: Box<MathNode>,
+        parameters: Vec<(Box<MathNode>, Box<MathNode>)>, // (parameter, domain) pairs
     },
 }
 
@@ -398,21 +453,7 @@ pub enum QuantificationNode {
 pub enum RefinedMulOrDivOperation {
     Multiplication(MulSymbol),
     Division(DivSymbol),
-}
-
-#[derive(Debug, Clone, Eq, PartialEq, Hash, Serialize, Deserialize, TS)]
-#[ts(export)]
-pub enum MulSymbol {
-    Quantity, // \times for numbers
-    Symbol,   // \, for symbols
-    Simple,   // \, for bracketed expressions
-    None,     // no symbol
-}
-#[derive(Debug, Clone, Eq, PartialEq, Hash, Serialize, Deserialize, TS)]
-#[ts(export)]
-pub enum DivSymbol {
-    Slash,  // /
-    Divide, // ÷
+    None,
 }
 
 #[derive(Debug, Clone, Eq, PartialEq, Hash, Serialize, Deserialize)]
@@ -427,6 +468,14 @@ pub enum DivisionStyle {
     Fraction, // \frac{a}{b}
     Inline,   // a/b
     Division, // a÷b
+}
+
+#[derive(Debug, Clone, Eq, PartialEq, Hash, Serialize, Deserialize, TS)]
+#[ts(export)]
+pub enum RefinedAddOrSubOperator {
+    Addition,
+    Subtraction,
+    None,
 }
 
 #[derive(Debug, Clone, Eq, PartialEq, Hash, Serialize, Deserialize, TS)]
@@ -451,15 +500,22 @@ pub enum BracketSize {
     Sized(u8), // \big, \Big, \bigg, \Bigg
 }
 
-#[derive(Debug, Clone, Eq, PartialEq, Hash, Serialize, Deserialize)]
-pub enum MulType {
-    Quantity, // \times
-    Symbol,   // \,
-    Simple,   // \,
-    None,
+#[derive(Debug, Clone, Eq, PartialEq, Hash, Serialize, Deserialize, TS)]
+#[ts(export)]
+pub enum MulSymbol {
+    Times,       // \times for numbers
+    Dot,         // \, for symbols
+    LittleSpace, // \, for bracketed expressions
+}
+#[derive(Debug, Clone, Eq, PartialEq, Hash, Serialize, Deserialize, TS)]
+#[ts(export)]
+pub enum DivSymbol {
+    Slash,  // /
+    Divide, // ÷
 }
 
-#[derive(Debug, Clone, Eq, PartialEq, Hash, Serialize, Deserialize)]
+#[derive(Debug, Clone, Eq, PartialEq, Hash, Serialize, Deserialize, TS)]
+#[ts(export)]
 pub enum UnitComponent {
     BaseUnit {
         name: BaseUnitTypeNode,
