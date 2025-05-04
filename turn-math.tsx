@@ -1270,10 +1270,10 @@ const renderMathNode = (node: MathNode, primes = 0): React.ReactNode => {
             
             // Extract all differentials from the Integration object
             const differentials = Integration.differentials || [];
-            
+                
             // Get domain information if available
             const domain = Integration.domain || null;
-                
+            
             return (
                 <Component
                     type="Mrow"
@@ -1287,29 +1287,29 @@ const renderMathNode = (node: MathNode, primes = 0): React.ReactNode => {
                         const reversedIndex = differentials.length - 1 - index;
                         return (
                             <Component type="Msubsup" key={`integral-${reversedIndex}`}>
-                                <Component type="Mo">∫</Component>
+                            <Component type="Mo">∫</Component>
                                 {/* Show domain under the first integral only (which is the last in reversed order) */}
                                 {index === differentials.length - 1 && domain && (
-                                    <Component
-                                        type="Mrow"
-                                        _props={{
-                                            dataType: 'sub',
-                                        }}
-                                    >
+                                <Component
+                                    type="Mrow"
+                                    _props={{
+                                        dataType: 'sub',
+                                    }}
+                                >
                                         {renderMathNode(domain)}
-                                    </Component>
-                                )}
+                                </Component>
+                            )}
                                 {/* Render upper limit if available */}
                                 {differential[2] && (
-                                    <Component
-                                        type="Mrow"
-                                        _props={{
-                                            dataType: 'sup',
-                                        }}
-                                    >
+                                <Component
+                                    type="Mrow"
+                                    _props={{
+                                        dataType: 'sup',
+                                    }}
+                                >
                                         {renderMathNode(differential[2])}
-                                    </Component>
-                                )}
+                                </Component>
+                            )}
                                 {/* Render lower limit if available */}
                                 {differential[1] && (
                                     <Component
@@ -1319,26 +1319,26 @@ const renderMathNode = (node: MathNode, primes = 0): React.ReactNode => {
                                         }}
                                     >
                                         {renderMathNode(differential[1])}
-                                    </Component>
+                        </Component>
                                 )}
                             </Component>
                         );
                     })}
-                    <Component
-                        type="Mspace"
-                        _props={{
-                            width: '0.167',
-                        }}
-                    ></Component>
-                    <Component type="Mrow">{renderMathNode(Integration.integrand)}</Component>
+                        <Component
+                            type="Mspace"
+                            _props={{
+                                width: '0.167',
+                            }}
+                        ></Component>
+                        <Component type="Mrow">{renderMathNode(Integration.integrand)}</Component>
                     
                     {/* Render each differential with its variable (in normal order) */}
                     {differentials.map((differential, index) => (
                         <Component type="Mrow" key={`diff-${index}`}>
-                            <Component type="Mspace" _props={{ width: '0.167' }}></Component>
-                            <Component type="Mi">d</Component>
+                                <Component type="Mspace" _props={{ width: '0.167' }}></Component>
+                                <Component type="Mi">d</Component>
                             {renderMathNode(differential[0])}
-                        </Component>
+                            </Component>
                     ))}
                 </Component>
             );

@@ -16,6 +16,393 @@ pub enum TurnTextLineNode {
 
 #[derive(Debug, Clone, Eq, PartialEq, Hash, Serialize, Deserialize, TS)]
 #[ts(export)]
+pub struct MathNode {
+    pub id: String,
+    pub content: Box<MathNodeContent>,
+}
+
+impl MathNode {
+    pub fn empty() -> MathNode {
+        MathNode {
+            id: String::new(),
+            content: Box::new(MathNodeContent::Empty),
+        }
+    }
+    pub fn is_quantity(&self) -> bool {
+        matches!(*self.content, MathNodeContent::Quantity { .. })
+    }
+    pub fn is_expression_in_bracket(&self) -> bool {
+        matches!(*self.content, MathNodeContent::Bracketed { .. })
+    }
+    pub fn is_expression_in_round_bracket(&self) -> bool {
+        matches!(
+            *self.content,
+            MathNodeContent::Bracketed {
+                style: BracketStyle::Round,
+                ..
+            }
+        )
+    }
+
+    pub fn identifier(input: String) -> MathNode {
+        MathNode {
+            id: input.clone(),
+            content: Box::new(MathNodeContent::Identifier {
+                body: input,
+                pre_script: None,
+                mid_script: None,
+                post_script: None,
+                primes: 0,
+                is_function: false,
+            }),
+        }
+    }
+}
+
+#[derive(Debug, Clone, Eq, PartialEq, Hash, Serialize, Deserialize, TS)]
+#[ts(export)]
+pub enum MathNodeContent {
+    Empty,
+    Text(String),
+    String(String),
+
+    // bracketed scopes
+    Bracketed {
+        inner: Box<MathNode>,
+        style: BracketStyle,
+        size: BracketSize,
+    },
+
+    // matrix and tensor
+    Matrix {
+        rows: Vec<Vec<MathNode>>,
+    },
+
+    // multinary operations/funcions
+    Multiplications {
+        terms: Vec<(RefinedMulOrDivOperation, MathNode)>,
+    },
+    Additions {
+        terms: Vec<(RefinedAddOrSubOperator, MathNode)>,
+    },
+    Division {
+        numerator: Box<MathNode>,
+        denominator: Box<MathNode>,
+        style: DivisionStyle,
+    },
+
+    SumNotation {
+        summand: Box<MathNode>,
+        variable: Option<MathNode>,
+        lower_limit: Option<Box<MathNode>>,
+        upper_limit: Option<Box<MathNode>>,
+    },
+    ProductNotation {
+        multiplicand: Box<MathNode>,
+        variable: Option<MathNode>,
+        lower_limit: Option<Box<MathNode>>,
+        upper_limit: Option<Box<MathNode>>,
+    },
+    Fraction {
+        numerator: Box<MathNode>,
+        denominator: Box<MathNode>,
+    },
+
+    Power {
+        base: Box<MathNode>,
+        exponent: Box<MathNode>,
+    },
+
+    // Unary Functions
+    LogFunction {
+        base: Option<MathNode>, // "2", "10", "e", "empty" etc.
+        parameter: Box<MathNode>,
+    },
+    Log2 {
+        parameter: Box<MathNode>,
+    },
+    Log10 {
+        parameter: Box<MathNode>,
+    },
+    Ln {
+        parameter: Box<MathNode>,
+    },
+    UnaryPostfix {
+        parameter: Box<MathNode>,
+        operator: String, // "!", "T", "%"
+    },
+    UnaryPrefix {
+        parameter: Box<MathNode>,
+        operator: String, // "-", "√"
+    },
+
+    // this is different than SimpleUnaryFunction, this will use the special notation |x| instead of abs(x)
+    Abs {
+        parameter: Box<MathNode>,
+    },
+
+    // general function names
+    CustomFunction {
+        name: Box<MathNode>,
+        parameters: Vec<MathNode>,
+    },
+
+    // sin, cos, opposite etc
+    SimpleUnaryFunction {
+        name: String,
+        parameter: Box<MathNode>,
+    },
+
+    SimpleMultinaryFunction {
+        name: String,
+        parameters: Vec<MathNode>,
+    },
+
+    Quantity {
+        number: String,
+        unit: Option<MathNode>,
+    }, // Add more content types as needed
+    Identifier {
+        body: String,
+        pre_script: Option<Box<MathNode>>,
+        mid_script: Option<SpecialMiddleScriptNode>,
+        post_script: Option<Box<MathNode>>,
+        primes: usize,
+        is_function: bool,
+    },
+    Script {
+        subscripts: Vec<MathNode>,
+        superscripts: Vec<MathNode>,
+    },
+
+    Unit {
+        original_form: Box<MathNode>,  // multiplication
+        flattened_form: Box<MathNode>, // multiplication
+    },
+
+    ScientificNotation {
+        magnitude: Box<MathNode>,
+        style: ScientificNotationStyle,
+    },
+
+    BaseUnit(String),
+
+    // universal relations for all theories
+    Relationship {
+        lhs: Box<MathNode>,
+        rhs: Box<MathNode>,
+        operator: RelationOperatorNode,
+    },
+
+    UnaryRelationship {
+        subject: Box<MathNode>,
+        predicate: UnaryRelationOperatorNode,
+    },
+
+    // variable declarations
+    VariableDefinition {
+        name: Box<MathNode>,
+        definition: Option<MathNode>,
+    },
+
+    FunctionDefinition {
+        custom_function: Box<MathNode>,
+        definition: Option<MathNode>,
+    },
+
+    // Calculus
+    Limit {
+        function: Box<MathNode>,
+        variable: String,
+        approaching_value: Box<MathNode>,
+    },
+    Differential {
+        target: Box<MathNode>,
+        order: Box<MathNode>,
+        diff_style: DifferentialStyle,
+    },
+    Integration {
+        integrand: Box<MathNode>,
+        differentials: Vec<(Box<MathNode>, Option<Box<MathNode>>, Option<Box<MathNode>>)>, // Array of (differential, lower_bound, upper_bound)
+        domain: Option<Box<MathNode>>, // Optional geometric domain rendered beneath the integral signs
+    },
+
+    // formalism
+    Theorem {
+        name: String,
+        description: String,
+        goal: Box<MathNode>,
+        proofs: Vec<MathNode>, // ProofForest
+    },
+
+    ProofGoal {
+        statement: Box<MathNode>,   // The main statement being proven
+        quantifiers: Vec<MathNode>, // Quantified objects in this state
+        variables: Vec<MathNode>,   // Variables with assigned values
+    },
+
+    ProofForest {
+        // Summary of the forest state
+        roots: Vec<MathNode>, // a vec of proof trees
+    },
+
+    Quantifier {
+        quantification: QuantificationNode,
+        variable: Box<MathNode>,
+        var_type: Box<MathNode>,
+    },
+
+    // math description
+    EmbeddedSentence {
+        subject: Box<MathNode>,
+        verb: String,
+        object: Box<MathNode>,
+    },
+
+    ElementOf {
+        target: Box<MathNode>,
+    },
+}
+
+#[derive(Debug, Clone, Eq, PartialEq, Hash, Serialize, Deserialize, TS)]
+#[ts(export)]
+pub enum ScientificNotationStyle {
+    LowerCaseE,
+    UpperCaseE,
+    TimesTenPower,
+}
+
+#[derive(Debug, Clone, Eq, PartialEq, Hash, Serialize, Deserialize, TS)]
+#[ts(export)]
+pub enum DifferentialStyle {
+    Partial,
+    Total,
+}
+
+#[derive(Debug, Clone, Eq, PartialEq, Hash, Serialize, Deserialize, TS)]
+#[ts(export)]
+pub enum IntegralType {
+    /// Single integral: ∫
+    Single,
+    /// Double integral: ∫∫
+    Double,
+    /// Triple integral: ∫∫∫
+    Triple,
+}
+
+#[derive(Debug, Clone, Eq, PartialEq, Hash, Serialize, Deserialize, TS)]
+#[ts(export)]
+pub enum IntegralDomain {
+    /// Regular integral with no domain specification
+    Regular,
+    /// Integral over a geometric domain (e.g., ∫[C], ∫[D])
+    Geometric(Box<MathNode>),
+    /// Integral with parameter domain (e.g., ∫[C|t:R])
+    ParametricGeometric {
+        path: Box<MathNode>,
+        parameters: Vec<(Box<MathNode>, Box<MathNode>)>, // (parameter, domain) pairs
+    },
+}
+
+#[derive(Debug, Clone, Eq, PartialEq, Hash, Serialize, Deserialize, TS)]
+#[ts(export)]
+pub enum QuantificationNode {
+    /// Universal quantification (∀)
+    Universal,
+
+    /// Existential quantification (∃)
+    Existential,
+
+    /// Unique existential quantification (∃!)
+    UniqueExistential,
+
+    /// Object defined in terms of others
+    Defined,
+
+    /// Arbitrary but fixed object
+    Fixed,
+}
+
+#[derive(Debug, Clone, Eq, PartialEq, Hash, Serialize, Deserialize, TS)]
+#[ts(export)]
+pub enum RefinedMulOrDivOperation {
+    Multiplication(MulSymbol),
+    Division(DivSymbol),
+    None,
+}
+
+#[derive(Debug, Clone, Eq, PartialEq, Hash, Serialize, Deserialize)]
+pub enum AdditionOperator {
+    Plus,  // +
+    Minus, // -
+}
+
+#[derive(Debug, Clone, Eq, PartialEq, Hash, Serialize, Deserialize, TS)]
+#[ts(export)]
+pub enum DivisionStyle {
+    Fraction, // \frac{a}{b}
+    Inline,   // a/b
+    Division, // a÷b
+}
+
+#[derive(Debug, Clone, Eq, PartialEq, Hash, Serialize, Deserialize, TS)]
+#[ts(export)]
+pub enum RefinedAddOrSubOperator {
+    Addition,
+    Subtraction,
+    None,
+}
+
+#[derive(Debug, Clone, Eq, PartialEq, Hash, Serialize, Deserialize, TS)]
+#[ts(export)]
+pub enum BracketStyle {
+    Round,          // ( )
+    Square,         // [ ]
+    Curly,          // { }
+    Angle,          // ⟨ ⟩
+    Vertical,       // | |
+    DoubleVertical, // ∥ ∥
+    Ceiling,        // ⌈ ⌉
+    Floor,          // ⌊ ⌋
+    None,           // Invisible brackets
+}
+
+#[derive(Debug, Clone, Eq, PartialEq, Hash, Serialize, Deserialize, TS)]
+#[ts(export)]
+pub enum BracketSize {
+    Normal,
+    Auto,      // \left \right
+    Sized(u8), // \big, \Big, \bigg, \Bigg
+}
+
+#[derive(Debug, Clone, Eq, PartialEq, Hash, Serialize, Deserialize, TS)]
+#[ts(export)]
+pub enum MulSymbol {
+    Times,       // \times for numbers
+    Dot,         // \, for symbols
+    LittleSpace, // \, for bracketed expressions
+}
+#[derive(Debug, Clone, Eq, PartialEq, Hash, Serialize, Deserialize, TS)]
+#[ts(export)]
+pub enum DivSymbol {
+    Slash,  // /
+    Divide, // ÷
+}
+
+#[derive(Debug, Clone, Eq, PartialEq, Hash, Serialize, Deserialize, TS)]
+#[ts(export)]
+pub enum UnitComponent {
+    BaseUnit {
+        name: BaseUnitTypeNode,
+        prefix: Option<String>,
+    },
+    CompoundUnit {
+        components: Vec<(UnitComponent, MathNode)>, // (unit, exponent)
+    },
+}
+
+#[derive(Debug, Clone, Eq, PartialEq, Hash, Serialize, Deserialize, TS)]
+#[ts(export)]
 pub enum RelationOperatorNode {
     // Binary relations
 
@@ -182,348 +569,6 @@ pub enum BaseUnitTypeNode {
     Minute, // Added Minute assuming "min" stands for Minute
 
     Custom(String),
-}
-
-#[derive(Debug, Clone, Eq, PartialEq, Hash, Serialize, Deserialize, TS)]
-#[ts(export)]
-pub struct MathNode {
-    pub id: String,
-    pub content: Box<MathNodeContent>,
-}
-
-impl MathNode {
-    pub fn empty() -> MathNode {
-        MathNode {
-            id: String::new(),
-            content: Box::new(MathNodeContent::Empty),
-        }
-    }
-    pub fn is_quantity(&self) -> bool {
-        matches!(*self.content, MathNodeContent::Quantity { .. })
-    }
-    pub fn is_expression_in_bracket(&self) -> bool {
-        matches!(*self.content, MathNodeContent::Bracketed { .. })
-    }
-    pub fn is_expression_in_round_bracket(&self) -> bool {
-        matches!(
-            *self.content,
-            MathNodeContent::Bracketed {
-                style: BracketStyle::Round,
-                ..
-            }
-        )
-    }
-}
-
-#[derive(Debug, Clone, Eq, PartialEq, Hash, Serialize, Deserialize, TS)]
-#[ts(export)]
-pub enum MathNodeContent {
-    Empty,
-    Text(String),
-    String(String),
-    Integration {
-        integrand: Box<MathNode>,
-        differentials: Vec<(Box<MathNode>, Option<Box<MathNode>>, Option<Box<MathNode>>)>, // Array of (differential, lower_bound, upper_bound)
-        domain: Option<Box<MathNode>>, // Optional geometric domain rendered beneath the integral signs
-    },
-    Limit {
-        function: Box<MathNode>,
-        variable: String,
-        approaching_value: Box<MathNode>,
-    },
-    Multiplications {
-        terms: Vec<(RefinedMulOrDivOperation, MathNode)>,
-    },
-    Additions {
-        terms: Vec<(RefinedAddOrSubOperator, MathNode)>,
-    },
-    Division {
-        numerator: Box<MathNode>,
-        denominator: Box<MathNode>,
-        style: DivisionStyle,
-    },
-    SumNotation {
-        summand: Box<MathNode>,
-        variable: Option<MathNode>,
-        lower_limit: Option<Box<MathNode>>,
-        upper_limit: Option<Box<MathNode>>,
-    },
-    ProductNotation {
-        multiplicand: Box<MathNode>,
-        variable: Option<MathNode>,
-        lower_limit: Option<Box<MathNode>>,
-        upper_limit: Option<Box<MathNode>>,
-    },
-    Fraction {
-        numerator: Box<MathNode>,
-        denominator: Box<MathNode>,
-    },
-    Bracketed {
-        inner: Box<MathNode>,
-        style: BracketStyle,
-        size: BracketSize,
-    },
-    Matrix {
-        rows: Vec<Vec<MathNode>>,
-    },
-    // Unary Functions
-    LogFunction {
-        base: Option<MathNode>, // "2", "10", "e", "empty" etc.
-        parameter: Box<MathNode>,
-    },
-    Log2 {
-        parameter: Box<MathNode>,
-    },
-    Log10 {
-        parameter: Box<MathNode>,
-    },
-    Ln {
-        parameter: Box<MathNode>,
-    },
-    UnaryPostfix {
-        parameter: Box<MathNode>,
-        operator: String, // "!", "T", "%"
-    },
-    UnaryPrefix {
-        parameter: Box<MathNode>,
-        operator: String, // "-", "√"
-    },
-    Abs {
-        parameter: Box<MathNode>,
-    },
-    // Multinary Functions
-    Power {
-        base: Box<MathNode>,
-        exponent: Box<MathNode>,
-    },
-    CustomFunction {
-        name: Box<MathNode>,
-        parameters: Vec<MathNode>,
-    },
-    SimpleUnaryFunction {
-        name: String,
-        parameter: Box<MathNode>,
-    },
-    SimpleMultinaryFunction {
-        name: String,
-        parameters: Vec<MathNode>,
-    },
-    Quantity {
-        number: String,
-        unit: Option<MathNode>,
-    }, // Add more content types as needed
-    Identifier {
-        body: String,
-        pre_script: Option<Box<MathNode>>,
-        mid_script: Option<SpecialMiddleScriptNode>,
-        post_script: Option<Box<MathNode>>,
-        primes: usize,
-        is_function: bool,
-    },
-    Script {
-        subscripts: Vec<MathNode>,
-        superscripts: Vec<MathNode>,
-    },
-
-    Unit {
-        original_form: Box<MathNode>,  // multiplication
-        flattened_form: Box<MathNode>, // multiplication
-    },
-
-    ScientificNotation {
-        magnitude: Box<MathNode>,
-        style: ScientificNotationStyle,
-    },
-
-    BaseUnit(String),
-
-    Relationship {
-        lhs: Box<MathNode>,
-        rhs: Box<MathNode>,
-        operator: RelationOperatorNode,
-    },
-
-    UnaryRelationship {
-        subject: Box<MathNode>,
-        predicate: UnaryRelationOperatorNode,
-    },
-
-    VariableDefinition {
-        name: Box<MathNode>,
-        definition: Option<MathNode>,
-    },
-
-    FunctionDefinition {
-        custom_function: Box<MathNode>,
-        definition: Option<MathNode>,
-    },
-
-    // Calculus
-    Differential {
-        target: Box<MathNode>,
-        order: Box<MathNode>,
-        diff_style: DifferentialStyle,
-    },
-    Theorem {
-        name: String,
-        description: String,
-        goal: Box<MathNode>,
-        proofs: Vec<MathNode>, // ProofForest
-    },
-
-    ProofGoal {
-        statement: Box<MathNode>,   // The main statement being proven
-        quantifiers: Vec<MathNode>, // Quantified objects in this state
-        variables: Vec<MathNode>,   // Variables with assigned values
-    },
-
-    ProofForest {
-        // Summary of the forest state
-        roots: Vec<MathNode>, // a vec of proof trees
-    },
-
-    Quantifier {
-        quantification: QuantificationNode,
-        variable: Box<MathNode>,
-        body: Box<MathNode>,
-    },
-}
-
-#[derive(Debug, Clone, Eq, PartialEq, Hash, Serialize, Deserialize, TS)]
-#[ts(export)]
-pub enum ScientificNotationStyle {
-    LowerCaseE,
-    UpperCaseE,
-    TimesTenPower,
-}
-
-#[derive(Debug, Clone, Eq, PartialEq, Hash, Serialize, Deserialize, TS)]
-#[ts(export)]
-pub enum DifferentialStyle {
-    Partial,
-    Total,
-}
-
-#[derive(Debug, Clone, Eq, PartialEq, Hash, Serialize, Deserialize, TS)]
-#[ts(export)]
-pub enum IntegralType {
-    /// Single integral: ∫
-    Single,
-    /// Double integral: ∫∫
-    Double,
-    /// Triple integral: ∫∫∫
-    Triple,
-}
-
-#[derive(Debug, Clone, Eq, PartialEq, Hash, Serialize, Deserialize, TS)]
-#[ts(export)]
-pub enum IntegralDomain {
-    /// Regular integral with no domain specification
-    Regular,
-    /// Integral over a geometric domain (e.g., ∫[C], ∫[D])
-    Geometric(Box<MathNode>),
-    /// Integral with parameter domain (e.g., ∫[C|t:R])
-    ParametricGeometric {
-        path: Box<MathNode>,
-        parameters: Vec<(Box<MathNode>, Box<MathNode>)>, // (parameter, domain) pairs
-    },
-}
-
-#[derive(Debug, Clone, Eq, PartialEq, Hash, Serialize, Deserialize, TS)]
-#[ts(export)]
-pub enum QuantificationNode {
-    /// Universal quantification (∀)
-    Universal,
-
-    /// Existential quantification (∃)
-    Existential,
-
-    /// Unique existential quantification (∃!)
-    UniqueExistential,
-
-    /// Object defined in terms of others
-    Defined,
-
-    /// Arbitrary but fixed object
-    Fixed,
-}
-
-#[derive(Debug, Clone, Eq, PartialEq, Hash, Serialize, Deserialize, TS)]
-#[ts(export)]
-pub enum RefinedMulOrDivOperation {
-    Multiplication(MulSymbol),
-    Division(DivSymbol),
-    None,
-}
-
-#[derive(Debug, Clone, Eq, PartialEq, Hash, Serialize, Deserialize)]
-pub enum AdditionOperator {
-    Plus,  // +
-    Minus, // -
-}
-
-#[derive(Debug, Clone, Eq, PartialEq, Hash, Serialize, Deserialize, TS)]
-#[ts(export)]
-pub enum DivisionStyle {
-    Fraction, // \frac{a}{b}
-    Inline,   // a/b
-    Division, // a÷b
-}
-
-#[derive(Debug, Clone, Eq, PartialEq, Hash, Serialize, Deserialize, TS)]
-#[ts(export)]
-pub enum RefinedAddOrSubOperator {
-    Addition,
-    Subtraction,
-    None,
-}
-
-#[derive(Debug, Clone, Eq, PartialEq, Hash, Serialize, Deserialize, TS)]
-#[ts(export)]
-pub enum BracketStyle {
-    Round,          // ( )
-    Square,         // [ ]
-    Curly,          // { }
-    Angle,          // ⟨ ⟩
-    Vertical,       // | |
-    DoubleVertical, // ∥ ∥
-    Ceiling,        // ⌈ ⌉
-    Floor,          // ⌊ ⌋
-    None,           // Invisible brackets
-}
-
-#[derive(Debug, Clone, Eq, PartialEq, Hash, Serialize, Deserialize, TS)]
-#[ts(export)]
-pub enum BracketSize {
-    Normal,
-    Auto,      // \left \right
-    Sized(u8), // \big, \Big, \bigg, \Bigg
-}
-
-#[derive(Debug, Clone, Eq, PartialEq, Hash, Serialize, Deserialize, TS)]
-#[ts(export)]
-pub enum MulSymbol {
-    Times,       // \times for numbers
-    Dot,         // \, for symbols
-    LittleSpace, // \, for bracketed expressions
-}
-#[derive(Debug, Clone, Eq, PartialEq, Hash, Serialize, Deserialize, TS)]
-#[ts(export)]
-pub enum DivSymbol {
-    Slash,  // /
-    Divide, // ÷
-}
-
-#[derive(Debug, Clone, Eq, PartialEq, Hash, Serialize, Deserialize, TS)]
-#[ts(export)]
-pub enum UnitComponent {
-    BaseUnit {
-        name: BaseUnitTypeNode,
-        prefix: Option<String>,
-    },
-    CompoundUnit {
-        components: Vec<(UnitComponent, MathNode)>, // (unit, exponent)
-    },
 }
 
 pub trait ToTurnMath {
