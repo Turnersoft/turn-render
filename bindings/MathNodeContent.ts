@@ -16,20 +16,8 @@ export type MathNodeContent =
   | "Empty"
   | { "Text": string }
   | { "String": string }
-  | {
-    "Integration": {
-      integrand: MathNode;
-      differentials: Array<[MathNode, MathNode | null, MathNode | null]>;
-      domain: MathNode | null;
-    };
-  }
-  | {
-    "Limit": {
-      function: MathNode;
-      variable: string;
-      approaching_value: MathNode;
-    };
-  }
+  | { "Bracketed": { inner: MathNode; style: BracketStyle; size: BracketSize } }
+  | { "Matrix": { rows: Array<Array<MathNode>> } }
   | {
     "Multiplications": { terms: Array<[RefinedMulOrDivOperation, MathNode]> };
   }
@@ -58,8 +46,7 @@ export type MathNodeContent =
     };
   }
   | { "Fraction": { numerator: MathNode; denominator: MathNode } }
-  | { "Bracketed": { inner: MathNode; style: BracketStyle; size: BracketSize } }
-  | { "Matrix": { rows: Array<Array<MathNode>> } }
+  | { "Power": { base: MathNode; exponent: MathNode } }
   | { "LogFunction": { base: MathNode | null; parameter: MathNode } }
   | { "Log2": { parameter: MathNode } }
   | { "Log10": { parameter: MathNode } }
@@ -67,7 +54,6 @@ export type MathNodeContent =
   | { "UnaryPostfix": { parameter: MathNode; operator: string } }
   | { "UnaryPrefix": { parameter: MathNode; operator: string } }
   | { "Abs": { parameter: MathNode } }
-  | { "Power": { base: MathNode; exponent: MathNode } }
   | { "CustomFunction": { name: MathNode; parameters: Array<MathNode> } }
   | { "SimpleUnaryFunction": { name: string; parameter: MathNode } }
   | { "SimpleMultinaryFunction": { name: string; parameters: Array<MathNode> } }
@@ -112,10 +98,24 @@ export type MathNodeContent =
     };
   }
   | {
+    "Limit": {
+      function: MathNode;
+      variable: string;
+      approaching_value: MathNode;
+    };
+  }
+  | {
     "Differential": {
       target: MathNode;
       order: MathNode;
       diff_style: DifferentialStyle;
+    };
+  }
+  | {
+    "Integration": {
+      integrand: MathNode;
+      differentials: Array<[MathNode, MathNode | null, MathNode | null]>;
+      domain: MathNode | null;
     };
   }
   | {
@@ -138,6 +138,10 @@ export type MathNodeContent =
     "Quantifier": {
       quantification: QuantificationNode;
       variable: MathNode;
-      body: MathNode;
+      var_type: MathNode;
     };
-  };
+  }
+  | {
+    "EmbeddedSentence": { subject: MathNode; verb: string; object: MathNode };
+  }
+  | { "ElementOf": { target: MathNode } };
