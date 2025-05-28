@@ -1,0 +1,402 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Personal Notes - Group Theory Exploration</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Kalam:wght@300;400;700&family=Architects+Daughter&display=swap');
+        
+        body { 
+            font-family: 'Kalam', cursive; 
+            margin: 0; 
+            background: linear-gradient(45deg, #f9f7f4 0%, #fdf8f0 100%); 
+            color: #2c3e50; 
+            line-height: 1.8; 
+            background-image: 
+                linear-gradient(90deg, transparent 79px, #e3ddd4 79px, #e3ddd4 81px, transparent 81px),
+                linear-gradient(#f0ebe2 .1em, transparent .1em);
+            background-size: 100% 2em;
+        }
+        .notebook-container { 
+            max-width: 900px; 
+            margin: 20px auto; 
+            background-color: #fefdfb; 
+            border-radius: 10px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.1); 
+            position: relative;
+        }
+        .notebook-header { 
+            background: linear-gradient(135deg, #8b4513 0%, #a0522d 100%); 
+            color: white; 
+            padding: 20px 40px; 
+            border-radius: 10px 10px 0 0;
+            position: relative;
+        }
+        .notebook-header::after {
+            content: '';
+            position: absolute;
+            bottom: -10px;
+            left: 0;
+            right: 0;
+            height: 10px;
+            background: linear-gradient(90deg, transparent 79px, #8b4513 79px, #8b4513 81px, transparent 81px);
+        }
+        .notebook-title { 
+            font-family: 'Architects Daughter', cursive;
+            font-size: 2.2em; 
+            margin: 0; 
+            transform: rotate(-1deg);
+        }
+        .notebook-date { 
+            font-size: 1em; 
+            margin-top: 10px; 
+            opacity: 0.9; 
+            transform: rotate(0.5deg);
+        }
+        .page-content { 
+            padding: 60px 40px 40px 100px; 
+            position: relative;
+        }
+        .red-margin {
+            position: absolute;
+            left: 80px;
+            top: 0;
+            bottom: 0;
+            width: 2px;
+            background-color: #ff6b6b;
+            opacity: 0.6;
+        }
+        .note-section { 
+            margin-bottom: 40px; 
+            position: relative;
+        }
+        .section-title { 
+            font-family: 'Architects Daughter', cursive;
+            font-size: 1.6em; 
+            color: #2c3e50; 
+            margin-bottom: 20px; 
+            transform: rotate(-0.5deg);
+            text-decoration: underline;
+            text-decoration-color: #3498db;
+        }
+        .handwritten-text { 
+            font-size: 1.1em; 
+            line-height: 2em;
+            color: #2c3e50; 
+            transform: rotate(0.2deg);
+        }
+        .math-scratch { 
+            background-color: #fff; 
+            border: 2px dashed #95a5a6; 
+            border-radius: 8px; 
+            padding: 20px; 
+            margin: 20px 0; 
+            font-family: 'Times New Roman', serif;
+            position: relative;
+            transform: rotate(-0.3deg);
+        }
+        .math-scratch::before {
+            content: 'scratch work';
+            position: absolute;
+            top: -12px;
+            left: 10px;
+            background-color: #fff;
+            padding: 0 8px;
+            font-size: 0.8em;
+            color: #7f8c8d;
+            font-family: 'Kalam', cursive;
+        }
+        .margin-note { 
+            position: absolute; 
+            left: -150px; 
+            width: 120px; 
+            background-color: #fff3cd; 
+            border: 1px solid #ffd93d; 
+            border-radius: 5px; 
+            padding: 10px; 
+            font-size: 0.9em; 
+            transform: rotate(-2deg);
+            box-shadow: 2px 2px 6px rgba(0,0,0,0.1);
+        }
+        .margin-note::after {
+            content: '';
+            position: absolute;
+            right: -8px;
+            top: 15px;
+            width: 0;
+            height: 0;
+            border-left: 8px solid #ffd93d;
+            border-top: 8px solid transparent;
+            border-bottom: 8px solid transparent;
+        }
+        .sketch-area { 
+            background-color: #f8f9fa; 
+            border: 1px solid #dee2e6; 
+            border-radius: 8px; 
+            height: 200px; 
+            margin: 20px 0; 
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transform: rotate(0.5deg);
+        }
+        .sketch-placeholder {
+            color: #6c757d;
+            font-style: italic;
+            text-align: center;
+        }
+        .highlight { 
+            background-color: #fff9c4; 
+            padding: 2px 4px; 
+            border-radius: 3px; 
+            margin: 0 2px;
+        }
+        .cross-out { 
+            text-decoration: line-through; 
+            color: #7f8c8d; 
+        }
+        .important { 
+            background-color: #ffebee; 
+            border-left: 4px solid #e74c3c; 
+            padding: 15px; 
+            margin: 20px 0; 
+            transform: rotate(-0.2deg);
+        }
+        .question { 
+            background-color: #e8f5e8; 
+            border-left: 4px solid #27ae60; 
+            padding: 15px; 
+            margin: 20px 0; 
+            font-style: italic;
+            transform: rotate(0.3deg);
+        }
+        .question::before {
+            content: '🤔 ';
+            margin-right: 5px;
+        }
+        .todo { 
+            background-color: #e3f2fd; 
+            border-left: 4px solid #2196f3; 
+            padding: 15px; 
+            margin: 20px 0; 
+            transform: rotate(-0.1deg);
+        }
+        .todo::before {
+            content: '📝 TODO: ';
+            font-weight: bold;
+            margin-right: 5px;
+        }
+        .doodle {
+            position: absolute;
+            font-size: 1.5em;
+            opacity: 0.3;
+            transform: rotate(15deg);
+            z-index: 1;
+        }
+        .arrow {
+            position: relative;
+            display: inline-block;
+            margin: 0 10px;
+        }
+        .arrow::after {
+            content: '→';
+            color: #e74c3c;
+            font-weight: bold;
+            margin-left: 5px;
+        }
+        .page-corner {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            width: 40px;
+            height: 40px;
+            background: linear-gradient(135deg, transparent 50%, #ddd 50%);
+            border-radius: 0 0 0 10px;
+        }
+        .ink-blot {
+            position: absolute;
+            width: 8px;
+            height: 8px;
+            background-color: #2c3e50;
+            border-radius: 50%;
+            opacity: 0.6;
+        }
+        .ink-blot-1 { top: 200px; left: 200px; }
+        .ink-blot-2 { top: 400px; left: 500px; width: 5px; height: 5px; }
+        .ink-blot-3 { top: 600px; left: 150px; width: 3px; height: 3px; }
+    </style>
+</head>
+<body>
+    <div class="notebook-container">
+        <div class="page-corner"></div>
+        <div class="red-margin"></div>
+        
+        <div class="notebook-header">
+            <div class="notebook-title">Group Theory Exploration</div>
+            <div class="notebook-date">October 15, 2024 - Late night musings</div>
+        </div>
+
+        <div class="page-content">
+            <div class="ink-blot ink-blot-1"></div>
+            <div class="ink-blot ink-blot-2"></div>
+            <div class="ink-blot ink-blot-3"></div>
+            
+            <div class="doodle" style="top: 100px; right: 200px;">⭐</div>
+            <div class="doodle" style="top: 300px; right: 150px;">✨</div>
+
+            <div class="note-section">
+                <div class="section-title">Understanding Group Actions</div>
+                <div class="margin-note" style="top: 0;">
+                    Key insight: groups act on sets!
+                </div>
+                
+                <div class="handwritten-text">
+                    Been thinking about how groups <span class="highlight">act on sets</span> today. 
+                    The idea seems fundamental but I keep getting confused about the notation.
+                    
+                    <br><br>
+                    
+                    If G is a group and X is a set, then a group action is a map:
+                </div>
+                
+                <div class="math-scratch">
+                    φ: G × X → X<br>
+                    such that:<br>
+                    1) φ(e, x) = x for all x ∈ X (identity acts trivially)<br>
+                    2) φ(g₁, φ(g₂, x)) = φ(g₁g₂, x) (composition law)
+                </div>
+                
+                <div class="handwritten-text">
+                    <span class="cross-out">Wait, is this right?</span> Yes, this looks correct. 
+                    The key is that the group operation gets "transferred" to operations on the set.
+                </div>
+            </div>
+
+            <div class="note-section">
+                <div class="section-title">Orbit-Stabilizer Connection</div>
+                <div class="margin-note" style="top: 150px;">
+                    This is HUGE! 🎯
+                </div>
+                
+                <div class="important">
+                    <strong>Major realization:</strong> The orbit-stabilizer theorem is basically saying that 
+                    |Orbit(x)| × |Stab(x)| = |G|. This connects the "size of how much g moves around" 
+                    with "size of what keeps x fixed"!
+                </div>
+                
+                <div class="math-scratch">
+                    For x ∈ X and group action φ:<br><br>
+                    Orbit(x) = {φ(g,x) : g ∈ G}<br>
+                    Stab(x) = {g ∈ G : φ(g,x) = x}<br><br>
+                    Then: |Orbit(x)| · |Stab(x)| = |G|
+                </div>
+                
+                <div class="question">
+                    Why does this work? Is there a natural bijection I'm missing? 
+                    Maybe between G/Stab(x) and Orbit(x)?
+                </div>
+            </div>
+
+            <div class="note-section">
+                <div class="section-title">Examples to work through</div>
+                
+                <div class="handwritten-text">
+                    Need to really understand this with concrete examples:
+                </div>
+                
+                <div class="todo">
+                    Work out D₄ acting on square vertices tomorrow morning
+                </div>
+                
+                <div class="todo">
+                    Check S₃ acting on {1,2,3} - should be the "natural" action
+                </div>
+                
+                <div class="handwritten-text">
+                    The dihedral group D₄ has 8 elements. If it acts on the 4 vertices of a square:
+                    <span class="arrow"></span> Each vertex orbit should have size 4? No wait...
+                </div>
+                
+                <div class="sketch-area">
+                    <div class="sketch-placeholder">
+                        [Sketch: Square with vertices labeled 1,2,3,4]<br>
+                        [Show how rotation by 90° moves vertices]<br>
+                        [Mark which elements fix vertex 1]
+                    </div>
+                </div>
+                
+                <div class="handwritten-text">
+                    Actually, since all vertices "look the same" under the group action, 
+                    they should all be in the same orbit! So |Orbit(1)| = 4, and |Stab(1)| = 8/4 = 2.
+                    
+                    <br><br>
+                    
+                    Which elements stabilize vertex 1? 
+                    <span class="highlight">Identity + reflection through the axis containing vertex 1</span>
+                </div>
+            </div>
+
+            <div class="note-section">
+                <div class="section-title">Random thoughts & connections</div>
+                <div class="margin-note" style="top: 0;">
+                    Connect to Lagrange theorem?
+                </div>
+                
+                <div class="handwritten-text">
+                    🔗 This orbit-stabilizer thing feels related to Lagrange's theorem somehow. 
+                    Both are about decomposing |G| into equal-sized pieces...
+                    
+                    <br><br>
+                    
+                    In Lagrange: |G| = |H| × |G/H| for subgroup H<br>
+                    In Orbit-Stab: |G| = |Stab(x)| × |Orbit(x)| for any x
+                    
+                    <br><br>
+                    
+                    OH! That's because Stab(x) is a subgroup! And G/Stab(x) ≅ Orbit(x).
+                    So orbit-stabilizer IS just Lagrange's theorem in disguise! 🤯
+                </div>
+                
+                <div class="important">
+                    <strong>Mind blown moment:</strong> Group actions give us a way to "see" abstract 
+                    group theory through concrete geometric transformations. The orbit-stabilizer 
+                    theorem is just Lagrange wearing a costume!
+                </div>
+                
+                <div class="question">
+                    What other theorems are actually the same theorem in different clothing?
+                </div>
+            </div>
+
+            <div class="note-section">
+                <div class="section-title">Tomorrow's goals</div>
+                
+                <div class="todo">
+                    Prove that Stab(x) is actually a subgroup (closure, inverses, etc.)
+                </div>
+                
+                <div class="todo">
+                    Show that G/Stab(x) ≅ Orbit(x) carefully
+                </div>
+                
+                <div class="todo">
+                    Find more examples: S₄ on {1,2,3,4}, cyclic groups on themselves
+                </div>
+                
+                <div class="handwritten-text">
+                    Also want to understand: when do we get faithful actions? Transitive actions? 
+                    How do these properties relate to the structure of G?
+                    
+                    <br><br>
+                    
+                    <span class="highlight">Key insight for tomorrow</span>: Every group action gives us 
+                    a homomorphism G → Sym(X). The kernel tells us about "wasted" group elements that 
+                    don't actually do anything to X.
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html> 

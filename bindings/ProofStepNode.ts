@@ -13,7 +13,7 @@ export type ProofStepNode =
   | {
     "Statement": {
       claim: Array<RichTextSegment>;
-      justification: Array<RichTextSegment> | null;
+      justification: Array<RichTextSegment>;
     };
   }
   | { "Elaboration": Array<SectionContentNode> }

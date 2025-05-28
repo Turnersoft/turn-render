@@ -11,7 +11,6 @@ export type Section = {
   id: string;
   title: ParagraphNode | null;
   content: Array<SectionContentNode>;
-  sub_sections: Array<Section>;
-  metadata: Array<[string, string]> | null;
+  metadata: Array<[string, string]>;
   display_options: SectionDisplayOptions | null;
 };

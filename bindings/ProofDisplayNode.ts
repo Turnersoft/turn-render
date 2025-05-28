@@ -8,7 +8,7 @@ import type { SectionContentNode } from "./SectionContentNode";
  */
 export type ProofDisplayNode = {
   title: ParagraphNode | null;
-  strategy: Array<SectionContentNode> | null;
+  strategy: Array<SectionContentNode>;
   steps: Array<ProofStepNode>;
   qed_symbol: string | null;
 };

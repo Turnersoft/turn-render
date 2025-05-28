@@ -1,0 +1,514 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>group - nLab</title>
+    <style>
+        body { 
+            font-family: "Linux Libertine", "Liberation Serif", "Times New Roman", serif; 
+            margin: 0; 
+            background-color: #f8f9fa; 
+            color: #333; 
+            line-height: 1.7; 
+        }
+        .nlab-container { 
+            max-width: 1000px; 
+            margin: 0 auto; 
+            background-color: #fff; 
+            min-height: 100vh; 
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        }
+        .nlab-header { 
+            background-color: #2c5aa0; 
+            color: white; 
+            padding: 15px 30px; 
+            border-bottom: 3px solid #1e3d6f;
+        }
+        .nlab-title { 
+            font-size: 1.8em; 
+            margin: 0; 
+            font-weight: normal;
+        }
+        .nlab-subtitle { 
+            font-size: 0.9em; 
+            margin-top: 5px; 
+            opacity: 0.9; 
+        }
+        .nlab-navigation {
+            background-color: #e6f3ff;
+            padding: 10px 30px;
+            border-bottom: 1px solid #b3d9ff;
+            font-size: 0.9em;
+        }
+        .nav-links {
+            margin: 0;
+        }
+        .nav-links a {
+            color: #2c5aa0;
+            text-decoration: none;
+            margin-right: 15px;
+        }
+        .nav-links a:hover {
+            text-decoration: underline;
+        }
+        .content-area { 
+            display: flex;
+            min-height: calc(100vh - 120px);
+        }
+        .main-content { 
+            flex: 1;
+            padding: 30px; 
+        }
+        .sidebar {
+            width: 250px;
+            background-color: #f8f9fa;
+            border-left: 1px solid #dee2e6;
+            padding: 20px;
+        }
+        .page-title { 
+            font-size: 2.2em; 
+            margin: 0 0 20px 0; 
+            color: #2c5aa0;
+            border-bottom: 2px solid #2c5aa0;
+            padding-bottom: 10px;
+        }
+        .definition-block { 
+            background: linear-gradient(135deg, #f0f8ff, #e6f3ff); 
+            border: 1px solid #b3d9ff; 
+            border-left: 5px solid #2c5aa0;
+            border-radius: 5px; 
+            padding: 20px; 
+            margin: 25px 0; 
+        }
+        .definition-title {
+            font-weight: bold;
+            color: #2c5aa0;
+            margin-bottom: 10px;
+            font-size: 1.1em;
+        }
+        .nlab-link { 
+            color: #2c5aa0; 
+            text-decoration: none; 
+            border-bottom: 1px dotted #2c5aa0;
+            cursor: pointer;
+        }
+        .nlab-link:hover { 
+            background-color: #e6f3ff;
+            text-decoration: none;
+        }
+        .nlab-link.internal {
+            font-weight: 500;
+        }
+        .nlab-link.external {
+            border-bottom: 1px solid #2c5aa0;
+        }
+        .categorical-note {
+            background: linear-gradient(135deg, #fff8e1, #fffbf0);
+            border: 1px solid #ffcc02;
+            border-left: 5px solid #ff9800;
+            border-radius: 5px;
+            padding: 15px;
+            margin: 20px 0;
+            font-style: italic;
+        }
+        .categorical-note::before {
+            content: "Categorical perspective: ";
+            font-weight: bold;
+            color: #ef6c00;
+            font-style: normal;
+        }
+        .theorem-block {
+            background: linear-gradient(135deg, #f3e5f5, #faf2fc);
+            border: 1px solid #ce93d8;
+            border-left: 5px solid #9c27b0;
+            border-radius: 5px;
+            padding: 20px;
+            margin: 25px 0;
+        }
+        .theorem-title {
+            font-weight: bold;
+            color: #7b1fa2;
+            margin-bottom: 10px;
+            font-size: 1.1em;
+        }
+        .example-block {
+            background: linear-gradient(135deg, #e8f5e8, #f1f8e9);
+            border: 1px solid #a5d6a7;
+            border-left: 5px solid #4caf50;
+            border-radius: 5px;
+            padding: 20px;
+            margin: 25px 0;
+        }
+        .example-title {
+            font-weight: bold;
+            color: #388e3c;
+            margin-bottom: 10px;
+            font-size: 1.1em;
+        }
+        .remark-block {
+            background: linear-gradient(135deg, #fff3e0, #fffbf0);
+            border: 1px solid #ffb74d;
+            border-left: 5px solid #ff9800;
+            border-radius: 5px;
+            padding: 15px;
+            margin: 20px 0;
+        }
+        .remark-title {
+            font-weight: bold;
+            color: #f57c00;
+            margin-bottom: 8px;
+        }
+        .toc {
+            background-color: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 5px;
+            padding: 15px;
+            margin: 20px 0;
+            float: right;
+            width: 300px;
+            margin-left: 20px;
+        }
+        .toc-title {
+            font-weight: bold;
+            margin-bottom: 10px;
+            color: #495057;
+        }
+        .toc-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+        .toc-list li {
+            margin: 5px 0;
+            padding-left: 15px;
+        }
+        .toc-list li a {
+            color: #2c5aa0;
+            text-decoration: none;
+            font-size: 0.9em;
+        }
+        .toc-list li a:hover {
+            text-decoration: underline;
+        }
+        .related-concepts {
+            background-color: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 5px;
+            padding: 15px;
+            margin: 20px 0;
+        }
+        .related-title {
+            font-weight: bold;
+            margin-bottom: 10px;
+            color: #495057;
+        }
+        .concept-link {
+            display: block;
+            margin: 5px 0;
+            color: #2c5aa0;
+            text-decoration: none;
+            font-size: 0.9em;
+        }
+        .concept-link:hover {
+            text-decoration: underline;
+        }
+        .references {
+            background-color: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 5px;
+            padding: 15px;
+            margin: 20px 0;
+        }
+        .references-title {
+            font-weight: bold;
+            margin-bottom: 10px;
+            color: #495057;
+        }
+        .reference-item {
+            margin: 8px 0;
+            font-size: 0.9em;
+            padding-left: 15px;
+            text-indent: -15px;
+        }
+        .edit-section {
+            background-color: #e6f3ff;
+            border: 1px solid #b3d9ff;
+            border-radius: 5px;
+            padding: 10px;
+            margin: 20px 0;
+            font-size: 0.9em;
+            text-align: center;
+        }
+        .edit-link {
+            color: #2c5aa0;
+            text-decoration: none;
+            font-weight: bold;
+        }
+        .edit-link:hover {
+            text-decoration: underline;
+        }
+        .math-expr {
+            font-family: "Latin Modern Math", "STIX Two Math", "Times New Roman", serif;
+            font-style: italic;
+        }
+        .category-link {
+            background-color: #fff3e0;
+            color: #f57c00;
+            padding: 2px 6px;
+            border-radius: 3px;
+            text-decoration: none;
+            font-size: 0.9em;
+            border: 1px solid #ffcc02;
+        }
+        .category-link:hover {
+            background-color: #ffe0b2;
+        }
+        .revision-info {
+            background-color: #f1f1f1;
+            border: 1px solid #ccc;
+            border-radius: 3px;
+            padding: 10px;
+            margin: 20px 0;
+            font-size: 0.8em;
+            color: #666;
+        }
+        .discussion-note {
+            background-color: #fff8e1;
+            border: 1px solid #ffb300;
+            border-radius: 5px;
+            padding: 15px;
+            margin: 20px 0;
+            font-size: 0.9em;
+        }
+        .discussion-note::before {
+            content: "💬 Discussion: ";
+            font-weight: bold;
+            color: #f57c00;
+        }
+    </style>
+</head>
+<body>
+    <div class="nlab-container">
+        <div class="nlab-header">
+            <div class="nlab-title">nLab</div>
+            <div class="nlab-subtitle">a collaborative lab for mathematics, physics and philosophy</div>
+        </div>
+
+        <div class="nlab-navigation">
+            <div class="nav-links">
+                <a href="#">HomePage</a>
+                <a href="#">Recent Changes</a>
+                <a href="#">All Pages</a>
+                <a href="#">Categories</a>
+                <a href="#">Random Page</a>
+                <a href="#">Help</a>
+            </div>
+        </div>
+
+        <div class="content-area">
+            <div class="main-content">
+                <h1 class="page-title">group</h1>
+
+                <div class="toc">
+                    <div class="toc-title">Contents</div>
+                    <ul class="toc-list">
+                        <li><a href="#idea">Idea</a></li>
+                        <li><a href="#definition">Definition</a></li>
+                        <li><a href="#categorical">Categorical perspective</a></li>
+                        <li><a href="#examples">Examples</a></li>
+                        <li><a href="#properties">Properties</a></li>
+                        <li><a href="#related">Related concepts</a></li>
+                        <li><a href="#references">References</a></li>
+                    </ul>
+                </div>
+
+                <h2 id="idea">Idea</h2>
+                
+                <p>A <strong>group</strong> is a fundamental structure in <a href="#" class="nlab-link internal">algebra</a> that captures the abstract essence of <a href="#" class="nlab-link internal">symmetry</a>. Groups appear throughout mathematics as the <a href="#" class="nlab-link internal">automorphism groups</a> of mathematical objects, encoding all the ways an object can be transformed while preserving its essential structure.</p>
+
+                <div class="categorical-note">
+                    Groups are precisely the objects in the <a href="#" class="nlab-link internal">category</a> <strong>Grp</strong> whose <a href="#" class="nlab-link internal">morphisms</a> are <a href="#" class="nlab-link internal">group homomorphisms</a>. This categorical viewpoint unifies group theory with the broader mathematical landscape.
+                </div>
+
+                <h2 id="definition">Definition</h2>
+
+                <div class="definition-block">
+                    <div class="definition-title">Definition (Group)</div>
+                    <p>A <strong>group</strong> is a <a href="#" class="nlab-link internal">set</a> <span class="math-expr">G</span> equipped with:</p>
+                    <ul>
+                        <li>a <a href="#" class="nlab-link internal">binary operation</a> <span class="math-expr">μ: G × G → G</span> (often written as multiplication <span class="math-expr">μ(g,h) = gh</span>)</li>
+                        <li>an <a href="#" class="nlab-link internal">identity element</a> <span class="math-expr">e ∈ G</span></li>
+                        <li>an <a href="#" class="nlab-link internal">inverse</a> operation <span class="math-expr">i: G → G</span> (written <span class="math-expr">i(g) = g^{-1}</span>)</li>
+                    </ul>
+                    
+                    <p>such that the following <a href="#" class="nlab-link internal">axioms</a> hold:</p>
+                    <ol>
+                        <li><strong><a href="#" class="nlab-link internal">Associativity</a>:</strong> <span class="math-expr">(gh)k = g(hk)</span> for all <span class="math-expr">g,h,k ∈ G</span></li>
+                        <li><strong><a href="#" class="nlab-link internal">Unit law</a>:</strong> <span class="math-expr">eg = ge = g</span> for all <span class="math-expr">g ∈ G</span></li>
+                        <li><strong><a href="#" class="nlab-link internal">Inverse law</a>:</strong> <span class="math-expr">gg^{-1} = g^{-1}g = e</span> for all <span class="math-expr">g ∈ G</span></li>
+                    </ol>
+                </div>
+
+                <div class="remark-block">
+                    <div class="remark-title">Remark</div>
+                    <p>The axioms ensure that every element has a unique <a href="#" class="nlab-link internal">left inverse</a> and a unique <a href="#" class="nlab-link internal">right inverse</a>, and these coincide. The identity element is also unique by the unit laws.</p>
+                </div>
+
+                <h2 id="categorical">Categorical perspective</h2>
+
+                <p>From the <a href="#" class="nlab-link internal">categorical</a> point of view, a group can be understood in several equivalent ways:</p>
+
+                <div class="categorical-note">
+                    A group is a <a href="#" class="nlab-link internal">groupoid</a> with a single object. This perspective emphasizes that groups are about <a href="#" class="nlab-link internal">composition</a> of <a href="#" class="nlab-link internal">transformations</a>.
+                </div>
+
+                <div class="theorem-block">
+                    <div class="theorem-title">Theorem (Cayley)</div>
+                    <p>Every group <span class="math-expr">G</span> is <a href="#" class="nlab-link internal">isomorphic</a> to a <a href="#" class="nlab-link internal">subgroup</a> of the <a href="#" class="nlab-link internal">symmetric group</a> <span class="math-expr">Sym(G)</span> on its underlying set. This is via the <a href="#" class="nlab-link internal">regular representation</a> <span class="math-expr">G → Sym(G)</span> given by <span class="math-expr">g ↦ (h ↦ gh)</span>.</p>
+                </div>
+
+                <p>Groups form a <a href="#" class="nlab-link internal">category</a> <strong><a href="#" class="nlab-link internal">Grp</a></strong> where:</p>
+                <ul>
+                    <li><strong>Objects:</strong> groups</li>
+                    <li><strong>Morphisms:</strong> <a href="#" class="nlab-link internal">group homomorphisms</a></li>
+                    <li><strong>Composition:</strong> composition of functions</li>
+                    <li><strong>Identities:</strong> <a href="#" class="nlab-link internal">identity homomorphisms</a></li>
+                </ul>
+
+                <h2 id="examples">Examples</h2>
+
+                <div class="example-block">
+                    <div class="example-title">Example (Additive groups)</div>
+                    <ul>
+                        <li>The <a href="#" class="nlab-link internal">integers</a> <span class="math-expr">(ℤ, +, 0)</span></li>
+                        <li>The <a href="#" class="nlab-link internal">rational numbers</a> <span class="math-expr">(ℚ, +, 0)</span></li>
+                        <li>Any <a href="#" class="nlab-link internal">vector space</a> <span class="math-expr">(V, +, 0)</span></li>
+                    </ul>
+                </div>
+
+                <div class="example-block">
+                    <div class="example-title">Example (Multiplicative groups)</div>
+                    <ul>
+                        <li>The <a href="#" class="nlab-link internal">general linear group</a> <span class="math-expr">GL(n, ℝ)</span> of <a href="#" class="nlab-link internal">invertible matrices</a></li>
+                        <li>The <a href="#" class="nlab-link internal">orthogonal group</a> <span class="math-expr">O(n)</span></li>
+                        <li>The <a href="#" class="nlab-link internal">circle group</a> <span class="math-expr">S^1 = U(1)</span></li>
+                    </ul>
+                </div>
+
+                <div class="example-block">
+                    <div class="example-title">Example (Symmetric groups)</div>
+                    <p>For any <a href="#" class="nlab-link internal">set</a> <span class="math-expr">X</span>, the group <span class="math-expr">Sym(X)</span> of all <a href="#" class="nlab-link internal">bijections</a> <span class="math-expr">X → X</span> under composition. When <span class="math-expr">X = \{1,2,\ldots,n\}</span>, this is the <a href="#" class="nlab-link internal">symmetric group</a> <span class="math-expr">S_n</span>.</p>
+                </div>
+
+                <h2 id="properties">Properties</h2>
+
+                <div class="theorem-block">
+                    <div class="theorem-title">Theorem (Lagrange)</div>
+                    <p>If <span class="math-expr">H</span> is a <a href="#" class="nlab-link internal">subgroup</a> of a finite group <span class="math-expr">G</span>, then <span class="math-expr">|H|</span> divides <span class="math-expr">|G|</span>. The quotient <span class="math-expr">|G|/|H|</span> is called the <a href="#" class="nlab-link internal">index</a> of <span class="math-expr">H</span> in <span class="math-expr">G</span>.</p>
+                </div>
+
+                <div class="discussion-note">
+                    The proof uses the fact that <a href="#" class="nlab-link internal">cosets</a> partition the group into disjoint subsets of equal size. This is a fundamental example of how <a href="#" class="nlab-link internal">group actions</a> (here, the action of <span class="math-expr">H</span> on <span class="math-expr">G</span> by left multiplication) lead to structural insights.
+                </div>
+
+                <div class="theorem-block">
+                    <div class="theorem-title">Theorem (First Isomorphism Theorem)</div>
+                    <p>Let <span class="math-expr">φ: G → H</span> be a <a href="#" class="nlab-link internal">group homomorphism</a>. Then:</p>
+                    <p class="math-expr">G / \ker(φ) ≅ \text{im}(φ)</p>
+                    <p>where <span class="math-expr">\ker(φ)</span> is the <a href="#" class="nlab-link internal">kernel</a> and <span class="math-expr">\text{im}(φ)</span> is the <a href="#" class="nlab-link internal">image</a> of <span class="math-expr">φ</span>.</p>
+                </div>
+
+                <div class="categorical-note">
+                    This theorem is a special case of the general <a href="#" class="nlab-link internal">factorization</a> of morphisms in <a href="#" class="nlab-link internal">abelian categories</a>. It shows that every homomorphism factors through its image as an <a href="#" class="nlab-link internal">epimorphism</a> followed by a <a href="#" class="nlab-link internal">monomorphism</a>.
+                </div>
+
+                <div class="edit-section">
+                    <a href="#" class="edit-link">Edit this section</a> | <a href="#" class="edit-link">Add examples</a> | <a href="#" class="edit-link">Improve exposition</a>
+                </div>
+
+                <h2 id="related">Related concepts</h2>
+
+                <ul>
+                    <li><a href="#" class="nlab-link internal">abelian group</a></li>
+                    <li><a href="#" class="nlab-link internal">topological group</a></li>
+                    <li><a href="#" class="nlab-link internal">Lie group</a></li>
+                    <li><a href="#" class="nlab-link internal">algebraic group</a></li>
+                    <li><a href="#" class="nlab-link internal">group object</a></li>
+                    <li><a href="#" class="nlab-link internal">groupoid</a></li>
+                    <li><a href="#" class="nlab-link internal">∞-group</a></li>
+                </ul>
+
+                <div class="categorical-note">
+                    The concept of group generalizes in <a href="#" class="nlab-link internal">higher category theory</a> to <a href="#" class="nlab-link internal">∞-groups</a>, which are <a href="#" class="nlab-link internal">group objects</a> in the <a href="#" class="nlab-link internal">∞-category</a> of <a href="#" class="nlab-link internal">∞-groupoids</a>.
+                </div>
+
+                <h2 id="references">References</h2>
+
+                <div class="references">
+                    <div class="references-title">Textbooks</div>
+                    <div class="reference-item">Joseph Rotman, <em>An Introduction to the Theory of Groups</em>, 4th edition, Springer 1994</div>
+                    <div class="reference-item">Dummit and Foote, <em>Abstract Algebra</em>, 3rd edition, Wiley 2003</div>
+                </div>
+
+                <div class="references">
+                    <div class="references-title">Historical</div>
+                    <div class="reference-item">Évariste Galois, original work on <a href="#" class="nlab-link internal">Galois theory</a> establishing the connection between groups and <a href="#" class="nlab-link internal">field extensions</a></div>
+                </div>
+
+                <div class="references">
+                    <div class="references-title">Categorical perspective</div>
+                    <div class="reference-item">Saunders Mac Lane, <em>Categories for the Working Mathematician</em>, 2nd edition, Springer 1998</div>
+                    <div class="reference-item">Francis Borceux, <em>Handbook of Categorical Algebra</em>, Cambridge University Press 1994</div>
+                </div>
+
+                <div class="revision-info">
+                    <strong>Revision history:</strong> Last edited on 15 October 2024 by <a href="#" class="nlab-link">CategoryTheorist</a>. 
+                    Previous major revisions by <a href="#" class="nlab-link">GroupTheorist42</a>, <a href="#" class="nlab-link">AlgebraStudent</a>. 
+                    <a href="#">View full history</a>
+                </div>
+
+                <div style="text-align: center; margin: 30px 0;">
+                    <a href="#" class="category-link">category: algebra</a>
+                    <a href="#" class="category-link">category: group theory</a>
+                    <a href="#" class="category-link">category: basic concepts</a>
+                </div>
+            </div>
+
+            <div class="sidebar">
+                <div class="related-concepts">
+                    <div class="related-title">Related concepts</div>
+                    <a href="#" class="concept-link">monoid</a>
+                    <a href="#" class="concept-link">group homomorphism</a>
+                    <a href="#" class="concept-link">subgroup</a>
+                    <a href="#" class="concept-link">normal subgroup</a>
+                    <a href="#" class="concept-link">quotient group</a>
+                    <a href="#" class="concept-link">group action</a>
+                    <a href="#" class="concept-link">representation theory</a>
+                    <a href="#" class="concept-link">group cohomology</a>
+                </div>
+
+                <div class="related-concepts">
+                    <div class="related-title">Generalizations</div>
+                    <a href="#" class="concept-link">topological group</a>
+                    <a href="#" class="concept-link">Lie group</a>
+                    <a href="#" class="concept-link">algebraic group</a>
+                    <a href="#" class="concept-link">group scheme</a>
+                    <a href="#" class="concept-link">group stack</a>
+                    <a href="#" class="concept-link">∞-group</a>
+                </div>
+
+                <div class="related-concepts">
+                    <div class="related-title">In other contexts</div>
+                    <a href="#" class="concept-link">Galois group</a>
+                    <a href="#" class="concept-link">fundamental group</a>
+                    <a href="#" class="concept-link">symmetry group</a>
+                    <a href="#" class="concept-link">automorphism group</a>
+                    <a href="#" class="concept-link">Picard group</a>
+                    <a href="#" class="concept-link">class group</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html> 

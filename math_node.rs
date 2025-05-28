@@ -250,6 +250,15 @@ pub enum MathNodeContent {
     ElementOf {
         target: Box<MathNode>,
     },
+
+    // Quantified expression structure (e.g., "∀ x ∈ S" or "∃ x : P(x)")
+    // This is a fundamental mathematical structure used across all theories
+    QuantifiedExpression {
+        quantifier: QuantificationNode,
+        variables: Vec<MathNode>,         // The quantified variables
+        domain: Option<Box<MathNode>>,    // Optional domain (the "∈ S" part)
+        predicate: Option<Box<MathNode>>, // Optional predicate (the ": P(x)" part)
+    },
 }
 
 #[derive(Debug, Clone, Eq, PartialEq, Hash, Serialize, Deserialize, TS)]

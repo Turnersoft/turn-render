@@ -1,0 +1,392 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Group (mathematics) - Mathematical Wiki</title>
+    <style>
+        body { 
+            font-family: sans-serif; 
+            margin: 0; 
+            background-color: #f6f6f6; 
+            color: #333; 
+            line-height: 1.6; 
+        }
+        .wiki-container { 
+            max-width: 1200px; 
+            margin: 0 auto; 
+            background-color: #fff; 
+            min-height: 100vh; 
+        }
+        .wiki-header { 
+            background-color: #f8f9fa; 
+            border-bottom: 3px solid #a2a9b1; 
+            padding: 15px 20px; 
+        }
+        .wiki-title { 
+            font-size: 2.2em; 
+            font-weight: normal; 
+            margin: 0; 
+            color: #000; 
+        }
+        .wiki-subtitle { 
+            color: #54595d; 
+            font-size: 0.9em; 
+            margin-top: 5px; 
+        }
+        .main-content { 
+            display: flex; 
+            gap: 20px; 
+            padding: 20px; 
+        }
+        .article-content { 
+            flex: 1; 
+        }
+        .sidebar { 
+            width: 300px; 
+            flex-shrink: 0; 
+        }
+        .infobox { 
+            background-color: #f8f9fa; 
+            border: 1px solid #a2a9b1; 
+            border-spacing: 3px; 
+            border-collapse: separate; 
+            width: 100%; 
+            margin-bottom: 20px; 
+            font-size: 0.9em; 
+        }
+        .infobox-title { 
+            background-color: #ccccff; 
+            text-align: center; 
+            font-weight: bold; 
+            padding: 10px; 
+        }
+        .infobox-row { 
+            display: flex; 
+        }
+        .infobox-label { 
+            background-color: #eee; 
+            padding: 8px; 
+            font-weight: bold; 
+            width: 35%; 
+        }
+        .infobox-value { 
+            padding: 8px; 
+            width: 65%; 
+        }
+        .wiki-link { 
+            color: #0645ad; 
+            text-decoration: none; 
+            cursor: pointer; 
+        }
+        .wiki-link:hover { 
+            text-decoration: underline; 
+        }
+        .wiki-link:visited { 
+            color: #0b0080; 
+        }
+        .new-link { 
+            color: #ba0000; 
+        }
+        .section-header { 
+            font-size: 1.5em; 
+            margin: 30px 0 15px 0; 
+            border-bottom: 1px solid #a2a9b1; 
+            padding-bottom: 5px; 
+        }
+        .subsection-header { 
+            font-size: 1.2em; 
+            margin: 25px 0 10px 0; 
+            font-weight: bold; 
+        }
+        .math-expr { 
+            font-family: "Times New Roman", serif; 
+            font-style: italic; 
+        }
+        .definition-box { 
+            background-color: #f0f8ff; 
+            border-left: 4px solid #36c; 
+            padding: 15px; 
+            margin: 20px 0; 
+        }
+        .theorem-box { 
+            background-color: #fff8dc; 
+            border-left: 4px solid #ffa500; 
+            padding: 15px; 
+            margin: 20px 0; 
+        }
+        .example-box { 
+            background-color: #f0fff0; 
+            border-left: 4px solid #32cd32; 
+            padding: 15px; 
+            margin: 20px 0; 
+        }
+        .navigation-box { 
+            background-color: #f8f9fa; 
+            border: 1px solid #a2a9b1; 
+            padding: 15px; 
+            margin-bottom: 20px; 
+        }
+        .nav-title { 
+            font-weight: bold; 
+            margin-bottom: 10px; 
+            text-align: center; 
+        }
+        .nav-list { 
+            list-style: none; 
+            padding: 0; 
+            margin: 0; 
+        }
+        .nav-list li { 
+            margin: 5px 0; 
+        }
+        .toc { 
+            background-color: #f8f9fa; 
+            border: 1px solid #a2a9b1; 
+            padding: 15px; 
+            margin-bottom: 20px; 
+            display: inline-block; 
+        }
+        .toc-title { 
+            font-weight: bold; 
+            margin-bottom: 10px; 
+        }
+        .toc-list { 
+            list-style: none; 
+            padding: 0; 
+            margin: 0; 
+        }
+        .toc-list li { 
+            margin: 3px 0; 
+        }
+        .toc-number { 
+            color: #0645ad; 
+        }
+        .clickable-term { 
+            background-color: #e1f5fe; 
+            padding: 1px 3px; 
+            border-radius: 3px; 
+            cursor: pointer; 
+            transition: background-color 0.2s; 
+        }
+        .clickable-term:hover { 
+            background-color: #b3e5fc; 
+            outline: 1px solid #0277bd; 
+        }
+        .categories { 
+            margin-top: 40px; 
+            padding-top: 20px; 
+            border-top: 1px solid #a2a9b1; 
+            font-size: 0.9em; 
+        }
+        .category-title { 
+            font-weight: bold; 
+            margin-bottom: 10px; 
+        }
+    </style>
+</head>
+<body>
+    <div class="wiki-container">
+        <div class="wiki-header">
+            <h1 class="wiki-title">Group (mathematics)</h1>
+            <div class="wiki-subtitle">From Mathematical Wiki, the free mathematics encyclopedia</div>
+        </div>
+
+        <div class="main-content">
+            <div class="article-content">
+                <div class="toc">
+                    <div class="toc-title">Contents</div>
+                    <ol class="toc-list">
+                        <li><span class="toc-number">1</span> <a href="#definition" class="wiki-link">Definition</a></li>
+                        <li><span class="toc-number">2</span> <a href="#examples" class="wiki-link">Examples</a></li>
+                        <li><span class="toc-number">3</span> <a href="#properties" class="wiki-link">Basic properties</a></li>
+                        <li><span class="toc-number">4</span> <a href="#subgroups" class="wiki-link">Subgroups</a></li>
+                        <li><span class="toc-number">5</span> <a href="#homomorphisms" class="wiki-link">Group homomorphisms</a></li>
+                        <li><span class="toc-number">6</span> <a href="#see-also" class="wiki-link">See also</a></li>
+                        <li><span class="toc-number">7</span> <a href="#references" class="wiki-link">References</a></li>
+                    </ol>
+                </div>
+
+                <p>In <a href="#" class="wiki-link">mathematics</a>, a <strong>group</strong> is a <a href="#" class="wiki-link">set</a> equipped with an <a href="#" class="wiki-link clickable-term" data-concept="operation">operation</a> that combines any two of its elements to form a third element in such a way that four conditions called <a href="#" class="wiki-link clickable-term" data-concept="axioms">group axioms</a> are satisfied, namely <a href="#" class="wiki-link clickable-term" data-concept="closure">closure</a>, <a href="#" class="wiki-link clickable-term" data-concept="associativity">associativity</a>, <a href="#" class="wiki-link clickable-term" data-concept="identity">identity</a> and <a href="#" class="wiki-link clickable-term" data-concept="invertibility">invertibility</a>.</p>
+
+                <p>Groups are fundamental in <a href="#" class="wiki-link">abstract algebra</a>: other well-known <a href="#" class="wiki-link">algebraic structures</a>, such as <a href="#" class="wiki-link">rings</a>, <a href="#" class="wiki-link">fields</a>, and <a href="#" class="wiki-link">vector spaces</a>, can all be seen as groups equipped with additional operations and axioms. Groups recur throughout mathematics, and the methods of group theory have influenced many parts of <a href="#" class="wiki-link">algebra</a>.</p>
+
+                <h2 class="section-header" id="definition">Definition</h2>
+
+                <div class="definition-box">
+                    <p><strong>Definition.</strong> A <span class="clickable-term" data-concept="group">group</span> is an ordered pair <span class="math-expr">(G, ∗)</span>, where <span class="clickable-term math-expr" data-concept="set-G">G</span> is a set and <span class="clickable-term math-expr" data-concept="operation">∗</span> is a <a href="#" class="wiki-link">binary operation</a> on <span class="clickable-term math-expr" data-concept="set-G">G</span>, satisfying the following axioms:</p>
+                    
+                    <ol>
+                        <li><strong><span class="clickable-term" data-concept="closure">Closure</span>:</strong> For all <span class="math-expr">a, b ∈ G</span>, the result of the operation <span class="math-expr">a ∗ b</span> is also in <span class="clickable-term math-expr" data-concept="set-G">G</span>.</li>
+                        <li><strong><span class="clickable-term" data-concept="associativity">Associativity</span>:</strong> For all <span class="math-expr">a, b, c ∈ G</span>, <span class="math-expr">(a ∗ b) ∗ c = a ∗ (b ∗ c)</span>.</li>
+                        <li><strong><span class="clickable-term" data-concept="identity">Identity element</span>:</strong> There exists an element <span class="clickable-term math-expr" data-concept="identity-e">e ∈ G</span> such that, for every element <span class="math-expr">a ∈ G</span>, the equation <span class="math-expr">e ∗ a = a ∗ e = a</span> holds.</li>
+                        <li><strong><span class="clickable-term" data-concept="inverse">Inverse element</span>:</strong> For each <span class="math-expr">a ∈ G</span>, there exists an element <span class="clickable-term math-expr" data-concept="inverse-b">b ∈ G</span> such that <span class="math-expr">a ∗ b = b ∗ a = e</span>, where <span class="clickable-term math-expr" data-concept="identity-e">e</span> is the identity element.</li>
+                    </ol>
+                </div>
+
+                <p>The result of an operation may be denoted as <span class="math-expr">ab</span> or <span class="math-expr">a + b</span>, rather than <span class="math-expr">a ∗ b</span>, depending on the context. The identity element is often denoted <span class="math-expr">1</span> or <span class="math-expr">e</span> for multiplicative groups, and <span class="math-expr">0</span> for additive groups.</p>
+
+                <h2 class="section-header" id="examples">Examples</h2>
+
+                <h3 class="subsection-header">Integers under addition</h3>
+                <div class="example-box">
+                    <p>The set of <a href="#" class="wiki-link">integers</a> <span class="clickable-term math-expr" data-concept="integers">ℤ</span> under the operation of <a href="#" class="wiki-link">addition</a> forms a group. The identity element is <span class="math-expr">0</span>, and the inverse of an integer <span class="math-expr">n</span> is <span class="math-expr">−n</span>.</p>
+                </div>
+
+                <h3 class="subsection-header">Symmetric groups</h3>
+                <div class="example-box">
+                    <p>For any positive integer <span class="math-expr">n</span>, the <a href="#" class="wiki-link clickable-term" data-concept="symmetric-group">symmetric group</a> <span class="math-expr">S_n</span> consists of all <a href="#" class="wiki-link">permutations</a> of a set with <span class="math-expr">n</span> elements. The group operation is <a href="#" class="wiki-link">function composition</a>.</p>
+                </div>
+
+                <h3 class="subsection-header">Matrix groups</h3>
+                <div class="example-box">
+                    <p>The <a href="#" class="wiki-link">general linear group</a> <span class="math-expr">GL(n, ℝ)</span> consists of all invertible <span class="math-expr">n × n</span> <a href="#" class="wiki-link">matrices</a> with <a href="#" class="wiki-link">real</a> entries, under <a href="#" class="wiki-link">matrix multiplication</a>.</p>
+                </div>
+
+                <h2 class="section-header" id="properties">Basic properties</h2>
+
+                <div class="theorem-box">
+                    <p><strong>Uniqueness of identity and inverses.</strong> The <span class="clickable-term" data-concept="identity">identity element</span> of a group is unique. Similarly, every element has a unique <span class="clickable-term" data-concept="inverse">inverse</span>.</p>
+                </div>
+
+                <p>This and other basic properties follow from the group axioms. For instance, the <strong><a href="#" class="wiki-link">cancellation laws</a></strong> hold: if <span class="math-expr">ab = ac</span>, then <span class="math-expr">b = c</span>.</p>
+
+                <h2 class="section-header" id="subgroups">Subgroups</h2>
+
+                <p>A <a href="#" class="wiki-link clickable-term" data-concept="subgroup">subgroup</a> of a group <span class="math-expr">G</span> is a subset <span class="math-expr">H</span> of <span class="math-expr">G</span> that is itself a group under the same operation. Important examples include:</p>
+
+                <ul>
+                    <li><a href="#" class="wiki-link">Cyclic subgroups</a></li>
+                    <li><a href="#" class="wiki-link">Normal subgroups</a></li>
+                    <li><a href="#" class="wiki-link">Sylow subgroups</a></li>
+                </ul>
+
+                <h2 class="section-header" id="homomorphisms">Group homomorphisms</h2>
+
+                <p>A <a href="#" class="wiki-link clickable-term" data-concept="homomorphism">group homomorphism</a> is a function <span class="math-expr">f: G → H</span> between two groups that preserves the group operation: <span class="math-expr">f(ab) = f(a)f(b)</span> for all elements <span class="math-expr">a, b ∈ G</span>.</p>
+
+                <h2 class="section-header" id="see-also">See also</h2>
+
+                <ul>
+                    <li><a href="#" class="wiki-link">Abelian group</a></li>
+                    <li><a href="#" class="wiki-link">Group action</a></li>
+                    <li><a href="#" class="wiki-link">Group theory</a></li>
+                    <li><a href="#" class="wiki-link">Lie group</a></li>
+                    <li><a href="#" class="wiki-link">Topological group</a></li>
+                </ul>
+
+                <h2 class="section-header" id="references">References</h2>
+
+                <ol>
+                    <li>Dummit, David S.; Foote, Richard M. (2004). <em>Abstract Algebra</em> (3rd ed.). John Wiley & Sons.</li>
+                    <li>Herstein, I. N. (1996). <em>Abstract Algebra</em> (3rd ed.). Prentice Hall.</li>
+                </ol>
+
+                <div class="categories">
+                    <div class="category-title">Categories:</div>
+                    <a href="#" class="wiki-link">Abstract algebra</a> | 
+                    <a href="#" class="wiki-link">Group theory</a> | 
+                    <a href="#" class="wiki-link">Algebraic structures</a>
+                </div>
+            </div>
+
+            <div class="sidebar">
+                <table class="infobox">
+                    <tr><td class="infobox-title" colspan="2">Group</td></tr>
+                    <tr class="infobox-row">
+                        <td class="infobox-label">Type</td>
+                        <td class="infobox-value"><a href="#" class="wiki-link">Algebraic structure</a></td>
+                    </tr>
+                    <tr class="infobox-row">
+                        <td class="infobox-label">Signature</td>
+                        <td class="infobox-value"><span class="math-expr">(G, ∗)</span></td>
+                    </tr>
+                    <tr class="infobox-row">
+                        <td class="infobox-label">Axioms</td>
+                        <td class="infobox-value">
+                            <a href="#" class="wiki-link">Closure</a><br>
+                            <a href="#" class="wiki-link">Associativity</a><br>
+                            <a href="#" class="wiki-link">Identity</a><br>
+                            <a href="#" class="wiki-link">Invertibility</a>
+                        </td>
+                    </tr>
+                    <tr class="infobox-row">
+                        <td class="infobox-label">Examples</td>
+                        <td class="infobox-value">
+                            <span class="math-expr">(ℤ, +)</span><br>
+                            <span class="math-expr">S_n</span><br>
+                            <span class="math-expr">GL(n, ℝ)</span>
+                        </td>
+                    </tr>
+                </table>
+
+                <div class="navigation-box">
+                    <div class="nav-title">Abstract Algebra</div>
+                    <ul class="nav-list">
+                        <li><a href="#" class="wiki-link">Group theory</a></li>
+                        <li><a href="#" class="wiki-link">Ring theory</a></li>
+                        <li><a href="#" class="wiki-link">Field theory</a></li>
+                        <li><a href="#" class="wiki-link">Module theory</a></li>
+                        <li><a href="#" class="wiki-link">Category theory</a></li>
+                    </ul>
+                </div>
+
+                <div class="navigation-box">
+                    <div class="nav-title">Group Theory</div>
+                    <ul class="nav-list">
+                        <li><a href="#" class="wiki-link">Subgroup</a></li>
+                        <li><a href="#" class="wiki-link">Quotient group</a></li>
+                        <li><a href="#" class="wiki-link">Group homomorphism</a></li>
+                        <li><a href="#" class="wiki-link">Group action</a></li>
+                        <li><a href="#" class="wiki-link">Sylow theorems</a></li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const clickableTerms = document.querySelectorAll('.clickable-term');
+            
+            clickableTerms.forEach(term => {
+                term.addEventListener('mouseenter', () => {
+                    const concept = term.dataset.concept;
+                    if (!concept) return;
+                    document.querySelectorAll(`.clickable-term[data-concept="${concept}"]`).forEach(t => {
+                        t.style.backgroundColor = '#b3e5fc';
+                        t.style.outline = '1px solid #0277bd';
+                    });
+                });
+                
+                term.addEventListener('mouseleave', () => {
+                    const concept = term.dataset.concept;
+                    if (!concept) return;
+                    document.querySelectorAll(`.clickable-term[data-concept="${concept}"]`).forEach(t => {
+                        t.style.backgroundColor = '#e1f5fe';
+                        t.style.outline = '';
+                    });
+                });
+
+                term.addEventListener('click', () => {
+                    const concept = term.dataset.concept;
+                    alert(`Clicked on concept: ${concept}\nThis would navigate to the definition page.`);
+                });
+            });
+
+            // Smooth scrolling for anchor links
+            document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+                anchor.addEventListener('click', function (e) {
+                    e.preventDefault();
+                    const target = document.querySelector(this.getAttribute('href'));
+                    if (target) {
+                        target.scrollIntoView({
+                            behavior: 'smooth'
+                        });
+                    }
+                });
+            });
+        });
+    </script>
+</body>
+</html> 

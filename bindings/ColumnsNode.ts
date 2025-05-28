@@ -3,6 +3,6 @@ import type { SectionContentNode } from "./SectionContentNode";
 
 export type ColumnsNode = {
   columns_content: Array<Array<SectionContentNode>>;
-  column_widths: Array<string> | null;
+  column_widths: Array<string>;
   gap: string | null;
 };

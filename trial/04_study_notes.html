@@ -1,0 +1,660 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Study Notes - Abstract Algebra Exam Prep</title>
+    <style>
+        body { 
+            font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif; 
+            margin: 0; 
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); 
+            color: #333; 
+            line-height: 1.6; 
+            min-height: 100vh;
+        }
+        .study-container { 
+            max-width: 1000px; 
+            margin: 0 auto; 
+            background-color: #fff; 
+            min-height: 100vh; 
+            box-shadow: 0 0 20px rgba(0,0,0,0.1); 
+        }
+        .study-header { 
+            background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%); 
+            color: white; 
+            padding: 25px; 
+            text-align: center;
+            position: relative;
+        }
+        .header-title { 
+            font-size: 2.2em; 
+            margin: 0; 
+            font-weight: 300;
+        }
+        .header-subtitle { 
+            font-size: 1.1em; 
+            margin-top: 10px; 
+            opacity: 0.9; 
+        }
+        .exam-countdown {
+            position: absolute;
+            top: 25px;
+            right: 25px;
+            background-color: #e74c3c;
+            color: white;
+            padding: 10px 15px;
+            border-radius: 20px;
+            font-weight: bold;
+            font-size: 0.9em;
+        }
+        .progress-bar {
+            background-color: rgba(255,255,255,0.2);
+            height: 6px;
+            border-radius: 3px;
+            margin-top: 15px;
+            overflow: hidden;
+        }
+        .progress-fill {
+            background: linear-gradient(90deg, #27ae60, #2ecc71);
+            height: 100%;
+            width: 65%;
+            transition: width 0.3s ease;
+        }
+        .study-content { 
+            padding: 30px; 
+        }
+        .section-tabs {
+            display: flex;
+            border-bottom: 3px solid #ecf0f1;
+            margin-bottom: 30px;
+        }
+        .tab {
+            padding: 12px 20px;
+            background-color: #ecf0f1;
+            border: none;
+            cursor: pointer;
+            font-size: 1em;
+            font-weight: 500;
+            border-radius: 8px 8px 0 0;
+            margin-right: 5px;
+            transition: all 0.3s ease;
+        }
+        .tab.active {
+            background-color: #3498db;
+            color: white;
+        }
+        .tab:hover {
+            background-color: #bdc3c7;
+        }
+        .tab.active:hover {
+            background-color: #2980b9;
+        }
+        .tab-content {
+            display: none;
+        }
+        .tab-content.active {
+            display: block;
+        }
+        .concept-card { 
+            background-color: #f8f9fa; 
+            border-left: 5px solid #3498db; 
+            border-radius: 8px; 
+            padding: 20px; 
+            margin-bottom: 20px; 
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+        .concept-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(0,0,0,0.15);
+        }
+        .concept-title { 
+            font-size: 1.3em; 
+            font-weight: bold; 
+            color: #2c3e50; 
+            margin-bottom: 10px; 
+            display: flex;
+            align-items: center;
+        }
+        .difficulty-badge {
+            display: inline-block;
+            padding: 3px 8px;
+            border-radius: 12px;
+            font-size: 0.7em;
+            margin-left: 10px;
+            font-weight: bold;
+        }
+        .easy { background-color: #d5f4e6; color: #27ae60; }
+        .medium { background-color: #fef9e7; color: #f39c12; }
+        .hard { background-color: #fadbd8; color: #e74c3c; }
+        .concept-definition { 
+            background-color: #e8f5e8; 
+            padding: 15px; 
+            border-radius: 5px; 
+            margin: 15px 0; 
+            border-left: 4px solid #27ae60;
+        }
+        .concept-example { 
+            background-color: #e3f2fd; 
+            padding: 15px; 
+            border-radius: 5px; 
+            margin: 15px 0; 
+            border-left: 4px solid #2196f3;
+        }
+        .concept-theorem { 
+            background-color: #fff3cd; 
+            padding: 15px; 
+            border-radius: 5px; 
+            margin: 15px 0; 
+            border-left: 4px solid #ffc107;
+        }
+        .flashcard { 
+            background-color: white; 
+            border: 2px solid #3498db; 
+            border-radius: 10px; 
+            padding: 20px; 
+            margin-bottom: 15px; 
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+            perspective: 1000px;
+        }
+        .flashcard:hover {
+            box-shadow: 0 5px 15px rgba(52, 152, 219, 0.3);
+        }
+        .flashcard-inner {
+            position: relative;
+            width: 100%;
+            transition: transform 0.6s;
+            transform-style: preserve-3d;
+        }
+        .flashcard.flipped .flashcard-inner {
+            transform: rotateY(180deg);
+        }
+        .flashcard-front, .flashcard-back {
+            position: relative;
+            width: 100%;
+            backface-visibility: hidden;
+        }
+        .flashcard-back {
+            position: absolute;
+            top: 0;
+            left: 0;
+            transform: rotateY(180deg);
+        }
+        .formula-box { 
+            background-color: #f1f2f6; 
+            border: 1px solid #ddd; 
+            border-radius: 5px; 
+            padding: 15px; 
+            margin: 15px 0; 
+            font-family: "Times New Roman", serif;
+            text-align: center;
+            font-size: 1.1em;
+        }
+        .key-insight { 
+            background: linear-gradient(135deg, #667eea, #764ba2); 
+            color: white; 
+            padding: 20px; 
+            border-radius: 10px; 
+            margin: 20px 0; 
+            position: relative;
+        }
+        .key-insight::before {
+            content: '💡';
+            font-size: 1.5em;
+            margin-right: 10px;
+        }
+        .checklist { 
+            background-color: #f8f9fa; 
+            padding: 20px; 
+            border-radius: 8px; 
+            margin: 20px 0; 
+        }
+        .checklist-item { 
+            display: flex; 
+            align-items: center; 
+            margin: 10px 0; 
+            cursor: pointer;
+        }
+        .checklist-item input[type="checkbox"] {
+            margin-right: 10px;
+            transform: scale(1.2);
+        }
+        .checklist-item.completed {
+            text-decoration: line-through;
+            color: #7f8c8d;
+        }
+        .exam-tip { 
+            background-color: #fff5f5; 
+            border: 1px solid #feb2b2; 
+            border-radius: 8px; 
+            padding: 15px; 
+            margin: 15px 0; 
+            color: #c53030;
+        }
+        .exam-tip::before {
+            content: '⚠️ ';
+            font-weight: bold;
+        }
+        .memory-aid {
+            background: linear-gradient(45deg, #ffeaa7, #fab1a0);
+            padding: 15px;
+            border-radius: 8px;
+            margin: 15px 0;
+            font-style: italic;
+            border-left: 4px solid #e17055;
+        }
+        .memory-aid::before {
+            content: '🧠 Memory aid: ';
+            font-weight: bold;
+            font-style: normal;
+        }
+        .practice-problem {
+            background-color: #f0f3ff;
+            border: 2px dashed #6c5ce7;
+            border-radius: 8px;
+            padding: 20px;
+            margin: 20px 0;
+        }
+        .practice-problem h4 {
+            color: #6c5ce7;
+            margin-top: 0;
+        }
+        .solution-toggle {
+            background-color: #6c5ce7;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin-top: 10px;
+        }
+        .solution {
+            background-color: white;
+            padding: 15px;
+            border-radius: 5px;
+            margin-top: 10px;
+            display: none;
+        }
+        .solution.visible {
+            display: block;
+        }
+        .study-stats {
+            background: linear-gradient(135deg, #74b9ff, #0984e3);
+            color: white;
+            padding: 20px;
+            border-radius: 10px;
+            margin: 20px 0;
+            text-align: center;
+        }
+        .stat-item {
+            display: inline-block;
+            margin: 0 20px;
+            text-align: center;
+        }
+        .stat-number {
+            font-size: 2em;
+            font-weight: bold;
+            display: block;
+        }
+        .stat-label {
+            font-size: 0.9em;
+            opacity: 0.9;
+        }
+    </style>
+</head>
+<body>
+    <div class="study-container">
+        <div class="study-header">
+            <div class="exam-countdown">Exam in 5 days!</div>
+            <div class="header-title">Abstract Algebra Study Guide</div>
+            <div class="header-subtitle">Groups, Homomorphisms & Group Actions</div>
+            <div class="progress-bar">
+                <div class="progress-fill"></div>
+            </div>
+        </div>
+
+        <div class="study-content">
+            <div class="study-stats">
+                <div class="stat-item">
+                    <span class="stat-number">23</span>
+                    <span class="stat-label">Concepts Learned</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-number">15</span>
+                    <span class="stat-label">Flashcards Mastered</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-number">8</span>
+                    <span class="stat-label">Practice Problems</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-number">85%</span>
+                    <span class="stat-label">Study Progress</span>
+                </div>
+            </div>
+
+            <div class="section-tabs">
+                <button class="tab active" onclick="showTab('concepts')">Core Concepts</button>
+                <button class="tab" onclick="showTab('flashcards')">Flashcards</button>
+                <button class="tab" onclick="showTab('practice')">Practice Problems</button>
+                <button class="tab" onclick="showTab('checklist')">Exam Checklist</button>
+            </div>
+
+            <div id="concepts" class="tab-content active">
+                <div class="concept-card">
+                    <div class="concept-title">
+                        Group Definition
+                        <span class="difficulty-badge easy">Easy</span>
+                    </div>
+                    <div class="concept-definition">
+                        <strong>Definition:</strong> A group (G, *) is a set G with a binary operation * that satisfies:
+                        <br>1. <strong>Closure:</strong> ∀a,b ∈ G: a * b ∈ G
+                        <br>2. <strong>Associativity:</strong> ∀a,b,c ∈ G: (a * b) * c = a * (b * c)
+                        <br>3. <strong>Identity:</strong> ∃e ∈ G such that ∀a ∈ G: e * a = a * e = a
+                        <br>4. <strong>Inverse:</strong> ∀a ∈ G, ∃a⁻¹ ∈ G such that a * a⁻¹ = a⁻¹ * a = e
+                    </div>
+                    <div class="concept-example">
+                        <strong>Examples:</strong> (ℤ, +), (ℚ*, ×), (S_n, ∘), matrices under multiplication
+                    </div>
+                    <div class="memory-aid">
+                        Remember "CAIE" - Closure, Associativity, Identity, Inverse
+                    </div>
+                </div>
+
+                <div class="concept-card">
+                    <div class="concept-title">
+                        Group Homomorphism
+                        <span class="difficulty-badge medium">Medium</span>
+                    </div>
+                    <div class="concept-definition">
+                        <strong>Definition:</strong> A function φ: G → H between groups is a homomorphism if:
+                        φ(ab) = φ(a)φ(b) for all a, b ∈ G
+                    </div>
+                    <div class="formula-box">
+                        Key Properties:<br>
+                        • φ(e_G) = e_H (identity maps to identity)<br>
+                        • φ(a⁻¹) = φ(a)⁻¹ (inverse of image is image of inverse)<br>
+                        • ker(φ) = {g ∈ G : φ(g) = e_H} is a normal subgroup
+                    </div>
+                    <div class="concept-theorem">
+                        <strong>First Isomorphism Theorem:</strong> If φ: G → H is a homomorphism, then G/ker(φ) ≅ Im(φ)
+                    </div>
+                    <div class="exam-tip">
+                        Always check that a function preserves the operation! This is the most common mistake.
+                    </div>
+                </div>
+
+                <div class="concept-card">
+                    <div class="concept-title">
+                        Group Actions
+                        <span class="difficulty-badge hard">Hard</span>
+                    </div>
+                    <div class="concept-definition">
+                        <strong>Definition:</strong> A group action of G on set X is a function G × X → X such that:
+                        <br>1. ex = x for all x ∈ X (identity acts trivially)
+                        <br>2. g(hx) = (gh)x for all g,h ∈ G, x ∈ X (compatibility with group operation)
+                    </div>
+                    <div class="key-insight">
+                        <strong>Orbit-Stabilizer Theorem:</strong> For any x ∈ X, |Orbit(x)| × |Stab(x)| = |G|
+                        <br>This connects the size of an orbit with the size of its stabilizer!
+                    </div>
+                    <div class="formula-box">
+                        • Orbit(x) = {gx : g ∈ G}<br>
+                        • Stab(x) = {g ∈ G : gx = x}<br>
+                        • Every group action gives homomorphism G → Sym(X)
+                    </div>
+                </div>
+
+                <div class="concept-card">
+                    <div class="concept-title">
+                        Lagrange's Theorem
+                        <span class="difficulty-badge medium">Medium</span>
+                    </div>
+                    <div class="concept-theorem">
+                        <strong>Theorem:</strong> If H is a subgroup of finite group G, then |H| divides |G|.
+                        Moreover, |G| = |H| × [G:H] where [G:H] is the index of H in G.
+                    </div>
+                    <div class="concept-example">
+                        <strong>Consequence:</strong> Order of any element divides order of the group.
+                        <br><strong>Example:</strong> In Z₁₂, possible element orders are 1, 2, 3, 4, 6, 12.
+                    </div>
+                    <div class="memory-aid">
+                        Think of it as "cutting the group into equal-sized pieces" using cosets.
+                    </div>
+                </div>
+            </div>
+
+            <div id="flashcards" class="tab-content">
+                <div class="flashcard" onclick="flipCard(this)">
+                    <div class="flashcard-inner">
+                        <div class="flashcard-front">
+                            <strong>Question:</strong> What are the four group axioms?
+                        </div>
+                        <div class="flashcard-back">
+                            <strong>Answer:</strong><br>
+                            1. Closure: a * b ∈ G<br>
+                            2. Associativity: (a * b) * c = a * (b * c)<br>
+                            3. Identity: ∃e such that ea = ae = a<br>
+                            4. Inverse: ∃a⁻¹ such that aa⁻¹ = a⁻¹a = e
+                        </div>
+                    </div>
+                </div>
+
+                <div class="flashcard" onclick="flipCard(this)">
+                    <div class="flashcard-inner">
+                        <div class="flashcard-front">
+                            <strong>Question:</strong> State the Orbit-Stabilizer Theorem
+                        </div>
+                        <div class="flashcard-back">
+                            <strong>Answer:</strong><br>
+                            For a group action of G on set X and any x ∈ X:<br>
+                            |Orbit(x)| × |Stabilizer(x)| = |G|<br><br>
+                            This relates the size of an element's orbit to the size of its stabilizer.
+                        </div>
+                    </div>
+                </div>
+
+                <div class="flashcard" onclick="flipCard(this)">
+                    <div class="flashcard-inner">
+                        <div class="flashcard-front">
+                            <strong>Question:</strong> What is the kernel of a homomorphism?
+                        </div>
+                        <div class="flashcard-back">
+                            <strong>Answer:</strong><br>
+                            ker(φ) = {g ∈ G : φ(g) = e_H}<br><br>
+                            It's the set of all elements that map to the identity in the codomain.
+                            The kernel is always a normal subgroup of G.
+                        </div>
+                    </div>
+                </div>
+
+                <div class="flashcard" onclick="flipCard(this)">
+                    <div class="flashcard-inner">
+                        <div class="flashcard-front">
+                            <strong>Question:</strong> When is a subgroup normal?
+                        </div>
+                        <div class="flashcard-back">
+                            <strong>Answer:</strong><br>
+                            H ⊴ G (H is normal in G) if any of these equivalent conditions hold:<br>
+                            • gHg⁻¹ = H for all g ∈ G<br>
+                            • gH = Hg for all g ∈ G (left cosets = right cosets)<br>
+                            • H is the kernel of some homomorphism
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div id="practice" class="tab-content">
+                <div class="practice-problem">
+                    <h4>Problem 1: Group Structure</h4>
+                    <p>Prove that in any group G, the identity element is unique.</p>
+                    <button class="solution-toggle" onclick="toggleSolution(this)">Show Solution</button>
+                    <div class="solution">
+                        <strong>Proof:</strong> Suppose e₁ and e₂ are both identity elements. Then:
+                        <br>• e₁ = e₁ * e₂ (since e₂ is identity)
+                        <br>• e₁ * e₂ = e₂ (since e₁ is identity)
+                        <br>• Therefore e₁ = e₂
+                        <br><br>The identity is unique. □
+                    </div>
+                </div>
+
+                <div class="practice-problem">
+                    <h4>Problem 2: Orbit-Stabilizer Application</h4>
+                    <p>Let D₄ act on the vertices {1,2,3,4} of a square. Find |Orbit(1)| and |Stab(1)|.</p>
+                    <button class="solution-toggle" onclick="toggleSolution(this)">Show Solution</button>
+                    <div class="solution">
+                        <strong>Solution:</strong>
+                        <br>• D₄ has order 8
+                        <br>• All vertices are equivalent under the action, so Orbit(1) = {1,2,3,4}
+                        <br>• |Orbit(1)| = 4
+                        <br>• By Orbit-Stabilizer: |Stab(1)| = |D₄|/|Orbit(1)| = 8/4 = 2
+                        <br>• Stab(1) = {e, reflection through axis containing vertex 1}
+                    </div>
+                </div>
+
+                <div class="practice-problem">
+                    <h4>Problem 3: Homomorphism</h4>
+                    <p>Show that φ: (ℤ,+) → (ℤₙ,+) defined by φ(x) = x mod n is a homomorphism.</p>
+                    <button class="solution-toggle" onclick="toggleSolution(this)">Show Solution</button>
+                    <div class="solution">
+                        <strong>Proof:</strong> We need to show φ(a + b) = φ(a) + φ(b).
+                        <br>• φ(a + b) = (a + b) mod n
+                        <br>• φ(a) + φ(b) = (a mod n) + (b mod n) = (a + b) mod n
+                        <br>• Therefore φ(a + b) = φ(a) + φ(b)
+                        <br>So φ is a homomorphism. □
+                    </div>
+                </div>
+            </div>
+
+            <div id="checklist" class="tab-content">
+                <div class="checklist">
+                    <h3>📚 Study Checklist - Abstract Algebra Exam</h3>
+                    
+                    <div class="checklist-item">
+                        <input type="checkbox" id="groups" checked>
+                        <label for="groups">Master group definition and examples</label>
+                    </div>
+                    
+                    <div class="checklist-item">
+                        <input type="checkbox" id="subgroups" checked>
+                        <label for="subgroups">Understand subgroups and Lagrange's theorem</label>
+                    </div>
+                    
+                    <div class="checklist-item">
+                        <input type="checkbox" id="homomorphisms" checked>
+                        <label for="homomorphisms">Know homomorphisms and isomorphism theorems</label>
+                    </div>
+                    
+                    <div class="checklist-item">
+                        <input type="checkbox" id="normal">
+                        <label for="normal">Understand normal subgroups and quotient groups</label>
+                    </div>
+                    
+                    <div class="checklist-item">
+                        <input type="checkbox" id="actions">
+                        <label for="actions">Master group actions and orbit-stabilizer theorem</label>
+                    </div>
+                    
+                    <div class="checklist-item">
+                        <input type="checkbox" id="sylow">
+                        <label for="sylow">Review Sylow theorems (if covered)</label>
+                    </div>
+                    
+                    <div class="checklist-item">
+                        <input type="checkbox" id="examples">
+                        <label for="examples">Work through concrete examples (Dₙ, Sₙ, ℤₙ)</label>
+                    </div>
+                    
+                    <div class="checklist-item">
+                        <input type="checkbox" id="proofs">
+                        <label for="proofs">Practice proof techniques</label>
+                    </div>
+                    
+                    <div class="checklist-item">
+                        <input type="checkbox" id="past">
+                        <label for="past">Complete past exam problems</label>
+                    </div>
+                    
+                    <div class="checklist-item">
+                        <input type="checkbox" id="formula">
+                        <label for="formula">Memorize key formulas and theorems</label>
+                    </div>
+                </div>
+
+                <div class="key-insight">
+                    <strong>Final Exam Tips:</strong>
+                    <br>• Always verify group axioms when asked to prove something is a group
+                    <br>• Use Lagrange's theorem to constrain possible subgroup orders
+                    <br>• Remember that homomorphisms preserve structure - use this in proofs
+                    <br>• Draw diagrams for group actions to visualize orbits and stabilizers
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function showTab(tabName) {
+            // Hide all tab contents
+            const contents = document.querySelectorAll('.tab-content');
+            contents.forEach(content => content.classList.remove('active'));
+            
+            // Remove active class from all tabs
+            const tabs = document.querySelectorAll('.tab');
+            tabs.forEach(tab => tab.classList.remove('active'));
+            
+            // Show selected tab content and mark tab as active
+            document.getElementById(tabName).classList.add('active');
+            event.target.classList.add('active');
+        }
+
+        function flipCard(card) {
+            card.classList.toggle('flipped');
+        }
+
+        function toggleSolution(button) {
+            const solution = button.nextElementSibling;
+            solution.classList.toggle('visible');
+            button.textContent = solution.classList.contains('visible') ? 'Hide Solution' : 'Show Solution';
+        }
+
+        // Update checklist progress
+        document.addEventListener('DOMContentLoaded', function() {
+            const checkboxes = document.querySelectorAll('.checklist input[type="checkbox"]');
+            
+            checkboxes.forEach(checkbox => {
+                checkbox.addEventListener('change', function() {
+                    const item = this.closest('.checklist-item');
+                    if (this.checked) {
+                        item.classList.add('completed');
+                    } else {
+                        item.classList.remove('completed');
+                    }
+                    updateProgress();
+                });
+                
+                // Initialize state
+                if (checkbox.checked) {
+                    checkbox.closest('.checklist-item').classList.add('completed');
+                }
+            });
+            
+            updateProgress();
+        });
+
+        function updateProgress() {
+            const checkboxes = document.querySelectorAll('.checklist input[type="checkbox"]');
+            const checked = document.querySelectorAll('.checklist input[type="checkbox"]:checked');
+            const progress = (checked.length / checkboxes.length) * 100;
+            
+            const progressBar = document.querySelector('.progress-fill');
+            progressBar.style.width = progress + '%';
+            
+            const progressText = document.querySelector('.stat-number');
+            progressText.textContent = Math.round(progress) + '%';
+        }
+    </script>
+</body>
+</html> 

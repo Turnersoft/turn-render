@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Textbook Structure Example - Group Theory</title>
+    <style>
+        body { 
+            font-family: "Times New Roman", serif; 
+            margin: 0; 
+            background-color: #f8f9fa; 
+            color: #333; 
+            line-height: 1.6; 
+        }
+        .textbook-container { 
+            max-width: 800px; 
+            margin: 0 auto; 
+            background-color: #fff; 
+            padding: 40px; 
+            box-shadow: 0 0 20px rgba(0,0,0,0.1); 
+        }
+        .title-page { 
+            text-align: center; 
+            margin-bottom: 60px; 
+            padding-bottom: 40px; 
+            border-bottom: 3px solid #2c3e50; 
+        }
+        .book-title { 
+            font-size: 2.5em; 
+            font-weight: bold; 
+            color: #2c3e50; 
+            margin-bottom: 20px; 
+        }
+        .book-subtitle { 
+            font-size: 1.3em; 
+            color: #7f8c8d; 
+            font-style: italic; 
+        }
+        .chapter { 
+            margin-bottom: 50px; 
+        }
+        .chapter-title { 
+            font-size: 1.8em; 
+            color: #2c3e50; 
+            border-bottom: 2px solid #3498db; 
+            padding-bottom: 10px; 
+            margin-bottom: 30px; 
+        }
+        .section { 
+            margin-bottom: 35px; 
+        }
+        .section-title { 
+            font-size: 1.4em; 
+            color: #34495e; 
+            margin-bottom: 20px; 
+        }
+        .subsection-title { 
+            font-size: 1.2em; 
+            color: #5d6d7e; 
+            margin-bottom: 15px; 
+        }
+        .definition, .theorem, .example, .exercise { 
+            margin: 25px 0; 
+            padding: 20px; 
+            border-radius: 8px; 
+        }
+        .definition { 
+            background-color: #e8f5e8; 
+            border-left: 5px solid #27ae60; 
+        }
+        .theorem { 
+            background-color: #fff3cd; 
+            border-left: 5px solid #f39c12; 
+        }
+        .example { 
+            background-color: #e3f2fd; 
+            border-left: 5px solid #3498db; 
+        }
+        .exercise { 
+            background-color: #fce4ec; 
+            border-left: 5px solid #e91e63; 
+        }
+        .block-title { 
+            font-weight: bold; 
+            font-size: 1.1em; 
+            margin-bottom: 10px; 
+        }
+        .math-expr { 
+            font-family: "Times New Roman", serif; 
+            font-style: italic; 
+            color: #2c3e50; 
+        }
+        .term { 
+            cursor: pointer; 
+            padding: 1px 3px; 
+            border-radius: 3px; 
+            transition: background-color 0.2s; 
+        }
+        .term:hover { 
+            background-color: #aed6f1; 
+            outline: 1px solid #3498db; 
+        }
+        .proof { 
+            margin-top: 15px; 
+            padding: 15px; 
+            background-color: #f8f9fa; 
+            border: 1px solid #dee2e6; 
+            border-radius: 5px; 
+        }
+        .proof-title { 
+            font-weight: bold; 
+            margin-bottom: 10px; 
+        }
+        .toc { 
+            background-color: #f1f2f6; 
+            padding: 25px; 
+            border-radius: 8px; 
+            margin-bottom: 40px; 
+        }
+        .toc-title { 
+            font-size: 1.3em; 
+            font-weight: bold; 
+            margin-bottom: 15px; 
+            color: #2c3e50; 
+        }
+        .toc-item { 
+            margin: 8px 0; 
+            padding-left: 20px; 
+        }
+        .toc-chapter { 
+            font-weight: bold; 
+            color: #2c3e50; 
+        }
+        .toc-section { 
+            padding-left: 20px; 
+            color: #5d6d7e; 
+        }
+    </style>
+</head>
+<body>
+    <div class="textbook-container">
+        <div class="title-page">
+            <div class="book-title">Abstract Algebra</div>
+            <div class="book-subtitle">A Modern Introduction to Groups, Rings, and Fields</div>
+        </div>
+
+        <div class="toc">
+            <div class="toc-title">Table of Contents</div>
+            <div class="toc-item toc-chapter">Chapter 1: Introduction to Groups</div>
+            <div class="toc-item toc-section">1.1 Basic Definitions</div>
+            <div class="toc-item toc-section">1.2 Group Properties</div>
+            <div class="toc-item toc-section">1.3 Examples of Groups</div>
+            <div class="toc-item toc-chapter">Chapter 2: Subgroups and Homomorphisms</div>
+            <div class="toc-item toc-section">2.1 Subgroup Criteria</div>
+            <div class="toc-item toc-section">2.2 Group Homomorphisms</div>
+        </div>
+
+        <div class="chapter">
+            <div class="chapter-title">Chapter 1: Introduction to Groups</div>
+            
+            <div class="section">
+                <div class="section-title">1.1 Basic Definitions</div>
+                
+                <p>In this section, we introduce the fundamental concept of a group, which is one of the most important algebraic structures in mathematics.</p>
+
+                <div class="definition">
+                    <div class="block-title">Definition 1.1 (Group)</div>
+                    <p>A <span class="term" data-concept="group">group</span> is a set <span class="term math-expr" data-concept="set-G">G</span> equipped with a binary operation <span class="term math-expr" data-concept="operation">*</span> that satisfies the following axioms:</p>
+                    <ol>
+                        <li><strong>Closure:</strong> For all <span class="math-expr">a, b ∈ <span class="term" data-concept="set-G">G</span></span>, we have <span class="math-expr">a * b ∈ <span class="term" data-concept="set-G">G</span></span></li>
+                        <li><strong>Associativity:</strong> For all <span class="math-expr">a, b, c ∈ <span class="term" data-concept="set-G">G</span></span>, we have <span class="math-expr">(a * b) * c = a * (b * c)</span></li>
+                        <li><strong>Identity:</strong> There exists an element <span class="term math-expr" data-concept="identity">e ∈ G</span> such that <span class="math-expr">e * a = a * e = a</span> for all <span class="math-expr">a ∈ <span class="term" data-concept="set-G">G</span></span></li>
+                        <li><strong>Inverse:</strong> For every <span class="math-expr">a ∈ <span class="term" data-concept="set-G">G</span></span>, there exists <span class="term math-expr" data-concept="inverse">a⁻¹ ∈ G</span> such that <span class="math-expr">a * a⁻¹ = a⁻¹ * a = e</span></li>
+                    </ol>
+                </div>
+
+                <div class="theorem">
+                    <div class="block-title">Theorem 1.2 (Uniqueness of Identity)</div>
+                    <p>The <span class="term" data-concept="identity">identity element</span> in a <span class="term" data-concept="group">group</span> is unique.</p>
+                    
+                    <div class="proof">
+                        <div class="proof-title">Proof:</div>
+                        <p>Suppose <span class="math-expr">e₁</span> and <span class="math-expr">e₂</span> are both identity elements. Then:</p>
+                        <p><span class="math-expr">e₁ = e₁ * e₂ = e₂</span></p>
+                        <p>where the first equality uses the fact that <span class="math-expr">e₂</span> is an identity, and the second equality uses the fact that <span class="math-expr">e₁</span> is an identity. ∎</p>
+                    </div>
+                </div>
+
+                <div class="example">
+                    <div class="block-title">Example 1.3 (Integers under Addition)</div>
+                    <p>The set of integers <span class="term math-expr" data-concept="integers">ℤ</span> with the operation of addition forms a group:</p>
+                    <ul>
+                        <li>Closure: The sum of two integers is an integer</li>
+                        <li>Associativity: <span class="math-expr">(a + b) + c = a + (b + c)</span> for all integers</li>
+                        <li>Identity: <span class="math-expr">0</span> is the additive identity</li>
+                        <li>Inverse: For any integer <span class="math-expr">a</span>, its inverse is <span class="math-expr">-a</span></li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="section">
+                <div class="section-title">1.2 Group Properties</div>
+                
+                <div class="subsection-title">1.2.1 Basic Properties</div>
+                
+                <p>We now explore some fundamental properties that follow from the group axioms.</p>
+
+                <div class="theorem">
+                    <div class="block-title">Theorem 1.4 (Cancellation Laws)</div>
+                    <p>In any <span class="term" data-concept="group">group</span> <span class="term math-expr" data-concept="set-G">G</span>, the following cancellation laws hold:</p>
+                    <ol>
+                        <li><strong>Left cancellation:</strong> If <span class="math-expr">a * b = a * c</span>, then <span class="math-expr">b = c</span></li>
+                        <li><strong>Right cancellation:</strong> If <span class="math-expr">b * a = c * a</span>, then <span class="math-expr">b = c</span></li>
+                    </ol>
+                </div>
+            </div>
+
+            <div class="section">
+                <div class="section-title">1.3 Examples of Groups</div>
+                
+                <div class="example">
+                    <div class="block-title">Example 1.5 (Symmetric Group)</div>
+                    <p>The <span class="term" data-concept="symmetric-group">symmetric group</span> <span class="math-expr">S_n</span> consists of all permutations of <span class="math-expr">n</span> elements, with composition as the group operation.</p>
+                </div>
+
+                <div class="exercise">
+                    <div class="block-title">Exercise 1.1</div>
+                    <p>Verify that the set <span class="math-expr">{1, -1, i, -i}</span> forms a group under multiplication, where <span class="math-expr">i</span> is the imaginary unit.</p>
+                </div>
+
+                <div class="exercise">
+                    <div class="block-title">Exercise 1.2</div>
+                    <p>Show that the set of <span class="math-expr">2×2</span> invertible matrices with real entries forms a group under matrix multiplication.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const terms = document.querySelectorAll('.term');
+            
+            terms.forEach(term => {
+                term.addEventListener('mouseenter', () => {
+                    const concept = term.dataset.concept;
+                    if (!concept) return;
+                    document.querySelectorAll(`.term[data-concept="${concept}"]`).forEach(t => {
+                        t.style.backgroundColor = '#aed6f1';
+                        t.style.outline = '1px solid #3498db';
+                    });
+                });
+                
+                term.addEventListener('mouseleave', () => {
+                    const concept = term.dataset.concept;
+                    if (!concept) return;
+                    document.querySelectorAll(`.term[data-concept="${concept}"]`).forEach(t => {
+                        t.style.backgroundColor = '';
+                        t.style.outline = '';
+                    });
+                });
+            });
+        });
+    </script>
+</body>
+</html> 

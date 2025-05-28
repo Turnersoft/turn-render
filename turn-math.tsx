@@ -1,14 +1,14 @@
 import React, { CSSProperties, ReactElement, ReactNode, useEffect, useRef, useState } from 'react';
 import classNames from 'classnames';
 import styles from './turn-math.module.scss';
-import { MathNode } from './bindings/MathNode';
-import { MathNodeContent } from './bindings/MathNodeContent';
-import { TurnTextLineNode } from './bindings/TurnTextLineNode';
+import { MathNode } from './bindings/MathNode.ts';
+import { MathNodeContent } from './bindings/MathNodeContent.ts';
+import { TurnTextLineNode } from './bindings/TurnTextLineNode.ts';
 import { MathJaxProvider, MathJaxNode } from '@yozora/react-mathjax';
-import { RefinedMulOrDivOperation } from './bindings/RefinedMulOrDivOperation';
-import { SpecialMiddleScriptContentTypeNode } from './bindings/SpecialMiddleScriptContentTypeNode';
-import { UnaryRelationOperatorNode } from './bindings/UnaryRelationOperatorNode';
-import { RelationOperatorNode } from './bindings/RelationOperatorNode';
+import { RefinedMulOrDivOperation } from './bindings/RefinedMulOrDivOperation.ts';
+import { SpecialMiddleScriptContentTypeNode } from './bindings/SpecialMiddleScriptContentTypeNode.ts';
+import { UnaryRelationOperatorNode } from './bindings/UnaryRelationOperatorNode.ts';
+import { RelationOperatorNode } from './bindings/RelationOperatorNode.ts';
 
 const hasMarginList = [
     '÷',
@@ -255,7 +255,7 @@ export const Mspace = ({ width, _classNames = '' }: { width?: string; _className
     const [_width, setWidth] = useState('0');
 
     useEffect(() => {
-        setWidth((e) => {
+        setWidth((_e) => {
             return width || defaultWidth;
         });
     }, [width]);
@@ -1239,7 +1239,7 @@ const UnderOver = ({
     return null;
 };
 
-const renderMathNode = (node: MathNode, primes = 0): React.ReactNode => {
+export const renderMathNode = (node: MathNode, primes = 0): React.ReactNode => {
     if (node.content === 'Empty') return null;
     const key = Object.keys(node.content)[0];
 

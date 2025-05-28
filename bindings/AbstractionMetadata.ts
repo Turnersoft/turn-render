@@ -13,9 +13,9 @@ export type AbstractionMetadata = {
   /**
    * For L2/L3/L4, parameters that have been specified or concretized.
    */
-  specified_parameters: Array<[string, MathNode]> | null;
+  specified_parameters: Array<[string, MathNode]>;
   /**
    * For L2, properties that are universally quantified (or "any valid option").
    */
-  universally_quantified_properties: Array<string> | null;
+  universally_quantified_properties: Array<string>;
 };

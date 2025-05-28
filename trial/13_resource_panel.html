@@ -1,0 +1,1006 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Group Theory Resource Panel - Theorems & Examples Database</title>
+    <style>
+        body { 
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; 
+            margin: 0; 
+            background-color: #f5f5f7; 
+            color: #1d1d1f; 
+            line-height: 1.5;
+        }
+        .resource-container { 
+            display: flex; 
+            height: 100vh; 
+            overflow: hidden;
+        }
+        
+        /* Sidebar Navigation */
+        .sidebar {
+            width: 280px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            overflow-y: auto;
+            box-shadow: 2px 0 10px rgba(0,0,0,0.1);
+        }
+        .sidebar-header {
+            padding: 20px;
+            border-bottom: 1px solid rgba(255,255,255,0.2);
+        }
+        .sidebar-title {
+            font-size: 1.4em;
+            font-weight: 700;
+            margin: 0;
+        }
+        .sidebar-subtitle {
+            font-size: 0.9em;
+            opacity: 0.8;
+            margin: 5px 0 0 0;
+        }
+        
+        .nav-section {
+            margin: 20px 0;
+        }
+        .nav-section-title {
+            padding: 15px 20px 5px 20px;
+            font-size: 0.85em;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            opacity: 0.7;
+        }
+        .nav-item {
+            padding: 12px 20px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border-left: 3px solid transparent;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        .nav-item:hover {
+            background-color: rgba(255,255,255,0.1);
+        }
+        .nav-item.active {
+            background-color: rgba(255,255,255,0.2);
+            border-left-color: #ffd700;
+        }
+        .nav-item-icon {
+            margin-right: 10px;
+            font-size: 1.1em;
+        }
+        .nav-item-count {
+            background-color: rgba(255,255,255,0.2);
+            border-radius: 12px;
+            padding: 2px 8px;
+            font-size: 0.8em;
+        }
+        
+        /* Search Bar */
+        .search-container {
+            padding: 15px 20px;
+            border-bottom: 1px solid rgba(255,255,255,0.2);
+        }
+        .search-input {
+            width: 100%;
+            padding: 10px 15px;
+            border: none;
+            border-radius: 20px;
+            background-color: rgba(255,255,255,0.2);
+            color: white;
+            font-size: 0.9em;
+        }
+        .search-input::placeholder {
+            color: rgba(255,255,255,0.7);
+        }
+        .search-input:focus {
+            outline: none;
+            background-color: rgba(255,255,255,0.3);
+        }
+        
+        /* Main Content Area */
+        .main-content {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+        
+        /* Toolbar */
+        .toolbar {
+            padding: 15px 25px;
+            background-color: white;
+            border-bottom: 1px solid #e0e0e0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .toolbar-title {
+            font-size: 1.3em;
+            font-weight: 600;
+            color: #1d1d1f;
+        }
+        .toolbar-controls {
+            display: flex;
+            gap: 10px;
+        }
+        .toolbar-btn {
+            padding: 8px 16px;
+            border: 1px solid #d1d1d6;
+            border-radius: 6px;
+            background-color: white;
+            color: #1d1d1f;
+            cursor: pointer;
+            font-size: 0.9em;
+            transition: all 0.2s ease;
+        }
+        .toolbar-btn:hover {
+            background-color: #f5f5f7;
+        }
+        .toolbar-btn.active {
+            background-color: #007aff;
+            color: white;
+            border-color: #007aff;
+        }
+        
+        /* Content Grid */
+        .content-area {
+            flex: 1;
+            padding: 25px;
+            overflow-y: auto;
+            background-color: #fafafa;
+        }
+        .content-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+            gap: 20px;
+        }
+        
+        /* Resource Cards */
+        .resource-card {
+            background-color: white;
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            transition: all 0.3s ease;
+            cursor: pointer;
+            border-left: 4px solid #007aff;
+        }
+        .resource-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+        }
+        
+        .card-header {
+            display: flex;
+            justify-content: between;
+            align-items: flex-start;
+            margin-bottom: 15px;
+        }
+        .card-type {
+            background-color: #007aff;
+            color: white;
+            padding: 4px 10px;
+            border-radius: 12px;
+            font-size: 0.8em;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        .card-type.theorem { background-color: #007aff; }
+        .card-type.definition { background-color: #34c759; }
+        .card-type.example { background-color: #ff9500; }
+        .card-type.proposition { background-color: #af52de; }
+        .card-type.lemma { background-color: #ff3b30; }
+        .card-type.corollary { background-color: #5ac8fa; }
+        
+        .card-difficulty {
+            margin-left: auto;
+            display: flex;
+            gap: 2px;
+        }
+        .difficulty-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background-color: #d1d1d6;
+        }
+        .difficulty-dot.filled { background-color: #ff9500; }
+        
+        .card-title {
+            font-size: 1.2em;
+            font-weight: 600;
+            margin-bottom: 10px;
+            color: #1d1d1f;
+        }
+        .card-statement {
+            font-size: 1em;
+            line-height: 1.6;
+            margin-bottom: 15px;
+            color: #424245;
+        }
+        .card-math {
+            background-color: #f8f9fa;
+            padding: 12px;
+            border-radius: 8px;
+            font-family: 'Times New Roman', serif;
+            font-style: italic;
+            text-align: center;
+            margin: 10px 0;
+            border-left: 3px solid #007aff;
+        }
+        
+        .card-footer {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding-top: 15px;
+            border-top: 1px solid #f0f0f0;
+        }
+        .card-tags {
+            display: flex;
+            gap: 6px;
+            flex-wrap: wrap;
+        }
+        .tag {
+            background-color: #f0f0f0;
+            color: #424245;
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-size: 0.8em;
+        }
+        .card-actions {
+            display: flex;
+            gap: 8px;
+        }
+        .action-btn {
+            padding: 6px;
+            border: none;
+            border-radius: 6px;
+            background-color: #f5f5f7;
+            color: #007aff;
+            cursor: pointer;
+            font-size: 1em;
+            transition: all 0.2s ease;
+        }
+        .action-btn:hover {
+            background-color: #e0e0e0;
+        }
+        
+        /* Modal/Detail View */
+        .modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.5);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+        .modal.active {
+            display: flex;
+        }
+        .modal-content {
+            background-color: white;
+            border-radius: 12px;
+            max-width: 800px;
+            max-height: 90vh;
+            overflow-y: auto;
+            padding: 30px;
+            position: relative;
+            box-shadow: 0 10px 50px rgba(0,0,0,0.3);
+        }
+        .modal-close {
+            position: absolute;
+            top: 15px;
+            right: 20px;
+            background: none;
+            border: none;
+            font-size: 1.5em;
+            cursor: pointer;
+            color: #999;
+        }
+        .modal-close:hover {
+            color: #333;
+        }
+        
+        /* Statistics Panel */
+        .stats-panel {
+            background-color: white;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 20px;
+        }
+        .stat-item {
+            text-align: center;
+        }
+        .stat-number {
+            font-size: 2.2em;
+            font-weight: 700;
+            color: #007aff;
+            margin-bottom: 5px;
+        }
+        .stat-label {
+            font-size: 0.9em;
+            color: #666;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .resource-container {
+                flex-direction: column;
+            }
+            .sidebar {
+                width: 100%;
+                height: auto;
+                max-height: 300px;
+            }
+            .content-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+        
+        /* Animations */
+        .fade-in {
+            animation: fadeIn 0.5s ease-out;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        /* Proof sections */
+        .proof-section {
+            background-color: #f8f9fa;
+            border-left: 4px solid #28a745;
+            padding: 15px;
+            margin: 15px 0;
+            border-radius: 0 8px 8px 0;
+        }
+        .proof-title {
+            font-weight: 600;
+            margin-bottom: 10px;
+            color: #28a745;
+        }
+        
+        /* Related items */
+        .related-section {
+            margin-top: 20px;
+            padding-top: 20px;
+            border-top: 1px solid #e0e0e0;
+        }
+        .related-title {
+            font-weight: 600;
+            margin-bottom: 10px;
+        }
+        .related-list {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+        .related-item {
+            padding: 8px 12px;
+            background-color: #f5f5f7;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: background-color 0.2s ease;
+        }
+        .related-item:hover {
+            background-color: #e0e0e0;
+        }
+    </style>
+</head>
+<body>
+    <div class="resource-container">
+        <div class="sidebar">
+            <div class="sidebar-header">
+                <h1 class="sidebar-title">Group Theory</h1>
+                <p class="sidebar-subtitle">Theorems & Examples Database</p>
+            </div>
+            
+            <div class="search-container">
+                <input type="text" class="search-input" placeholder="Search theorems, examples..." id="searchInput">
+            </div>
+            
+            <div class="nav-section">
+                <div class="nav-section-title">Categories</div>
+                <div class="nav-item active" data-category="all">
+                    <span><span class="nav-item-icon">📚</span>All Resources</span>
+                    <span class="nav-item-count">127</span>
+                </div>
+                <div class="nav-item" data-category="fundamental">
+                    <span><span class="nav-item-icon">🔬</span>Fundamental Theorems</span>
+                    <span class="nav-item-count">23</span>
+                </div>
+                <div class="nav-item" data-category="finite">
+                    <span><span class="nav-item-icon">🎯</span>Finite Groups</span>
+                    <span class="nav-item-count">31</span>
+                </div>
+                <div class="nav-item" data-category="homomorphisms">
+                    <span><span class="nav-item-icon">🔗</span>Homomorphisms</span>
+                    <span class="nav-item-count">18</span>
+                </div>
+                <div class="nav-item" data-category="subgroups">
+                    <span><span class="nav-item-icon">🔍</span>Subgroups</span>
+                    <span class="nav-item-count">25</span>
+                </div>
+                <div class="nav-item" data-category="actions">
+                    <span><span class="nav-item-icon">⚡</span>Group Actions</span>
+                    <span class="nav-item-count">19</span>
+                </div>
+                <div class="nav-item" data-category="examples">
+                    <span><span class="nav-item-icon">💡</span>Worked Examples</span>
+                    <span class="nav-item-count">11</span>
+                </div>
+            </div>
+            
+            <div class="nav-section">
+                <div class="nav-section-title">Difficulty</div>
+                <div class="nav-item" data-difficulty="beginner">
+                    <span><span class="nav-item-icon">🟢</span>Beginner</span>
+                    <span class="nav-item-count">42</span>
+                </div>
+                <div class="nav-item" data-difficulty="intermediate">
+                    <span><span class="nav-item-icon">🟡</span>Intermediate</span>
+                    <span class="nav-item-count">58</span>
+                </div>
+                <div class="nav-item" data-difficulty="advanced">
+                    <span><span class="nav-item-icon">🔴</span>Advanced</span>
+                    <span class="nav-item-count">27</span>
+                </div>
+            </div>
+            
+            <div class="nav-section">
+                <div class="nav-section-title">Type</div>
+                <div class="nav-item" data-type="theorem">
+                    <span><span class="nav-item-icon">📐</span>Theorems</span>
+                    <span class="nav-item-count">45</span>
+                </div>
+                <div class="nav-item" data-type="definition">
+                    <span><span class="nav-item-icon">📖</span>Definitions</span>
+                    <span class="nav-item-count">38</span>
+                </div>
+                <div class="nav-item" data-type="example">
+                    <span><span class="nav-item-icon">🎯</span>Examples</span>
+                    <span class="nav-item-count">29</span>
+                </div>
+                <div class="nav-item" data-type="lemma">
+                    <span><span class="nav-item-icon">🔧</span>Lemmas</span>
+                    <span class="nav-item-count">15</span>
+                </div>
+            </div>
+        </div>
+        
+        <div class="main-content">
+            <div class="toolbar">
+                <div class="toolbar-title">Fundamental Theorems</div>
+                <div class="toolbar-controls">
+                    <button class="toolbar-btn active" data-view="grid">Grid View</button>
+                    <button class="toolbar-btn" data-view="list">List View</button>
+                    <button class="toolbar-btn" data-sort="relevance">Sort: Relevance</button>
+                    <button class="toolbar-btn" data-filter="all">All Types</button>
+                </div>
+            </div>
+            
+            <div class="content-area">
+                <div class="stats-panel">
+                    <div class="stats-grid">
+                        <div class="stat-item">
+                            <div class="stat-number">127</div>
+                            <div class="stat-label">Total Resources</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-number">45</div>
+                            <div class="stat-label">Theorems</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-number">38</div>
+                            <div class="stat-label">Definitions</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-number">29</div>
+                            <div class="stat-label">Examples</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-number">15</div>
+                            <div class="stat-label">Lemmas</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="content-grid" id="contentGrid">
+                    <!-- Lagrange's Theorem -->
+                    <div class="resource-card fade-in" data-id="lagrange">
+                        <div class="card-header">
+                            <span class="card-type theorem">Theorem</span>
+                            <div class="card-difficulty">
+                                <div class="difficulty-dot filled"></div>
+                                <div class="difficulty-dot filled"></div>
+                                <div class="difficulty-dot"></div>
+                            </div>
+                        </div>
+                        <h3 class="card-title">Lagrange's Theorem</h3>
+                        <p class="card-statement">
+                            In any finite group, the order of every subgroup divides the order of the group.
+                        </p>
+                        <div class="card-math">
+                            If H ≤ G and |G| < ∞, then |H| divides |G|
+                        </div>
+                        <div class="card-footer">
+                            <div class="card-tags">
+                                <span class="tag">fundamental</span>
+                                <span class="tag">subgroups</span>
+                                <span class="tag">finite groups</span>
+                            </div>
+                            <div class="card-actions">
+                                <button class="action-btn" onclick="toggleFavorite(this)" title="Add to favorites">⭐</button>
+                                <button class="action-btn" onclick="openModal('lagrange')" title="View details">👁️</button>
+                                <button class="action-btn" onclick="shareResource('lagrange')" title="Share">📤</button>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- First Isomorphism Theorem -->
+                    <div class="resource-card fade-in" data-id="first-iso">
+                        <div class="card-header">
+                            <span class="card-type theorem">Theorem</span>
+                            <div class="card-difficulty">
+                                <div class="difficulty-dot filled"></div>
+                                <div class="difficulty-dot filled"></div>
+                                <div class="difficulty-dot filled"></div>
+                            </div>
+                        </div>
+                        <h3 class="card-title">First Isomorphism Theorem</h3>
+                        <p class="card-statement">
+                            Every group homomorphism can be factored through its image and kernel.
+                        </p>
+                        <div class="card-math">
+                            If φ: G → H is a homomorphism, then G/ker(φ) ≅ Im(φ)
+                        </div>
+                        <div class="card-footer">
+                            <div class="card-tags">
+                                <span class="tag">homomorphisms</span>
+                                <span class="tag">quotient groups</span>
+                                <span class="tag">isomorphisms</span>
+                            </div>
+                            <div class="card-actions">
+                                <button class="action-btn" onclick="toggleFavorite(this)" title="Add to favorites">⭐</button>
+                                <button class="action-btn" onclick="openModal('first-iso')" title="View details">👁️</button>
+                                <button class="action-btn" onclick="shareResource('first-iso')" title="Share">📤</button>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Group Definition -->
+                    <div class="resource-card fade-in" data-id="group-def">
+                        <div class="card-header">
+                            <span class="card-type definition">Definition</span>
+                            <div class="card-difficulty">
+                                <div class="difficulty-dot filled"></div>
+                                <div class="difficulty-dot"></div>
+                                <div class="difficulty-dot"></div>
+                            </div>
+                        </div>
+                        <h3 class="card-title">Group</h3>
+                        <p class="card-statement">
+                            A set G together with a binary operation * satisfying four axioms: closure, associativity, identity, and inverse.
+                        </p>
+                        <div class="card-math">
+                            (G, *) where ∀a,b ∈ G: a*b ∈ G, (a*b)*c = a*(b*c), ∃e ∈ G, ∀a ∃a⁻¹
+                        </div>
+                        <div class="card-footer">
+                            <div class="card-tags">
+                                <span class="tag">fundamental</span>
+                                <span class="tag">axioms</span>
+                                <span class="tag">structure</span>
+                            </div>
+                            <div class="card-actions">
+                                <button class="action-btn" onclick="toggleFavorite(this)" title="Add to favorites">⭐</button>
+                                <button class="action-btn" onclick="openModal('group-def')" title="View details">👁️</button>
+                                <button class="action-btn" onclick="shareResource('group-def')" title="Share">📤</button>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Orbit-Stabilizer Theorem -->
+                    <div class="resource-card fade-in" data-id="orbit-stab">
+                        <div class="card-header">
+                            <span class="card-type theorem">Theorem</span>
+                            <div class="card-difficulty">
+                                <div class="difficulty-dot filled"></div>
+                                <div class="difficulty-dot filled"></div>
+                                <div class="difficulty-dot filled"></div>
+                            </div>
+                        </div>
+                        <h3 class="card-title">Orbit-Stabilizer Theorem</h3>
+                        <p class="card-statement">
+                            For a group action, the size of an orbit times the size of its stabilizer equals the group order.
+                        </p>
+                        <div class="card-math">
+                            |Orbit(x)| × |Stab(x)| = |G|
+                        </div>
+                        <div class="card-footer">
+                            <div class="card-tags">
+                                <span class="tag">group actions</span>
+                                <span class="tag">orbits</span>
+                                <span class="tag">counting</span>
+                            </div>
+                            <div class="card-actions">
+                                <button class="action-btn" onclick="toggleFavorite(this)" title="Add to favorites">⭐</button>
+                                <button class="action-btn" onclick="openModal('orbit-stab')" title="View details">👁️</button>
+                                <button class="action-btn" onclick="shareResource('orbit-stab')" title="Share">📤</button>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Sylow Theorems -->
+                    <div class="resource-card fade-in" data-id="sylow">
+                        <div class="card-header">
+                            <span class="card-type theorem">Theorem</span>
+                            <div class="card-difficulty">
+                                <div class="difficulty-dot filled"></div>
+                                <div class="difficulty-dot filled"></div>
+                                <div class="difficulty-dot filled"></div>
+                            </div>
+                        </div>
+                        <h3 class="card-title">Sylow Theorems</h3>
+                        <p class="card-statement">
+                            Three fundamental results about the existence and properties of p-subgroups in finite groups.
+                        </p>
+                        <div class="card-math">
+                            n_p ≡ 1 (mod p) and n_p | |G|/p^k
+                        </div>
+                        <div class="card-footer">
+                            <div class="card-tags">
+                                <span class="tag">finite groups</span>
+                                <span class="tag">p-groups</span>
+                                <span class="tag">classification</span>
+                            </div>
+                            <div class="card-actions">
+                                <button class="action-btn" onclick="toggleFavorite(this)" title="Add to favorites">⭐</button>
+                                <button class="action-btn" onclick="openModal('sylow')" title="View details">👁️</button>
+                                <button class="action-btn" onclick="shareResource('sylow')" title="Share">📤</button>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Dihedral Group Example -->
+                    <div class="resource-card fade-in" data-id="dihedral">
+                        <div class="card-header">
+                            <span class="card-type example">Example</span>
+                            <div class="card-difficulty">
+                                <div class="difficulty-dot filled"></div>
+                                <div class="difficulty-dot filled"></div>
+                                <div class="difficulty-dot"></div>
+                            </div>
+                        </div>
+                        <h3 class="card-title">Dihedral Group D₄</h3>
+                        <p class="card-statement">
+                            The symmetries of a square: 4 rotations and 4 reflections form a non-abelian group of order 8.
+                        </p>
+                        <div class="card-math">
+                            D₄ = ⟨r, s | r⁴ = s² = 1, srs = r⁻¹⟩
+                        </div>
+                        <div class="card-footer">
+                            <div class="card-tags">
+                                <span class="tag">examples</span>
+                                <span class="tag">non-abelian</span>
+                                <span class="tag">symmetry</span>
+                            </div>
+                            <div class="card-actions">
+                                <button class="action-btn" onclick="toggleFavorite(this)" title="Add to favorites">⭐</button>
+                                <button class="action-btn" onclick="openModal('dihedral')" title="View details">👁️</button>
+                                <button class="action-btn" onclick="shareResource('dihedral')" title="Share">📤</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Modal for detailed view -->
+    <div class="modal" id="detailModal">
+        <div class="modal-content">
+            <button class="modal-close" onclick="closeModal()">&times;</button>
+            <div id="modalContent">
+                <!-- Content will be loaded dynamically -->
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Sample detailed content for modals
+        const resourceDetails = {
+            'lagrange': {
+                title: "Lagrange's Theorem",
+                type: "theorem",
+                statement: "In any finite group G, the order of every subgroup H divides the order of G.",
+                proof: `
+                    <div class="proof-section">
+                        <div class="proof-title">Proof:</div>
+                        <p>Let H be a subgroup of finite group G. Consider the left cosets of H in G:</p>
+                        <p>g₁H, g₂H, ..., gₖH where {g₁, g₂, ..., gₖ} are coset representatives.</p>
+                        <p>These cosets partition G (are disjoint and cover G), and each coset has |H| elements.</p>
+                        <p>Therefore: |G| = k|H|, which means |H| divides |G|. □</p>
+                    </div>
+                `,
+                applications: [
+                    "Determines possible orders of subgroups",
+                    "Foundation for Sylow theorems",
+                    "Used in classification of finite groups"
+                ],
+                related: ["Cosets", "Index of a subgroup", "Cauchy's theorem", "Sylow theorems"]
+            },
+            'first-iso': {
+                title: "First Isomorphism Theorem",
+                type: "theorem",
+                statement: "If φ: G → H is a group homomorphism, then G/ker(φ) ≅ Im(φ).",
+                proof: `
+                    <div class="proof-section">
+                        <div class="proof-title">Proof:</div>
+                        <p>Define ψ: G/ker(φ) → Im(φ) by ψ(g·ker(φ)) = φ(g).</p>
+                        <p><strong>Well-defined:</strong> If g₁·ker(φ) = g₂·ker(φ), then g₁⁻¹g₂ ∈ ker(φ), so φ(g₁⁻¹g₂) = e, thus φ(g₁) = φ(g₂).</p>
+                        <p><strong>Homomorphism:</strong> ψ((g₁·ker(φ))(g₂·ker(φ))) = ψ(g₁g₂·ker(φ)) = φ(g₁g₂) = φ(g₁)φ(g₂) = ψ(g₁·ker(φ))ψ(g₂·ker(φ)).</p>
+                        <p><strong>Bijective:</strong> Clearly surjective by definition. Injective since ker(ψ) = {ker(φ)}. □</p>
+                    </div>
+                `,
+                applications: [
+                    "Understanding quotient groups",
+                    "Proving other isomorphism theorems",
+                    "Classification of groups"
+                ],
+                related: ["Second Isomorphism Theorem", "Third Isomorphism Theorem", "Kernels", "Normal subgroups"]
+            },
+            'group-def': {
+                title: "Group Definition",
+                type: "definition",
+                statement: "A group is a set G together with a binary operation * such that (G, *) satisfies four axioms.",
+                proof: `
+                    <div class="proof-section">
+                        <div class="proof-title">The Four Group Axioms:</div>
+                        <p><strong>1. Closure:</strong> For all a, b ∈ G, we have a * b ∈ G.</p>
+                        <p><strong>2. Associativity:</strong> For all a, b, c ∈ G, we have (a * b) * c = a * (b * c).</p>
+                        <p><strong>3. Identity:</strong> There exists an element e ∈ G such that for all a ∈ G, e * a = a * e = a.</p>
+                        <p><strong>4. Inverse:</strong> For each a ∈ G, there exists an element a⁻¹ ∈ G such that a * a⁻¹ = a⁻¹ * a = e.</p>
+                    </div>
+                `,
+                applications: [
+                    "Foundation of group theory",
+                    "Symmetry in mathematics and physics",
+                    "Cryptography and coding theory"
+                ],
+                related: ["Abelian groups", "Cyclic groups", "Subgroups", "Group homomorphisms"]
+            },
+            'orbit-stab': {
+                title: "Orbit-Stabilizer Theorem",
+                type: "theorem", 
+                statement: "For a group G acting on a set X, and for any x ∈ X: |Orbit(x)| × |Stab(x)| = |G|.",
+                proof: `
+                    <div class="proof-section">
+                        <div class="proof-title">Proof:</div>
+                        <p>Define a map φ: G/Stab(x) → Orbit(x) by φ(g·Stab(x)) = g·x.</p>
+                        <p><strong>Well-defined:</strong> If g₁·Stab(x) = g₂·Stab(x), then g₁⁻¹g₂ ∈ Stab(x), so (g₁⁻¹g₂)·x = x, thus g₁·x = g₂·x.</p>
+                        <p><strong>Bijective:</strong> Surjective by definition of orbit. Injective since if g₁·x = g₂·x, then (g₁⁻¹g₂)·x = x, so g₁⁻¹g₂ ∈ Stab(x).</p>
+                        <p>Therefore |G/Stab(x)| = |Orbit(x)|, and by Lagrange's theorem, |G/Stab(x)| = |G|/|Stab(x)|. □</p>
+                    </div>
+                `,
+                applications: [
+                    "Counting arguments in group theory",
+                    "Burnside's lemma for counting orbits",
+                    "Classification of group actions"
+                ],
+                related: ["Group actions", "Burnside's lemma", "Cauchy's theorem", "Class equation"]
+            },
+            'sylow': {
+                title: "Sylow Theorems",
+                type: "theorem",
+                statement: "Three fundamental theorems about the existence and number of p-subgroups in finite groups.",
+                proof: `
+                    <div class="proof-section">
+                        <div class="proof-title">The Three Sylow Theorems:</div>
+                        <p><strong>Sylow I:</strong> If p^k divides |G|, then G contains a subgroup of order p^k.</p>
+                        <p><strong>Sylow II:</strong> All Sylow p-subgroups are conjugate to each other.</p>
+                        <p><strong>Sylow III:</strong> The number n_p of Sylow p-subgroups satisfies:</p>
+                        <ul>
+                            <li>n_p ≡ 1 (mod p)</li>
+                            <li>n_p divides |G|/p^α where p^α is the highest power of p dividing |G|</li>
+                        </ul>
+                    </div>
+                `,
+                applications: [
+                    "Classification of finite groups",
+                    "Proving groups of certain orders are not simple",
+                    "Finding normal subgroups"
+                ],
+                related: ["p-groups", "Normalizer", "Conjugacy", "Simple groups"]
+            },
+            'dihedral': {
+                title: "Dihedral Group D₄",
+                type: "example",
+                statement: "The group of symmetries of a square, consisting of 4 rotations and 4 reflections.",
+                proof: `
+                    <div class="proof-section">
+                        <div class="proof-title">Elements of D₄:</div>
+                        <p><strong>Rotations:</strong> 1, r, r², r³ (by 0°, 90°, 180°, 270°)</p>
+                        <p><strong>Reflections:</strong> s, sr, sr², sr³ (across various axes)</p>
+                        <p><strong>Relations:</strong></p>
+                        <ul>
+                            <li>r⁴ = 1 (rotation by 360° is identity)</li>
+                            <li>s² = 1 (reflection twice is identity)</li>
+                            <li>srs = r⁻¹ (reflection conjugates rotation to its inverse)</li>
+                        </ul>
+                        <p><strong>Presentation:</strong> D₄ = ⟨r, s | r⁴ = s² = 1, srs = r⁻¹⟩</p>
+                    </div>
+                `,
+                applications: [
+                    "Concrete example of non-abelian group",
+                    "Illustration of group presentations",
+                    "Symmetry groups in crystallography"
+                ],
+                related: ["Symmetric groups", "Group presentations", "Semidirect products", "Crystallographic groups"]
+            }
+        };
+        
+        // Navigation functionality
+        document.querySelectorAll('.nav-item').forEach(item => {
+            item.addEventListener('click', function() {
+                document.querySelectorAll('.nav-item').forEach(nav => nav.classList.remove('active'));
+                this.classList.add('active');
+                
+                const category = this.dataset.category;
+                const difficulty = this.dataset.difficulty;
+                const type = this.dataset.type;
+                
+                // Update toolbar title
+                const titleMap = {
+                    'all': 'All Resources',
+                    'fundamental': 'Fundamental Theorems',
+                    'finite': 'Finite Groups',
+                    'homomorphisms': 'Homomorphisms',
+                    'subgroups': 'Subgroups',
+                    'actions': 'Group Actions',
+                    'examples': 'Worked Examples',
+                    'beginner': 'Beginner Level',
+                    'intermediate': 'Intermediate Level',
+                    'advanced': 'Advanced Level',
+                    'theorem': 'Theorems',
+                    'definition': 'Definitions',
+                    'example': 'Examples',
+                    'lemma': 'Lemmas'
+                };
+                
+                const title = titleMap[category] || titleMap[difficulty] || titleMap[type] || 'Resources';
+                document.querySelector('.toolbar-title').textContent = title;
+                
+                // Filter cards (simplified - in real app would filter based on data)
+                filterCards(category, difficulty, type);
+            });
+        });
+        
+        function filterCards(category, difficulty, type) {
+            // Simplified filtering - in real app would filter based on actual data
+            const cards = document.querySelectorAll('.resource-card');
+            cards.forEach(card => {
+                card.style.display = 'block';
+                card.classList.add('fade-in');
+            });
+        }
+        
+        // Search functionality
+        document.getElementById('searchInput').addEventListener('input', function(e) {
+            const searchTerm = e.target.value.toLowerCase();
+            const cards = document.querySelectorAll('.resource-card');
+            
+            cards.forEach(card => {
+                const title = card.querySelector('.card-title').textContent.toLowerCase();
+                const statement = card.querySelector('.card-statement').textContent.toLowerCase();
+                const tags = Array.from(card.querySelectorAll('.tag')).map(tag => tag.textContent.toLowerCase());
+                
+                const matches = title.includes(searchTerm) || 
+                               statement.includes(searchTerm) || 
+                               tags.some(tag => tag.includes(searchTerm));
+                
+                card.style.display = matches ? 'block' : 'none';
+            });
+        });
+        
+        // Modal functionality
+        function openModal(resourceId) {
+            const modal = document.getElementById('detailModal');
+            const content = document.getElementById('modalContent');
+            const resource = resourceDetails[resourceId];
+            
+            if (resource) {
+                content.innerHTML = `
+                    <h2>${resource.title}</h2>
+                    <span class="card-type ${resource.type}">${resource.type.toUpperCase()}</span>
+                    <div style="margin: 20px 0;">
+                        <h3>Statement:</h3>
+                        <p>${resource.statement}</p>
+                    </div>
+                    ${resource.proof}
+                    <div class="related-section">
+                        <div class="related-title">Applications:</div>
+                        <ul>
+                            ${resource.applications.map(app => `<li>${app}</li>`).join('')}
+                        </ul>
+                    </div>
+                    <div class="related-section">
+                        <div class="related-title">Related Topics:</div>
+                        <div class="related-list">
+                            ${resource.related.map(item => `<div class="related-item">${item}</div>`).join('')}
+                        </div>
+                    </div>
+                `;
+                modal.classList.add('active');
+            }
+        }
+        
+        function closeModal() {
+            document.getElementById('detailModal').classList.remove('active');
+        }
+        
+        // Utility functions
+        function toggleFavorite(button) {
+            button.textContent = button.textContent === '⭐' ? '⭐' : '⭐';
+            button.style.color = button.style.color === 'gold' ? '' : 'gold';
+        }
+        
+        function shareResource(resourceId) {
+            // Simplified share functionality
+            alert(`Sharing ${resourceId} resource...`);
+        }
+        
+        // Close modal when clicking outside
+        document.getElementById('detailModal').addEventListener('click', function(e) {
+            if (e.target === this) {
+                closeModal();
+            }
+        });
+        
+        // Toolbar controls
+        document.querySelectorAll('.toolbar-btn').forEach(btn => {
+            btn.addEventListener('click', function() {
+                if (this.dataset.view) {
+                    document.querySelectorAll('[data-view]').forEach(b => b.classList.remove('active'));
+                    this.classList.add('active');
+                    
+                    // Toggle between grid and list view
+                    const grid = document.getElementById('contentGrid');
+                    if (this.dataset.view === 'list') {
+                        grid.style.gridTemplateColumns = '1fr';
+                    } else {
+                        grid.style.gridTemplateColumns = 'repeat(auto-fit, minmax(400px, 1fr))';
+                    }
+                }
+            });
+        });
+        
+        // Initialize page
+        document.addEventListener('DOMContentLoaded', function() {
+            // Add staggered animation to cards
+            const cards = document.querySelectorAll('.resource-card');
+            cards.forEach((card, index) => {
+                setTimeout(() => {
+                    card.classList.add('fade-in');
+                }, index * 100);
+            });
+        });
+    </script>
+</body>
+</html> 

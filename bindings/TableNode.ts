@@ -6,9 +6,9 @@ import type { TableStyleOptions } from "./TableStyleOptions";
 
 export type TableNode = {
   caption: ParagraphNode | null;
-  header_rows: Array<TableRowNode> | null;
+  header_rows: Array<TableRowNode>;
   body_rows: Array<TableRowNode>;
-  footer_rows: Array<TableRowNode> | null;
-  column_styles: Array<ColumnStyle> | null;
+  footer_rows: Array<TableRowNode>;
+  column_styles: Array<ColumnStyle>;
   table_style_options: TableStyleOptions | null;
 };

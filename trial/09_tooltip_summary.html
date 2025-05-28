@@ -1,0 +1,525 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mathematical Tooltip Summaries - Compact Explanations</title>
+    <style>
+        body { 
+            font-family: "Inter", -apple-system, BlinkMacSystemFont, sans-serif; 
+            margin: 0; 
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%); 
+            color: #333; 
+            line-height: 1.6; 
+            padding: 20px;
+        }
+        .demo-container { 
+            max-width: 1200px; 
+            margin: 0 auto; 
+            background-color: #fff; 
+            border-radius: 15px; 
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1); 
+            overflow: hidden;
+        }
+        .demo-header { 
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); 
+            color: white; 
+            padding: 30px; 
+            text-align: center;
+        }
+        .demo-title { 
+            font-size: 2.2em; 
+            margin: 0 0 10px 0; 
+            font-weight: 600;
+        }
+        .demo-subtitle { 
+            font-size: 1.1em; 
+            opacity: 0.9; 
+        }
+        .content-area { 
+            padding: 40px; 
+        }
+        .explanation-text {
+            font-size: 1.1em;
+            margin-bottom: 30px;
+            color: #555;
+        }
+        .demo-section {
+            margin-bottom: 40px;
+            padding: 25px;
+            background-color: #f8f9fa;
+            border-radius: 10px;
+            border-left: 4px solid #007bff;
+        }
+        .section-title {
+            font-size: 1.3em;
+            font-weight: 600;
+            margin-bottom: 20px;
+            color: #2c3e50;
+        }
+        .interactive-text {
+            font-size: 1.1em;
+            line-height: 1.8;
+            margin-bottom: 20px;
+        }
+        
+        /* Tooltip Styles */
+        .tooltip-trigger {
+            color: #007bff;
+            font-weight: 500;
+            cursor: help;
+            border-bottom: 1px dotted #007bff;
+            position: relative;
+            transition: all 0.3s ease;
+        }
+        .tooltip-trigger:hover {
+            color: #0056b3;
+            background-color: rgba(0, 123, 255, 0.1);
+            padding: 2px 4px;
+            border-radius: 3px;
+        }
+        
+        .tooltip {
+            position: absolute;
+            background-color: #2c3e50;
+            color: white;
+            padding: 12px 16px;
+            border-radius: 8px;
+            font-size: 0.85em;
+            line-height: 1.4;
+            max-width: 300px;
+            box-shadow: 0 8px 25px rgba(0,0,0,0.2);
+            z-index: 1000;
+            opacity: 0;
+            visibility: hidden;
+            transform: translateY(10px);
+            transition: all 0.3s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+            pointer-events: none;
+        }
+        
+        .tooltip::before {
+            content: '';
+            position: absolute;
+            top: -8px;
+            left: 20px;
+            width: 0;
+            height: 0;
+            border-left: 8px solid transparent;
+            border-right: 8px solid transparent;
+            border-bottom: 8px solid #2c3e50;
+        }
+        
+        .tooltip-trigger:hover .tooltip {
+            opacity: 1;
+            visibility: visible;
+            transform: translateY(0);
+        }
+        
+        /* Different tooltip types */
+        .tooltip-definition {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            border-left: 3px solid #fff;
+        }
+        .tooltip-definition::before {
+            border-bottom-color: #667eea;
+        }
+        
+        .tooltip-formula {
+            background: linear-gradient(135deg, #f093fb, #f5576c);
+            font-family: 'Times New Roman', serif;
+            text-align: center;
+        }
+        .tooltip-formula::before {
+            border-bottom-color: #f093fb;
+        }
+        
+        .tooltip-example {
+            background: linear-gradient(135deg, #4facfe, #00f2fe);
+            font-style: italic;
+        }
+        .tooltip-example::before {
+            border-bottom-color: #4facfe;
+        }
+        
+        .tooltip-warning {
+            background: linear-gradient(135deg, #fa709a, #fee140);
+            color: #333;
+            font-weight: 500;
+        }
+        .tooltip-warning::before {
+            border-bottom-color: #fa709a;
+        }
+        
+        .tooltip-proof {
+            background: linear-gradient(135deg, #a8edea, #fed6e3);
+            color: #333;
+            max-width: 400px;
+        }
+        .tooltip-proof::before {
+            border-bottom-color: #a8edea;
+        }
+        
+        /* Compact summary cards */
+        .summary-card {
+            background: white;
+            border: 1px solid #e0e0e0;
+            border-radius: 10px;
+            padding: 20px;
+            margin: 15px 0;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+        .summary-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(0,0,0,0.15);
+        }
+        
+        .card-title {
+            font-size: 1.1em;
+            font-weight: 600;
+            color: #2c3e50;
+            margin-bottom: 8px;
+        }
+        
+        .card-formula {
+            background: linear-gradient(135deg, #f8f9fa, #e9ecef);
+            padding: 10px;
+            border-radius: 5px;
+            font-family: 'Times New Roman', serif;
+            text-align: center;
+            margin: 10px 0;
+            border-left: 3px solid #007bff;
+        }
+        
+        .card-description {
+            font-size: 0.9em;
+            color: #666;
+            line-height: 1.5;
+        }
+        
+        /* Floating tooltip variants */
+        .floating-tooltip {
+            position: fixed;
+            background: rgba(44, 62, 80, 0.95);
+            backdrop-filter: blur(10px);
+            color: white;
+            padding: 15px 20px;
+            border-radius: 12px;
+            font-size: 0.9em;
+            max-width: 350px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+            z-index: 1001;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s ease;
+        }
+        
+        .controls {
+            background-color: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 8px;
+            padding: 20px;
+            margin: 30px 0;
+            text-align: center;
+        }
+        
+        .control-button {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 6px;
+            margin: 5px;
+            cursor: pointer;
+            font-size: 0.9em;
+            transition: transform 0.2s ease;
+        }
+        
+        .control-button:hover {
+            transform: translateY(-1px);
+        }
+        
+        .tooltip-showcase {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin: 30px 0;
+        }
+        
+        .math-text {
+            font-family: 'Times New Roman', serif;
+            font-style: italic;
+            color: #2c3e50;
+        }
+    </style>
+</head>
+<body>
+    <div class="demo-container">
+        <div class="demo-header">
+            <h1 class="demo-title">Mathematical Tooltip Summaries</h1>
+            <p class="demo-subtitle">Compact explanations that appear on demand</p>
+        </div>
+
+        <div class="content-area">
+            <p class="explanation-text">
+                <strong>Interactive tooltips provide instant clarification</strong> without interrupting the reading flow. 
+                Hover over any highlighted term below to see compact, context-aware explanations.
+            </p>
+
+            <div class="demo-section">
+                <h2 class="section-title">📚 Basic Concepts in Group Theory</h2>
+                <div class="interactive-text">
+                    A <span class="tooltip-trigger">group
+                        <div class="tooltip tooltip-definition">
+                            <strong>Group:</strong> A set G with a binary operation * satisfying closure, associativity, identity, and inverse properties.
+                        </div>
+                    </span> is one of the most fundamental structures in 
+                    <span class="tooltip-trigger">abstract algebra
+                        <div class="tooltip">
+                            <strong>Abstract Algebra:</strong> The study of algebraic structures like groups, rings, and fields, focusing on their general properties rather than specific examples.
+                        </div>
+                    </span>. Every group must have an 
+                    <span class="tooltip-trigger">identity element
+                        <div class="tooltip tooltip-formula">
+                            <strong>Identity Element (e):</strong><br>
+                            For all g ∈ G: e * g = g * e = g
+                        </div>
+                    </span>, and every element must have an 
+                    <span class="tooltip-trigger">inverse
+                        <div class="tooltip tooltip-formula">
+                            <strong>Inverse Element:</strong><br>
+                            For each g ∈ G, ∃ g⁻¹ such that:<br>
+                            g * g⁻¹ = g⁻¹ * g = e
+                        </div>
+                    </span>.
+                </div>
+                
+                <div class="interactive-text">
+                    The <span class="tooltip-trigger">order of a group
+                        <div class="tooltip">
+                            <strong>Group Order:</strong> The number of elements in the group. For finite groups, this is denoted |G|.
+                        </div>
+                    </span> is related to the order of its elements by 
+                    <span class="tooltip-trigger">Lagrange's theorem
+                        <div class="tooltip tooltip-proof">
+                            <strong>Lagrange's Theorem:</strong> If H is a subgroup of finite group G, then |H| divides |G|. This means the order of any element must divide the group order.
+                        </div>
+                    </span>, which tells us that the 
+                    <span class="tooltip-trigger">order of any element
+                        <div class="tooltip tooltip-example">
+                            <strong>Element Order:</strong> The smallest positive integer n such that gⁿ = e. For example, in Z₆, the element 2 has order 3 because 2³ ≡ 0 (mod 6).
+                        </div>
+                    </span> must divide the group order.
+                </div>
+            </div>
+
+            <div class="demo-section">
+                <h2 class="section-title">🔢 Advanced Topics</h2>
+                <div class="interactive-text">
+                    When studying <span class="tooltip-trigger">homomorphisms
+                        <div class="tooltip tooltip-definition">
+                            <strong>Group Homomorphism:</strong> A function φ: G → H that preserves the group operation: φ(ab) = φ(a)φ(b) for all a,b ∈ G.
+                        </div>
+                    </span>, we often encounter the concept of a 
+                    <span class="tooltip-trigger">kernel
+                        <div class="tooltip tooltip-formula">
+                            <strong>Kernel:</strong><br>
+                            ker(φ) = {g ∈ G : φ(g) = e_H}<br>
+                            Always a normal subgroup of G
+                        </div>
+                    </span>. The <span class="tooltip-trigger">First Isomorphism Theorem
+                        <div class="tooltip tooltip-proof">
+                            <strong>First Isomorphism Theorem:</strong> For any group homomorphism φ: G → H, we have G/ker(φ) ≅ Im(φ). This fundamental result connects quotient groups with images.
+                        </div>
+                    </span> provides a crucial connection between kernels and images.
+                </div>
+                
+                <div class="interactive-text">
+                    <span class="tooltip-trigger">Group actions
+                        <div class="tooltip">
+                            <strong>Group Action:</strong> A way for a group G to "act on" a set X via a function G × X → X satisfying certain axioms.
+                        </div>
+                    </span> lead us to important concepts like 
+                    <span class="tooltip-trigger">orbits
+                        <div class="tooltip tooltip-formula">
+                            <strong>Orbit:</strong><br>
+                            Orbit(x) = {g·x : g ∈ G}<br>
+                            The set of all elements that x can be "moved to" by the group action.
+                        </div>
+                    </span> and <span class="tooltip-trigger">stabilizers
+                        <div class="tooltip tooltip-formula">
+                            <strong>Stabilizer:</strong><br>
+                            Stab(x) = {g ∈ G : g·x = x}<br>
+                            The subgroup of elements that "fix" x.
+                        </div>
+                    </span>, connected by the elegant 
+                    <span class="tooltip-trigger">orbit-stabilizer theorem
+                        <div class="tooltip tooltip-warning">
+                            <strong>⚠️ Key Theorem:</strong> For any x in a finite G-set: |Orbit(x)| × |Stab(x)| = |G|
+                        </div>
+                    </span>.
+                </div>
+            </div>
+
+            <div class="demo-section">
+                <h2 class="section-title">⚠️ Common Pitfalls</h2>
+                <div class="interactive-text">
+                    Students often confuse <span class="tooltip-trigger">normal subgroups
+                        <div class="tooltip tooltip-warning">
+                            <strong>⚠️ Careful!</strong> H ⊴ G means gHg⁻¹ = H for all g ∈ G. This is NOT the same as saying individual elements commute!
+                        </div>
+                    </span> with regular subgroups. Remember that 
+                    <span class="tooltip-trigger">quotient groups
+                        <div class="tooltip tooltip-warning">
+                            <strong>⚠️ Only for Normal Subgroups!</strong> G/H is only a group when H is normal in G. Otherwise, the cosets don't form a group structure.
+                        </div>
+                    </span> only exist when the subgroup is normal!
+                </div>
+            </div>
+
+            <div class="controls">
+                <h3>Tooltip Demonstration Controls</h3>
+                <button class="control-button" onclick="showFloatingTooltip('definition')">Show Definition Tooltip</button>
+                <button class="control-button" onclick="showFloatingTooltip('formula')">Show Formula Tooltip</button>
+                <button class="control-button" onclick="showFloatingTooltip('example')">Show Example Tooltip</button>
+                <button class="control-button" onclick="hideFloatingTooltips()">Hide All</button>
+            </div>
+
+            <div class="tooltip-showcase">
+                <div class="summary-card">
+                    <div class="card-title">Group Definition</div>
+                    <div class="card-formula math-text">
+                        (G, *) with closure, associativity, identity, inverses
+                    </div>
+                    <div class="card-description">
+                        The fundamental algebraic structure underlying symmetry and transformation.
+                    </div>
+                </div>
+
+                <div class="summary-card">
+                    <div class="card-title">Lagrange's Theorem</div>
+                    <div class="card-formula math-text">
+                        |H| divides |G| for any subgroup H ≤ G
+                    </div>
+                    <div class="card-description">
+                        Constrains the possible sizes of subgroups and element orders within finite groups.
+                    </div>
+                </div>
+
+                <div class="summary-card">
+                    <div class="card-title">Orbit-Stabilizer</div>
+                    <div class="card-formula math-text">
+                        |Orbit(x)| × |Stab(x)| = |G|
+                    </div>
+                    <div class="card-description">
+                        Connects the size of an orbit with its stabilizer in group actions.
+                    </div>
+                </div>
+
+                <div class="summary-card">
+                    <div class="card-title">First Isomorphism Theorem</div>
+                    <div class="card-formula math-text">
+                        G/ker(φ) ≅ Im(φ)
+                    </div>
+                    <div class="card-description">
+                        Every homomorphism factors through its image via a quotient by its kernel.
+                    </div>
+                </div>
+
+                <div class="summary-card">
+                    <div class="card-title">Normal Subgroup</div>
+                    <div class="card-formula math-text">
+                        gHg⁻¹ = H for all g ∈ G
+                    </div>
+                    <div class="card-description">
+                        Required condition for quotient groups to have well-defined group structure.
+                    </div>
+                </div>
+
+                <div class="summary-card">
+                    <div class="card-title">Group Homomorphism</div>
+                    <div class="card-formula math-text">
+                        φ(ab) = φ(a)φ(b)
+                    </div>
+                    <div class="card-description">
+                        Structure-preserving maps between groups that respect the binary operation.
+                    </div>
+                </div>
+            </div>
+
+            <div class="demo-section">
+                <h2 class="section-title">💡 Usage Guidelines</h2>
+                <div class="interactive-text">
+                    <strong>Best Practices for Mathematical Tooltips:</strong>
+                    <ul>
+                        <li><strong>Keep it concise:</strong> Aim for 1-2 sentences with optional formula</li>
+                        <li><strong>Context-aware:</strong> Tailor explanation depth to the surrounding content level</li>
+                        <li><strong>Visual hierarchy:</strong> Use typography and color to guide attention</li>
+                        <li><strong>Progressive disclosure:</strong> Basic explanation with option to expand</li>
+                        <li><strong>Cross-references:</strong> Link related concepts for deeper exploration</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Floating tooltips for demo -->
+    <div id="floatingTooltip" class="floating-tooltip"></div>
+
+    <script>
+        function showFloatingTooltip(type) {
+            const tooltip = document.getElementById('floatingTooltip');
+            let content = '';
+            
+            switch(type) {
+                case 'definition':
+                    content = '<strong>Group Action:</strong><br>A group G acts on a set X via a function φ: G × X → X such that:<br>1. φ(e, x) = x (identity acts trivially)<br>2. φ(g₁, φ(g₂, x)) = φ(g₁g₂, x) (associativity)';
+                    break;
+                case 'formula':
+                    content = '<strong>Euler\'s Totient Function:</strong><br><em>φ(n) = n ∏(1 - 1/p)</em><br>where the product is over all prime divisors p of n.<br>Counts integers ≤ n that are coprime to n.';
+                    break;
+                case 'example':
+                    content = '<strong>Example - Dihedral Group D₄:</strong><br>The symmetries of a square: 4 rotations + 4 reflections = 8 elements total.<br>Non-abelian group with presentation ⟨r,s | r⁴ = s² = 1, srs = r⁻¹⟩';
+                    break;
+            }
+            
+            tooltip.innerHTML = content;
+            tooltip.style.opacity = '1';
+            tooltip.style.visibility = 'visible';
+            tooltip.style.left = '50%';
+            tooltip.style.top = '30%';
+            tooltip.style.transform = 'translateX(-50%)';
+        }
+        
+        function hideFloatingTooltips() {
+            const tooltip = document.getElementById('floatingTooltip');
+            tooltip.style.opacity = '0';
+            tooltip.style.visibility = 'hidden';
+        }
+        
+        // Auto-hide floating tooltips after 5 seconds
+        let hideTimeout;
+        document.querySelectorAll('.control-button').forEach(button => {
+            button.addEventListener('click', () => {
+                clearTimeout(hideTimeout);
+                hideTimeout = setTimeout(hideFloatingTooltips, 5000);
+            });
+        });
+        
+        // Enhanced hover effects for better UX
+        document.querySelectorAll('.tooltip-trigger').forEach(trigger => {
+            trigger.addEventListener('mouseenter', function() {
+                const tooltip = this.querySelector('.tooltip');
+                if (tooltip) {
+                    // Adjust position if tooltip would go off-screen
+                    const rect = tooltip.getBoundingClientRect();
+                    if (rect.right > window.innerWidth) {
+                        tooltip.style.left = 'auto';
+                        tooltip.style.right = '0';
+                    }
+                }
+            });
+        });
+    </script>
+</body>
+</html> 

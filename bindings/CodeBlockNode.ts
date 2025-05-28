@@ -6,6 +6,6 @@ export type CodeBlockNode = {
   language: string | null;
   caption: ParagraphNode | null;
   show_line_numbers: boolean | null;
-  highlight_lines: Array<number> | null;
+  highlight_lines: Array<number>;
   is_executable: boolean | null;
 };

@@ -1,0 +1,739 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Interactive Group Explorer - Dihedral Groups</title>
+    <style>
+        body { 
+            font-family: sans-serif; 
+            margin: 0; 
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); 
+            color: #333; 
+            min-height: 100vh; 
+        }
+        .playground-container { 
+            max-width: 1600px; 
+            margin: 0 auto; 
+            background-color: #fff; 
+            min-height: 100vh; 
+            box-shadow: 0 0 30px rgba(0,0,0,0.2); 
+        }
+        .header { 
+            background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%); 
+            color: white; 
+            padding: 30px; 
+            text-align: center; 
+        }
+        .header h1 { 
+            margin: 0; 
+            font-size: 2.5em; 
+            font-weight: 300; 
+        }
+        .header p { 
+            margin: 15px 0 0 0; 
+            font-size: 1.2em; 
+            opacity: 0.9; 
+        }
+        .playground-layout { 
+            display: grid; 
+            grid-template-columns: 300px 1fr 300px; 
+            min-height: calc(100vh - 140px); 
+        }
+        .controls-panel { 
+            background-color: #f8f9fa; 
+            padding: 25px; 
+            border-right: 1px solid #dee2e6; 
+            overflow-y: auto; 
+        }
+        .main-visualization { 
+            padding: 30px; 
+            background-color: #fff; 
+            position: relative; 
+        }
+        .info-panel { 
+            background-color: #f1f3f4; 
+            padding: 25px; 
+            border-left: 1px solid #dee2e6; 
+            overflow-y: auto; 
+        }
+        .control-group { 
+            background-color: white; 
+            padding: 20px; 
+            border-radius: 8px; 
+            margin-bottom: 20px; 
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1); 
+        }
+        .control-title { 
+            font-weight: bold; 
+            font-size: 1.1em; 
+            margin-bottom: 15px; 
+            color: #2c3e50; 
+            border-bottom: 2px solid #3498db; 
+            padding-bottom: 5px; 
+        }
+        .control-item { 
+            margin-bottom: 15px; 
+        }
+        .control-label { 
+            display: block; 
+            margin-bottom: 5px; 
+            font-weight: 500; 
+            color: #34495e; 
+        }
+        .slider-container { 
+            position: relative; 
+        }
+        .slider { 
+            width: 100%; 
+            height: 6px; 
+            border-radius: 3px; 
+            background: #ddd; 
+            outline: none; 
+            -webkit-appearance: none; 
+        }
+        .slider::-webkit-slider-thumb { 
+            -webkit-appearance: none; 
+            appearance: none; 
+            width: 20px; 
+            height: 20px; 
+            border-radius: 50%; 
+            background: #3498db; 
+            cursor: pointer; 
+        }
+        .slider::-moz-range-thumb { 
+            width: 20px; 
+            height: 20px; 
+            border-radius: 50%; 
+            background: #3498db; 
+            cursor: pointer; 
+            border: none; 
+        }
+        .slider-value { 
+            position: absolute; 
+            right: 0; 
+            top: -25px; 
+            background-color: #3498db; 
+            color: white; 
+            padding: 3px 8px; 
+            border-radius: 12px; 
+            font-size: 0.8em; 
+        }
+        .toggle-switch { 
+            position: relative; 
+            display: inline-block; 
+            width: 50px; 
+            height: 24px; 
+        }
+        .toggle-switch input { 
+            opacity: 0; 
+            width: 0; 
+            height: 0; 
+        }
+        .toggle-slider { 
+            position: absolute; 
+            cursor: pointer; 
+            top: 0; 
+            left: 0; 
+            right: 0; 
+            bottom: 0; 
+            background-color: #ccc; 
+            transition: .4s; 
+            border-radius: 24px; 
+        }
+        .toggle-slider:before { 
+            position: absolute; 
+            content: ""; 
+            height: 18px; 
+            width: 18px; 
+            left: 3px; 
+            bottom: 3px; 
+            background-color: white; 
+            transition: .4s; 
+            border-radius: 50%; 
+        }
+        input:checked + .toggle-slider { 
+            background-color: #3498db; 
+        }
+        input:checked + .toggle-slider:before { 
+            transform: translateX(26px); 
+        }
+        .dropdown { 
+            width: 100%; 
+            padding: 8px; 
+            border: 1px solid #ddd; 
+            border-radius: 4px; 
+            background-color: white; 
+        }
+        .visualization-area { 
+            background-color: #fafafa; 
+            border: 2px solid #e0e0e0; 
+            border-radius: 10px; 
+            height: 400px; 
+            display: flex; 
+            align-items: center; 
+            justify-content: center; 
+            margin-bottom: 30px; 
+            position: relative; 
+        }
+        .group-visualization { 
+            position: relative; 
+            width: 350px; 
+            height: 350px; 
+        }
+        .group-element { 
+            position: absolute; 
+            width: 40px; 
+            height: 40px; 
+            border-radius: 50%; 
+            background-color: #3498db; 
+            color: white; 
+            display: flex; 
+            align-items: center; 
+            justify-content: center; 
+            font-weight: bold; 
+            cursor: pointer; 
+            transition: all 0.3s ease; 
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2); 
+        }
+        .group-element:hover { 
+            background-color: #e74c3c; 
+            transform: scale(1.2); 
+            z-index: 10; 
+        }
+        .group-element.identity { 
+            background-color: #f39c12; 
+        }
+        .group-element.rotation { 
+            background-color: #3498db; 
+        }
+        .group-element.reflection { 
+            background-color: #9b59b6; 
+        }
+        .operation-display { 
+            background-color: white; 
+            border: 1px solid #ddd; 
+            border-radius: 8px; 
+            padding: 20px; 
+            margin-bottom: 20px; 
+        }
+        .operation-title { 
+            font-size: 1.2em; 
+            font-weight: bold; 
+            margin-bottom: 15px; 
+            color: #2c3e50; 
+        }
+        .operation-grid { 
+            display: grid; 
+            grid-template-columns: repeat(var(--cols), 1fr); 
+            gap: 2px; 
+            margin-top: 15px; 
+        }
+        .grid-cell { 
+            aspect-ratio: 1; 
+            border: 1px solid #ddd; 
+            display: flex; 
+            align-items: center; 
+            justify-content: center; 
+            font-weight: bold; 
+            cursor: pointer; 
+            transition: background-color 0.2s; 
+        }
+        .grid-cell:hover { 
+            background-color: #e3f2fd; 
+        }
+        .grid-cell.header { 
+            background-color: #f5f5f5; 
+            font-weight: bold; 
+        }
+        .info-section { 
+            background-color: white; 
+            padding: 20px; 
+            border-radius: 8px; 
+            margin-bottom: 20px; 
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1); 
+        }
+        .info-title { 
+            font-weight: bold; 
+            font-size: 1.1em; 
+            margin-bottom: 15px; 
+            color: #2c3e50; 
+            border-bottom: 2px solid #e74c3c; 
+            padding-bottom: 5px; 
+        }
+        .property-list { 
+            list-style: none; 
+            padding: 0; 
+        }
+        .property-list li { 
+            padding: 8px 0; 
+            border-bottom: 1px solid #eee; 
+        }
+        .property-list li:last-child { 
+            border-bottom: none; 
+        }
+        .property-value { 
+            float: right; 
+            font-weight: bold; 
+            color: #3498db; 
+        }
+        .math-expr { 
+            font-family: "Times New Roman", serif; 
+            font-style: italic; 
+            color: #2c3e50; 
+        }
+        .highlight-animation { 
+            animation: highlight 1s ease-in-out; 
+        }
+        @keyframes highlight { 
+            0%, 100% { background-color: transparent; } 
+            50% { background-color: #ffeb3b; } 
+        }
+        .reset-button { 
+            background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%); 
+            color: white; 
+            border: none; 
+            padding: 10px 20px; 
+            border-radius: 5px; 
+            cursor: pointer; 
+            font-weight: bold; 
+            width: 100%; 
+            margin-top: 10px; 
+            transition: transform 0.2s; 
+        }
+        .reset-button:hover { 
+            transform: translateY(-2px); 
+        }
+    </style>
+</head>
+<body>
+    <div class="playground-container">
+        <div class="header">
+            <h1>Interactive Group Explorer</h1>
+            <p>Discover the structure and properties of dihedral groups through interactive visualization</p>
+        </div>
+
+        <div class="playground-layout">
+            <div class="controls-panel">
+                <div class="control-group">
+                    <div class="control-title">Group Parameters</div>
+                    
+                    <div class="control-item">
+                        <label class="control-label">Number of vertices (n)</label>
+                        <div class="slider-container">
+                            <input type="range" min="3" max="8" value="4" class="slider" id="vertexSlider">
+                            <div class="slider-value" id="vertexValue">4</div>
+                        </div>
+                    </div>
+
+                    <div class="control-item">
+                        <label class="control-label">Group Type</label>
+                        <select class="dropdown" id="groupType">
+                            <option value="dihedral">Dihedral D_n</option>
+                            <option value="cyclic">Cyclic C_n</option>
+                            <option value="symmetric">Symmetric S_n</option>
+                        </select>
+                    </div>
+
+                    <div class="control-item">
+                        <label class="control-label">Show Cayley Table</label>
+                        <label class="toggle-switch">
+                            <input type="checkbox" id="showCayleyTable" checked>
+                            <span class="toggle-slider"></span>
+                        </label>
+                    </div>
+
+                    <div class="control-item">
+                        <label class="control-label">Animation Speed</label>
+                        <div class="slider-container">
+                            <input type="range" min="1" max="10" value="5" class="slider" id="speedSlider">
+                            <div class="slider-value" id="speedValue">5</div>
+                        </div>
+                    </div>
+
+                    <button class="reset-button" onclick="resetToDefaults()">Reset to Defaults</button>
+                </div>
+
+                <div class="control-group">
+                    <div class="control-title">Visualization Options</div>
+                    
+                    <div class="control-item">
+                        <label class="control-label">Show Element Labels</label>
+                        <label class="toggle-switch">
+                            <input type="checkbox" id="showLabels" checked>
+                            <span class="toggle-slider"></span>
+                        </label>
+                    </div>
+
+                    <div class="control-item">
+                        <label class="control-label">Color by Type</label>
+                        <label class="toggle-switch">
+                            <input type="checkbox" id="colorByType" checked>
+                            <span class="toggle-slider"></span>
+                        </label>
+                    </div>
+
+                    <div class="control-item">
+                        <label class="control-label">Highlight Subgroups</label>
+                        <select class="dropdown" id="subgroupHighlight">
+                            <option value="none">None</option>
+                            <option value="rotations">Rotations Only</option>
+                            <option value="reflections">Reflections Only</option>
+                            <option value="cyclic">Cyclic Subgroups</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+
+            <div class="main-visualization">
+                <div class="visualization-area">
+                    <div class="group-visualization" id="groupViz">
+                        <!-- Group elements will be dynamically generated here -->
+                    </div>
+                </div>
+
+                <div class="operation-display" id="cayleyTableContainer">
+                    <div class="operation-title">Cayley Table (Group Operation)</div>
+                    <p>Click on any two elements to see their composition</p>
+                    <div class="operation-grid" id="cayleyTable">
+                        <!-- Cayley table will be generated here -->
+                    </div>
+                </div>
+
+                <div class="operation-display">
+                    <div class="operation-title">Interactive Operation</div>
+                    <p>
+                        Selected: <span id="selectedElement1" class="math-expr">None</span> ∘ 
+                        <span id="selectedElement2" class="math-expr">None</span> = 
+                        <span id="operationResult" class="math-expr">?</span>
+                    </p>
+                    <button onclick="performRandomOperation()" style="margin-top: 10px; padding: 8px 16px; background-color: #3498db; color: white; border: none; border-radius: 4px; cursor: pointer;">
+                        Random Operation
+                    </button>
+                </div>
+            </div>
+
+            <div class="info-panel">
+                <div class="info-section">
+                    <div class="info-title">Group Properties</div>
+                    <ul class="property-list">
+                        <li>Order: <span class="property-value" id="groupOrder">8</span></li>
+                        <li>Type: <span class="property-value" id="groupTypeName">Dihedral</span></li>
+                        <li>Abelian: <span class="property-value" id="isAbelian">No</span></li>
+                        <li>Subgroups: <span class="property-value" id="subgroupCount">6</span></li>
+                        <li>Generators: <span class="property-value" id="generators">r, s</span></li>
+                    </ul>
+                </div>
+
+                <div class="info-section">
+                    <div class="info-title">Element Information</div>
+                    <div id="elementInfo">
+                        <p>Hover over or click elements to see detailed information about their properties and relationships.</p>
+                    </div>
+                </div>
+
+                <div class="info-section">
+                    <div class="info-title">Group Relations</div>
+                    <div id="groupRelations">
+                        <p class="math-expr">r^n = e</p>
+                        <p class="math-expr">s^2 = e</p>
+                        <p class="math-expr">srs = r^(-1)</p>
+                        <p><small>Where r = rotation, s = reflection, e = identity</small></p>
+                    </div>
+                </div>
+
+                <div class="info-section">
+                    <div class="info-title">Learning Notes</div>
+                    <div id="learningNotes">
+                        <p><strong>Tip:</strong> Dihedral groups model the symmetries of regular polygons. Try changing the number of vertices to see how the group structure changes!</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let currentGroup = null;
+        let selectedElements = [];
+        let animationSpeed = 5;
+
+        // Dihedral group data structure
+        class DihedralGroup {
+            constructor(n) {
+                this.n = n;
+                this.order = 2 * n;
+                this.elements = this.generateElements();
+                this.cayleyTable = this.generateCayleyTable();
+            }
+
+            generateElements() {
+                const elements = [];
+                // Rotations: r^0, r^1, ..., r^(n-1)
+                for (let i = 0; i < this.n; i++) {
+                    elements.push({
+                        id: `r${i}`,
+                        type: i === 0 ? 'identity' : 'rotation',
+                        name: i === 0 ? 'e' : `r^${i}`,
+                        order: this.n / this.gcd(i, this.n)
+                    });
+                }
+                // Reflections: sr^0, sr^1, ..., sr^(n-1)
+                for (let i = 0; i < this.n; i++) {
+                    elements.push({
+                        id: `sr${i}`,
+                        type: 'reflection',
+                        name: i === 0 ? 's' : `sr^${i}`,
+                        order: 2
+                    });
+                }
+                return elements;
+            }
+
+            generateCayleyTable() {
+                const table = {};
+                for (let i = 0; i < this.elements.length; i++) {
+                    table[this.elements[i].id] = {};
+                    for (let j = 0; j < this.elements.length; j++) {
+                        table[this.elements[i].id][this.elements[j].id] = 
+                            this.compose(this.elements[i], this.elements[j]);
+                    }
+                }
+                return table;
+            }
+
+            compose(a, b) {
+                // Simplified composition for dihedral groups
+                // This is a basic implementation for demonstration
+                if (a.type === 'identity') return b.id;
+                if (b.type === 'identity') return a.id;
+                
+                // For actual implementation, you'd need proper group operation logic
+                // This is simplified for demo purposes
+                const result = this.elements[Math.floor(Math.random() * this.elements.length)];
+                return result.id;
+            }
+
+            gcd(a, b) {
+                return b === 0 ? a : this.gcd(b, a % b);
+            }
+        }
+
+        function initializePlayground() {
+            currentGroup = new DihedralGroup(4);
+            updateVisualization();
+            updateCayleyTable();
+            updateGroupInfo();
+            setupEventListeners();
+        }
+
+        function setupEventListeners() {
+            document.getElementById('vertexSlider').addEventListener('input', (e) => {
+                const n = parseInt(e.target.value);
+                document.getElementById('vertexValue').textContent = n;
+                currentGroup = new DihedralGroup(n);
+                updateVisualization();
+                updateCayleyTable();
+                updateGroupInfo();
+            });
+
+            document.getElementById('speedSlider').addEventListener('input', (e) => {
+                animationSpeed = parseInt(e.target.value);
+                document.getElementById('speedValue').textContent = animationSpeed;
+            });
+
+            document.getElementById('showCayleyTable').addEventListener('change', (e) => {
+                document.getElementById('cayleyTableContainer').style.display = 
+                    e.target.checked ? 'block' : 'none';
+            });
+
+            document.getElementById('groupType').addEventListener('change', (e) => {
+                // For demo purposes, we'll just update the display
+                updateGroupInfo();
+            });
+        }
+
+        function updateVisualization() {
+            const viz = document.getElementById('groupViz');
+            viz.innerHTML = '';
+
+            const centerX = 175;
+            const centerY = 175;
+            const radius = 120;
+
+            currentGroup.elements.forEach((element, index) => {
+                const angle = (2 * Math.PI * index) / currentGroup.elements.length;
+                const x = centerX + radius * Math.cos(angle) - 20;
+                const y = centerY + radius * Math.sin(angle) - 20;
+
+                const elementDiv = document.createElement('div');
+                elementDiv.className = `group-element ${element.type}`;
+                elementDiv.style.left = `${x}px`;
+                elementDiv.style.top = `${y}px`;
+                elementDiv.textContent = element.name;
+                elementDiv.dataset.elementId = element.id;
+
+                elementDiv.addEventListener('click', () => selectElement(element));
+                elementDiv.addEventListener('mouseenter', () => showElementInfo(element));
+
+                viz.appendChild(elementDiv);
+            });
+        }
+
+        function updateCayleyTable() {
+            const table = document.getElementById('cayleyTable');
+            table.innerHTML = '';
+            table.style.setProperty('--cols', currentGroup.elements.length + 1);
+
+            // Header row
+            const headerCell = document.createElement('div');
+            headerCell.className = 'grid-cell header';
+            headerCell.textContent = '∘';
+            table.appendChild(headerCell);
+
+            currentGroup.elements.forEach(element => {
+                const cell = document.createElement('div');
+                cell.className = 'grid-cell header';
+                cell.textContent = element.name;
+                table.appendChild(cell);
+            });
+
+            // Data rows
+            currentGroup.elements.forEach(rowElement => {
+                // Row header
+                const rowHeader = document.createElement('div');
+                rowHeader.className = 'grid-cell header';
+                rowHeader.textContent = rowElement.name;
+                table.appendChild(rowHeader);
+
+                // Data cells
+                currentGroup.elements.forEach(colElement => {
+                    const cell = document.createElement('div');
+                    cell.className = 'grid-cell';
+                    const result = currentGroup.cayleyTable[rowElement.id][colElement.id];
+                    const resultElement = currentGroup.elements.find(e => e.id === result);
+                    cell.textContent = resultElement ? resultElement.name : '?';
+                    
+                    cell.addEventListener('click', () => {
+                        highlightOperation(rowElement, colElement, resultElement);
+                    });
+
+                    table.appendChild(cell);
+                });
+            });
+        }
+
+        function selectElement(element) {
+            selectedElements.push(element);
+            
+            if (selectedElements.length > 2) {
+                selectedElements = selectedElements.slice(-2);
+            }
+
+            updateSelectedDisplay();
+
+            if (selectedElements.length === 2) {
+                performOperation();
+            }
+        }
+
+        function updateSelectedDisplay() {
+            document.getElementById('selectedElement1').textContent = 
+                selectedElements[0] ? selectedElements[0].name : 'None';
+            document.getElementById('selectedElement2').textContent = 
+                selectedElements[1] ? selectedElements[1].name : 'None';
+        }
+
+        function performOperation() {
+            if (selectedElements.length !== 2) return;
+
+            const result = currentGroup.cayleyTable[selectedElements[0].id][selectedElements[1].id];
+            const resultElement = currentGroup.elements.find(e => e.id === result);
+            
+            document.getElementById('operationResult').textContent = 
+                resultElement ? resultElement.name : '?';
+
+            // Animate the operation
+            animateOperation(selectedElements[0], selectedElements[1], resultElement);
+        }
+
+        function performRandomOperation() {
+            const randomElements = [
+                currentGroup.elements[Math.floor(Math.random() * currentGroup.elements.length)],
+                currentGroup.elements[Math.floor(Math.random() * currentGroup.elements.length)]
+            ];
+
+            selectedElements = randomElements;
+            updateSelectedDisplay();
+            performOperation();
+        }
+
+        function animateOperation(elem1, elem2, result) {
+            // Find and highlight the elements in the visualization
+            const vizElements = document.querySelectorAll('.group-element');
+            
+            vizElements.forEach(vizElem => {
+                if (vizElem.dataset.elementId === elem1.id || 
+                    vizElem.dataset.elementId === elem2.id || 
+                    vizElem.dataset.elementId === result.id) {
+                    vizElem.classList.add('highlight-animation');
+                    setTimeout(() => {
+                        vizElem.classList.remove('highlight-animation');
+                    }, 1000);
+                }
+            });
+        }
+
+        function highlightOperation(elem1, elem2, result) {
+            selectedElements = [elem1, elem2];
+            updateSelectedDisplay();
+            performOperation();
+        }
+
+        function showElementInfo(element) {
+            const infoDiv = document.getElementById('elementInfo');
+            infoDiv.innerHTML = `
+                <p><strong>Element:</strong> ${element.name}</p>
+                <p><strong>Type:</strong> ${element.type}</p>
+                <p><strong>Order:</strong> ${element.order}</p>
+                <p><strong>ID:</strong> ${element.id}</p>
+                ${element.type === 'rotation' ? 
+                    `<p><strong>Angle:</strong> ${(360 * parseInt(element.id.slice(1)) / currentGroup.n).toFixed(1)}°</p>` : 
+                    ''}
+            `;
+        }
+
+        function updateGroupInfo() {
+            document.getElementById('groupOrder').textContent = currentGroup.order;
+            document.getElementById('groupTypeName').textContent = 
+                document.getElementById('groupType').value === 'dihedral' ? 'Dihedral' : 'Other';
+            document.getElementById('isAbelian').textContent = 
+                currentGroup.n <= 2 ? 'Yes' : 'No';
+            document.getElementById('subgroupCount').textContent = 
+                Math.floor(currentGroup.order / 2) + 2; // Simplified calculation
+            document.getElementById('generators').textContent = 'r, s';
+        }
+
+        function resetToDefaults() {
+            document.getElementById('vertexSlider').value = 4;
+            document.getElementById('vertexValue').textContent = 4;
+            document.getElementById('speedSlider').value = 5;
+            document.getElementById('speedValue').textContent = 5;
+            document.getElementById('showCayleyTable').checked = true;
+            document.getElementById('groupType').value = 'dihedral';
+            
+            currentGroup = new DihedralGroup(4);
+            selectedElements = [];
+            updateVisualization();
+            updateCayleyTable();
+            updateGroupInfo();
+            updateSelectedDisplay();
+            
+            document.getElementById('operationResult').textContent = '?';
+            document.getElementById('cayleyTableContainer').style.display = 'block';
+        }
+
+        // Initialize the playground when the page loads
+        document.addEventListener('DOMContentLoaded', initializePlayground);
+    </script>
+</body>
+</html> 
