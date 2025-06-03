@@ -3,13 +3,14 @@ import type { BracketSize } from "./BracketSize";
 import type { BracketStyle } from "./BracketStyle";
 import type { DifferentialStyle } from "./DifferentialStyle";
 import type { DivisionStyle } from "./DivisionStyle";
-import type { IdentifierNode } from "./IdentifierNode";
 import type { MathNode } from "./MathNode";
 import type { QuantificationNode } from "./QuantificationNode";
 import type { RefinedAddOrSubOperator } from "./RefinedAddOrSubOperator";
 import type { RefinedMulOrDivOperation } from "./RefinedMulOrDivOperation";
 import type { RelationOperatorNode } from "./RelationOperatorNode";
 import type { ScientificNotationStyle } from "./ScientificNotationStyle";
+import type { ScriptNode } from "./ScriptNode";
+import type { SpecialMiddleScriptNode } from "./SpecialMiddleScriptNode";
 import type { UnaryRelationOperatorNode } from "./UnaryRelationOperatorNode";
 
 export type MathNodeContent =
@@ -50,7 +51,7 @@ export type MathNodeContent =
   | { "UnaryPostfixOperation": { parameter: MathNode; operator: MathNode } }
   | { "UnaryPrefixOperation": { parameter: MathNode; operator: MathNode } }
   | { "Abs": { parameter: MathNode } }
-  | { "FunctionCall": { name: IdentifierNode; parameters: Array<MathNode> } }
+  | { "FunctionCall": { name: MathNode; parameters: Array<MathNode> } }
   | {
     "Quantity": {
       number: string;
@@ -64,7 +65,16 @@ export type MathNodeContent =
       style: ScientificNotationStyle;
     };
   }
-  | { "Identifier": IdentifierNode }
+  | {
+    "Identifier": {
+      body: string;
+      pre_script: ScriptNode | null;
+      mid_script: SpecialMiddleScriptNode | null;
+      post_script: ScriptNode | null;
+      primes: number;
+      is_function: boolean;
+    };
+  }
   | { "Unit": { original_form: MathNode; flattened_form: MathNode } }
   | {
     "Relationship": {

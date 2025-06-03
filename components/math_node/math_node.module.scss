@@ -797,3 +797,401 @@
 @import url(./mi.module.scss);
 @import url(./mn.modules.scss);
 @import url(./mo.module.scss);
+
+// Base math node styles
+.mathNode {
+  display: inline-block;
+  font-family: 'KaTeX_Math', 'Times New Roman', serif;
+  font-size: 1rem;
+  line-height: 1.2;
+  color: var(--math-text-color, #000000);
+}
+
+// Text content
+.text {
+  font-family: inherit;
+}
+
+// Identifiers and variables
+.identifier {
+  font-style: italic;
+  color: var(--identifier-color, #000080);
+}
+
+.functionIdentifier {
+  font-style: normal;
+  font-weight: 500;
+}
+
+// Numbers and quantities
+.quantity {
+  font-style: normal;
+  color: var(--number-color, #000000);
+}
+
+.scientificNotation {
+  font-style: normal;
+  
+  .mantissa {
+    color: var(--number-color, #000000);
+  }
+  
+  .exponent {
+    font-size: 0.8em;
+    vertical-align: super;
+  }
+}
+
+// Mathematical operators
+.operator {
+  margin: 0 0.2em;
+  font-style: normal;
+  color: var(--operator-color, #000000);
+}
+
+.binaryOperator {
+  margin: 0 0.3em;
+}
+
+.unaryOperator {
+  margin-right: 0.1em;
+}
+
+// Relationships and comparisons
+.relationship {
+  margin: 0 0.3em;
+  font-style: normal;
+  color: var(--relation-color, #000080);
+}
+
+// Powers and superscripts
+.power {
+  position: relative;
+  
+  .base {
+    display: inline-block;
+  }
+  
+  .exponent {
+    font-size: 0.7em;
+    vertical-align: super;
+    margin-left: 0.1em;
+  }
+}
+
+// Subscripts
+.subscript {
+  position: relative;
+  
+  .base {
+    display: inline-block;
+  }
+  
+  .subscriptValue {
+    font-size: 0.7em;
+    vertical-align: sub;
+    margin-left: 0.1em;
+  }
+}
+
+// Fractions
+.fraction {
+  display: inline-block;
+  vertical-align: middle;
+  text-align: center;
+  
+  .numerator {
+    display: block;
+    border-bottom: 1px solid var(--fraction-line-color, #000000);
+    padding-bottom: 0.1em;
+    margin-bottom: 0.1em;
+  }
+  
+  .denominator {
+    display: block;
+    padding-top: 0.1em;
+  }
+}
+
+// Square roots
+.sqrt {
+  position: relative;
+  padding-left: 0.5em;
+  
+  &::before {
+    content: '√';
+    position: absolute;
+    left: 0;
+    top: 0;
+    font-size: 1.2em;
+    line-height: 1;
+  }
+  
+  .radicand {
+    border-top: 1px solid var(--sqrt-line-color, #000000);
+    padding-top: 0.1em;
+    padding-left: 0.2em;
+  }
+}
+
+// Function calls
+.functionCall {
+  .functionName {
+    font-style: normal;
+    font-weight: 500;
+    color: var(--function-color, #800080);
+  }
+  
+  .arguments {
+    margin-left: 0.1em;
+  }
+}
+
+// Parentheses and brackets
+.parentheses,
+.brackets,
+.braces {
+  font-size: 1.2em;
+  vertical-align: middle;
+  margin: 0 0.1em;
+}
+
+// Sets
+.set {
+  .setElements {
+    margin: 0 0.2em;
+  }
+  
+  .setBuilder {
+    margin: 0 0.1em;
+    font-style: italic;
+  }
+}
+
+// Matrices
+.matrix {
+  display: inline-block;
+  vertical-align: middle;
+  
+  .matrixContent {
+    display: grid;
+    gap: 0.3em;
+    padding: 0.3em;
+    border-left: 2px solid var(--matrix-border-color, #000000);
+    border-right: 2px solid var(--matrix-border-color, #000000);
+  }
+  
+  .matrixElement {
+    text-align: center;
+    padding: 0.1em 0.3em;
+  }
+}
+
+// Summations and products
+.summation,
+.product {
+  display: inline-block;
+  position: relative;
+  vertical-align: middle;
+  
+  .operator {
+    font-size: 1.5em;
+    line-height: 1;
+  }
+  
+  .lowerBound {
+    position: absolute;
+    bottom: -0.8em;
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: 0.7em;
+  }
+  
+  .upperBound {
+    position: absolute;
+    top: -0.8em;
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: 0.7em;
+  }
+  
+  .summand {
+    margin-left: 0.3em;
+  }
+}
+
+// Integrals
+.integral {
+  display: inline-block;
+  position: relative;
+  vertical-align: middle;
+  
+  .integralSymbol {
+    font-size: 1.8em;
+    line-height: 1;
+    margin-right: 0.2em;
+  }
+  
+  .integrand {
+    margin-right: 0.2em;
+  }
+  
+  .differentialVariable {
+    margin-left: 0.1em;
+    font-style: italic;
+  }
+  
+  .bounds {
+    position: absolute;
+    right: 100%;
+    
+    .lowerBound {
+      position: absolute;
+      bottom: 0;
+      font-size: 0.7em;
+    }
+    
+    .upperBound {
+      position: absolute;
+      top: 0;
+      font-size: 0.7em;
+    }
+  }
+}
+
+// Limits
+.limit {
+  display: inline-block;
+  
+  .limitOperator {
+    font-style: normal;
+    margin-right: 0.3em;
+  }
+  
+  .limitVariable {
+    font-size: 0.8em;
+    vertical-align: sub;
+    margin-left: -0.2em;
+  }
+  
+  .limitValue {
+    font-size: 0.8em;
+    vertical-align: sub;
+  }
+  
+  .expression {
+    margin-left: 0.3em;
+  }
+}
+
+// Differentials
+.differential {
+  .differentialSymbol {
+    font-style: italic;
+    margin-right: 0.1em;
+  }
+  
+  .order {
+    font-size: 0.7em;
+    vertical-align: super;
+  }
+  
+  .function {
+    margin: 0 0.1em;
+  }
+  
+  .variable {
+    font-style: italic;
+    margin: 0 0.1em;
+  }
+}
+
+// Quantified expressions
+.quantifiedExpression {
+  .quantifier {
+    font-size: 1.2em;
+    margin-right: 0.3em;
+  }
+  
+  .variable {
+    font-style: italic;
+    margin: 0 0.2em;
+  }
+  
+  .domain {
+    margin: 0 0.2em;
+  }
+  
+  .expression {
+    margin-left: 0.3em;
+  }
+}
+
+// Function definitions
+.functionDefinition {
+  .functionName {
+    font-style: italic;
+    margin-right: 0.1em;
+  }
+  
+  .parameters {
+    margin: 0 0.1em;
+  }
+  
+  .equals {
+    margin: 0 0.3em;
+  }
+  
+  .body {
+    margin-left: 0.1em;
+  }
+}
+
+// Special symbols
+.infinity {
+  font-size: 1.2em;
+}
+
+.delimiter {
+  font-size: 1.2em;
+  margin: 0 0.1em;
+}
+
+// Error and unknown content
+.error {
+  background-color: var(--error-bg-color, #ffe6e6);
+  color: var(--error-text-color, #cc0000);
+  padding: 0.2em;
+  border-radius: 3px;
+  font-style: italic;
+}
+
+.unknown {
+  background-color: var(--unknown-bg-color, #fff3cd);
+  color: var(--unknown-text-color, #856404);
+  padding: 0.2em;
+  border-radius: 3px;
+  font-style: italic;
+}
+
+// Responsive adjustments
+@media (max-width: 768px) {
+  .mathNode {
+    font-size: 0.9rem;
+  }
+  
+  .fraction {
+    .numerator,
+    .denominator {
+      font-size: 0.9em;
+    }
+  }
+  
+  .power .exponent {
+    font-size: 0.6em;
+  }
+  
+  .subscript .subscriptValue {
+    font-size: 0.6em;
+  }
+}

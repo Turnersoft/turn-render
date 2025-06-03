@@ -35,14 +35,14 @@ impl MathNode {
     pub fn identifier(input: String) -> MathNode {
         MathNode {
             id: input.clone(),
-            content: Box::new(MathNodeContent::Identifier(IdentifierNode {
+            content: Box::new(MathNodeContent::Identifier {
                 body: input,
                 pre_script: None,
                 mid_script: None,
                 post_script: None,
                 primes: 0,
                 is_function: false,
-            })),
+            }),
         }
     }
 }
@@ -119,7 +119,7 @@ pub enum MathNodeContent {
 
     // general function names
     FunctionCall {
-        name: IdentifierNode,
+        name: Box<MathNode>,
         parameters: Vec<MathNode>,
     },
 
@@ -134,7 +134,14 @@ pub enum MathNodeContent {
         style: ScientificNotationStyle,
     },
 
-    Identifier(IdentifierNode),
+    Identifier {
+        body: String,
+        pre_script: Option<ScriptNode>,
+        mid_script: Option<SpecialMiddleScriptNode>,
+        post_script: Option<ScriptNode>,
+        primes: usize,
+        is_function: bool,
+    },
 
     Unit {
         original_form: Box<MathNode>,  // multiplication
@@ -189,17 +196,6 @@ pub enum MathNodeContent {
         domain: Option<Box<MathNode>>,    // Optional domain (the "∈ S" part)
         predicate: Option<Box<MathNode>>, // Optional predicate (the ": P(x)" part)
     },
-}
-
-#[derive(Debug, Clone, Eq, PartialEq, Hash, Serialize, Deserialize, TS)]
-#[ts(export)]
-pub struct IdentifierNode {
-    pub body: String,
-    pub pre_script: Option<ScriptNode>,
-    pub mid_script: Option<SpecialMiddleScriptNode>,
-    pub post_script: Option<ScriptNode>,
-    pub primes: usize,
-    pub is_function: bool,
 }
 
 #[derive(Debug, Clone, Eq, PartialEq, Hash, Serialize, Deserialize, TS)]

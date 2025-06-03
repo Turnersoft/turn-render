@@ -24,7 +24,7 @@ import type { WikiPageContent } from "./WikiPageContent";
 /**
  * Each variant represents a distinct document type with its own specialized structure and behavior
  */
-export type MathematicalContentType =
+export type MathDocumentType =
   | { "WikiPage": WikiPageContent }
   | { "Textbook": TextbookContent }
   | { "ScientificPaper": ScientificPaperContent }

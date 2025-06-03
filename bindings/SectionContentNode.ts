@@ -9,8 +9,8 @@ import type { ImageNode } from "./ImageNode";
 import type { InteractiveControls } from "./InteractiveControls";
 import type { InteractiveDiagramNode } from "./InteractiveDiagramNode";
 import type { ListNode } from "./ListNode";
+import type { MathDocument } from "./MathDocument";
 import type { MathNode } from "./MathNode";
-import type { MathematicalContent } from "./MathematicalContent";
 import type { PanelLayout } from "./PanelLayout";
 import type { ParagraphNode } from "./ParagraphNode";
 import type { Section } from "./Section";
@@ -62,4 +62,4 @@ export type SectionContentNode =
   | { "PanelLayout": PanelLayout }
   | { "AnnotationOverlay": AnnotationOverlay }
   | { "InteractiveControls": InteractiveControls }
-  | { "EmbeddedDocument": MathematicalContent };
+  | { "EmbeddedDocument": MathDocument };

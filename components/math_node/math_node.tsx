@@ -1,14 +1,15 @@
 import React, { CSSProperties, ReactElement, ReactNode, useEffect, useRef, useState } from 'react';
 import classNames from 'classnames';
-import styles from './turn-math.module.scss';
-import { MathNode } from './bindings/MathNode.ts';
-import { MathNodeContent } from './bindings/MathNodeContent.ts';
-import { TurnTextLineNode } from './bindings/TurnTextLineNode.ts';
+import styles from './math_node.module.scss';
+import { MathNode } from '../../bindings/MathNode.ts';
+import { MathNodeContent } from '../../bindings/MathNodeContent.ts';
+import { TurnTextLineNode } from '../../bindings/TurnTextLineNode.ts';
 import { MathJaxProvider, MathJaxNode } from '@yozora/react-mathjax';
-import { RefinedMulOrDivOperation } from './bindings/RefinedMulOrDivOperation.ts';
-import { SpecialMiddleScriptContentTypeNode } from './bindings/SpecialMiddleScriptContentTypeNode.ts';
-import { UnaryRelationOperatorNode } from './bindings/UnaryRelationOperatorNode.ts';
-import { RelationOperatorNode } from './bindings/RelationOperatorNode.ts';
+import { RefinedMulOrDivOperation } from '../../bindings/RefinedMulOrDivOperation.ts';
+import { SpecialMiddleScriptContentTypeNode } from '../../bindings/SpecialMiddleScriptContentTypeNode.ts';
+import { UnaryRelationOperatorNode } from '../../bindings/UnaryRelationOperatorNode.ts';
+import { RelationOperatorNode } from '../../bindings/RelationOperatorNode.ts';
+import { ScriptNode } from '../../bindings/ScriptNode.ts';
 
 const hasMarginList = [
     '÷',
@@ -1228,7 +1229,7 @@ const UnderOver = ({
 
         return <Component type="Mo">{_SpecialMiddleScriptContent[_type]}</Component>;
     } else if (Object.keys(data)[0] === 'Dot') {
-        return Array.from({ length: data.Dot }).map((dite, dind) => {
+        return Array.from({ length: data.Dot }).map((_, dind) => {
             return (
                 <Component type="Mo" key={dind}>
                     {_SpecialMiddleScriptContent['Dot']}
@@ -1239,7 +1240,7 @@ const UnderOver = ({
     return null;
 };
 
-export const renderMathNode = (node: MathNode, primes = 0): React.ReactNode => {
+export const renderMathNode = (node: MathNode): React.ReactNode => {
     if (node.content === 'Empty') return null;
     const key = Object.keys(node.content)[0];
 
@@ -1353,7 +1354,7 @@ export const renderMathNode = (node: MathNode, primes = 0): React.ReactNode => {
                         _classNames: styles.editable_span,
                     }}
                 >
-                    <Component type="Muner">
+                    <Component type="Munder">
                         <Component
                             type="Mrow"
                             _props={{
@@ -1362,11 +1363,135 @@ export const renderMathNode = (node: MathNode, primes = 0): React.ReactNode => {
                                 },
                             }}
                         >
-                            {StringMapNode(Limit.variable)}
+                            <Component type="Mi">lim</Component>
                         </Component>
-                        <Component type="Mrow">{renderMathNode(Limit.approaching_value)}</Component>
+                        <Component type="Mrow">
+                            <Component type="Mi">{Limit.variable}</Component>
+                            <Component type="Mo">→</Component>
+                            {renderMathNode(Limit.approaching_value)}
+                        </Component>
                     </Component>
+                    <Component
+                        type="Mspace"
+                        _props={{
+                            width: '0.167',
+                        }}
+                    ></Component>
                     {renderMathNode(Limit.function)}
+                </Component>
+            );
+        case 'Differential':
+            const { Differential } = node.content as Extract<MathNodeContent, { Differential: any }>;
+            return (
+                <Component
+                    type="Mrow"
+                    _props={{
+                        id: node.id,
+                        _classNames: styles.editable_span,
+                    }}
+                >
+                    <Component type="Mfrac">
+                        <Component type="Mrow">
+                            <Component type="Mi">d</Component>
+                            <Component type="Msup">
+                                <Component type="Mrow"></Component>
+                                <Component type="Mrow">{renderMathNode(Differential.order)}</Component>
+                            </Component>
+                            {renderMathNode(Differential.target)}
+                        </Component>
+                        <Component type="Mrow">
+                            <Component type="Mi">d</Component>
+                            <Component type="Mi">x</Component>
+                            <Component type="Msup">
+                                <Component type="Mrow"></Component>
+                                <Component type="Mrow">{renderMathNode(Differential.order)}</Component>
+                            </Component>
+                        </Component>
+                    </Component>
+                </Component>
+            );
+        case 'QuantifiedExpression':
+            const { QuantifiedExpression } = node.content as Extract<MathNodeContent, { QuantifiedExpression: any }>;
+            return (
+                <Component
+                    type="Mrow"
+                    _props={{
+                        id: node.id,
+                        _classNames: styles.editable_span,
+                    }}
+                >
+                    <Component type="Mo">
+                        {QuantifiedExpression.quantifier === 'Universal' ? '∀' : 
+                         QuantifiedExpression.quantifier === 'Existential' ? '∃' : 
+                         QuantifiedExpression.quantifier === 'UniqueExistential' ? '∃!' : ''}
+                    </Component>
+                    <Component
+                        type="Mspace"
+                        _props={{
+                            width: '0.167',
+                        }}
+                    ></Component>
+                    {QuantifiedExpression.variables.map((variable, index) => (
+                        <Component type="Mrow" key={index}>
+                            {renderMathNode(variable)}
+                            {index < QuantifiedExpression.variables.length - 1 && <Component type="Mo">,</Component>}
+                        </Component>
+                    ))}
+                    {QuantifiedExpression.domain && (
+                        <Component type="Mrow">
+                            <Component
+                                type="Mspace"
+                                _props={{
+                                    width: '0.167',
+                                }}
+                            ></Component>
+                            <Component type="Mo">∈</Component>
+                            <Component
+                                type="Mspace"
+                                _props={{
+                                    width: '0.167',
+                                }}
+                            ></Component>
+                            {renderMathNode(QuantifiedExpression.domain)}
+                        </Component>
+                    )}
+                    {QuantifiedExpression.predicate && (
+                        <Component type="Mrow">
+                            <Component
+                                type="Mspace"
+                                _props={{
+                                    width: '0.167',
+                                }}
+                            ></Component>
+                            <Component type="Mo">:</Component>
+                            <Component
+                                type="Mspace"
+                                _props={{
+                                    width: '0.167',
+                                }}
+                            ></Component>
+                            {renderMathNode(QuantifiedExpression.predicate)}
+                        </Component>
+                    )}
+                </Component>
+            );
+        case 'ScientificNotation':
+            const { ScientificNotation } = node.content as Extract<MathNodeContent, { ScientificNotation: any }>;
+            return (
+                <Component
+                    type="Mrow"
+                    _props={{
+                        id: node.id,
+                        _classNames: styles.editable_span,
+                    }}
+                >
+                    {renderMathNode(ScientificNotation.magnitude)}
+                    <Component type="Mo">×</Component>
+                    <Component type="Mn">10</Component>
+                    <Component type="Msup">
+                        <Component type="Mrow"></Component>
+                        <Component type="Mrow">{/* Add exponent handling based on style */}</Component>
+                    </Component>
                 </Component>
             );
         case 'Multiplications':
@@ -1660,89 +1785,10 @@ export const renderMathNode = (node: MathNode, primes = 0): React.ReactNode => {
                 </Component>
             );
 
-        case 'LogFunction':
-            const { LogFunction } = node.content as Extract<MathNodeContent, { LogFunction: any }>;
-            return (
-                <Component
-                    type="Mrow"
-                    _props={{
-                        id: node.id,
-                        _classNames: styles.editable_span,
-                    }}
-                >
-                    <Component type="Msub">
-                        <Component type="Mrow">
-                            <Component type="Mi">L</Component>
-                            <Component type="Mi">o</Component>
-                            <Component type="Mi">g</Component>
-                        </Component>
-                        {LogFunction.base && (
-                            <Component type="Mrow">{renderMathNode(LogFunction.base)}</Component>
-                        )}
-                        {renderMathNode(LogFunction.parameter)}
-                    </Component>
-                </Component>
-            );
-
-        case 'Log2':
-            const { Log2 } = node.content as Extract<MathNodeContent, { Log2: any }>;
-            return (
-                <Component
-                    type="Mrow"
-                    _props={{
-                        id: node.id,
-                        _classNames: styles.editable_span,
-                    }}
-                >
-                    <Component type="Msub">
-                        {StringMapNode('Log')}
-                        <Component type="Mn">2</Component>
-                    </Component>
-                    <Component type="Mo">(</Component>
-                    {renderMathNode(Log2.parameter)}
-                    <Component type="Mo">)</Component>
-                </Component>
-            );
-
-        case 'Log10':
-            const { Log10 } = node.content as Extract<MathNodeContent, { Log10: any }>;
-            return (
-                <Component
-                    type="Mrow"
-                    _props={{
-                        id: node.id,
-                        _classNames: styles.editable_span,
-                    }}
-                >
-                    <Component type="Msub">
-                        {StringMapNode('Log')}
-                        <Component type="Mn">10</Component>
-                    </Component>
-                    <Component type="Mo">(</Component>
-                    {renderMathNode(Log10.parameter)}
-                    <Component type="Mo">)</Component>
-                </Component>
-            );
-        case 'Ln':
-            const { Ln } = node.content as Extract<MathNodeContent, { Ln: any }>;
-            return (
-                <Component
-                    type="Mrow"
-                    _props={{
-                        id: node.id,
-                        _classNames: styles.editable_span,
-                    }}
-                >
-                    {StringMapNode('Ln')}
-                    <Component type="Mo">(</Component>
-                    {renderMathNode(Ln.parameter)}
-                    <Component type="Mo">)</Component>
-                </Component>
-            );
-        case 'UnaryPostfix':
-            const { UnaryPostfix } = node.content as Extract<
+        case 'UnaryPostfixOperation':
+            const { UnaryPostfixOperation } = node.content as Extract<
                 MathNodeContent,
-                { UnaryPostfix: any }
+                { UnaryPostfixOperation: any }
             >;
             return (
                 <Component
@@ -1752,12 +1798,12 @@ export const renderMathNode = (node: MathNode, primes = 0): React.ReactNode => {
                         _classNames: styles.editable_span,
                     }}
                 >
-                    {renderMathNode(UnaryPostfix.parameter)}
-                    {StringMapNode(UnaryPostfix.operator)}
+                    {renderMathNode(UnaryPostfixOperation.parameter)}
+                    {renderMathNode(UnaryPostfixOperation.operator)}
                 </Component>
             );
-        case 'UnaryPrefix':
-            const { UnaryPrefix } = node.content as Extract<MathNodeContent, { UnaryPrefix: any }>;
+        case 'UnaryPrefixOperation':
+            const { UnaryPrefixOperation } = node.content as Extract<MathNodeContent, { UnaryPrefixOperation: any }>;
             return (
                 <Component
                     type="Mrow"
@@ -1766,8 +1812,8 @@ export const renderMathNode = (node: MathNode, primes = 0): React.ReactNode => {
                         _classNames: styles.editable_span,
                     }}
                 >
-                    {StringMapNode(UnaryPrefix.operator)}
-                    {renderMathNode(UnaryPrefix.parameter)}
+                    {renderMathNode(UnaryPrefixOperation.operator)}
+                    {renderMathNode(UnaryPrefixOperation.parameter)}
                 </Component>
             );
         case 'Abs':
@@ -1799,10 +1845,10 @@ export const renderMathNode = (node: MathNode, primes = 0): React.ReactNode => {
                     <Component type="Mrow">{renderMathNode(Power.exponent)}</Component>
                 </Component>
             );
-        case 'CustomFunction':
-            const { CustomFunction } = node.content as Extract<
+        case 'FunctionCall':
+            const { FunctionCall } = node.content as Extract<
                 MathNodeContent,
-                { CustomFunction: any }
+                { FunctionCall: any }
             >;
 
             return (
@@ -1816,122 +1862,13 @@ export const renderMathNode = (node: MathNode, primes = 0): React.ReactNode => {
                         },
                     }}
                 >
-                    {renderMathNode(CustomFunction.name)}
+                    {renderMathNode(FunctionCall.name)}
                     <Component type="Mo">(</Component>
-                    {CustomFunction.parameters.map((item, ind) => {
+                    {FunctionCall.parameters.map((item, ind) => {
                         return (
                             <Component type="Mrow" key={ind}>
                                 {renderMathNode(item)}
-                                {ind < CustomFunction.parameters.length - 1 && (
-                                    <Component type="Mo">,</Component>
-                                )}
-                            </Component>
-                        );
-                    })}
-                    <Component type="Mo">)</Component>
-                </Component>
-            );
-        case 'SimpleUnaryFunction':
-            const { SimpleUnaryFunction } = node.content as Extract<
-                MathNodeContent,
-                { SimpleUnaryFunction: any }
-            >;
-
-            switch (SimpleUnaryFunction.name) {
-                case 'abs':
-                    return (
-                        <Component
-                            type="Mrow"
-                            _props={{
-                                id: node.id,
-                                _classNames: styles.editable_span,
-                            }}
-                        >
-                            <Component type="Mo">|</Component>
-                            {renderMathNode(SimpleUnaryFunction.parameter)}
-                            <Component type="Mo">|</Component>
-                        </Component>
-                    );
-                case 'sqrt':
-                    return (
-                        <Component
-                            type="Mrow"
-                            _props={{
-                                id: node.id,
-                                _classNames: styles.editable_span,
-                            }}
-                        >
-                            <Component type="Msqrt">
-                                {renderMathNode(SimpleUnaryFunction.parameter)}
-                            </Component>
-                        </Component>
-                    );
-                case 'opposite':
-                    return (
-                        <Component
-                            type="Mrow"
-                            _props={{
-                                id: node.id,
-                                _classNames: styles.editable_span,
-                            }}
-                        >
-                            <Component type="Mo" _props={{ isUnit: true }}>
-                                -
-                            </Component>
-                            {renderMathNode(SimpleUnaryFunction.parameter)}
-                        </Component>
-                    );
-                case 'percentage':
-                    return (
-                        <Component
-                            type="Mrow"
-                            _props={{
-                                id: node.id,
-                                _classNames: styles.editable_span,
-                            }}
-                        >
-                            {renderMathNode(SimpleUnaryFunction.parameter)}
-                            <Component type="Mo" _props={{ isUnit: true }}>
-                                %
-                            </Component>
-                        </Component>
-                    );
-            }
-
-            return (
-                <Component
-                    type="Mrow"
-                    _props={{
-                        id: node.id,
-                        _classNames: styles.editable_span,
-                    }}
-                >
-                    {StringMapNode(SimpleUnaryFunction.name)}
-                    <Component type="Mo">(</Component>
-                    {renderMathNode(SimpleUnaryFunction.parameter)}
-                    <Component type="Mo">)</Component>
-                </Component>
-            );
-        case 'SimpleMultinaryFunction':
-            const { SimpleMultinaryFunction } = node.content as Extract<
-                MathNodeContent,
-                { SimpleMultinaryFunction: any }
-            >;
-            return (
-                <Component
-                    type="Mrow"
-                    _props={{
-                        id: node.id,
-                        _classNames: styles.editable_span,
-                    }}
-                >
-                    <Component type="Mo">{SimpleMultinaryFunction.name}</Component>
-                    <Component type="Mo">(</Component>
-                    {SimpleMultinaryFunction.parameters.map((item, ind) => {
-                        return (
-                            <Component type="Mrow" key={ind}>
-                                {renderMathNode(item)}
-                                {ind < CustomFunction.parameters.length && (
+                                {ind < FunctionCall.parameters.length - 1 && (
                                     <Component type="Mo">,</Component>
                                 )}
                             </Component>
@@ -1951,6 +1888,7 @@ export const renderMathNode = (node: MathNode, primes = 0): React.ReactNode => {
                     }}
                 >
                     {StringMapNode(Quantity.number, node.id)}
+                    {Quantity.scientific_notation && renderMathNode(Quantity.scientific_notation)}
                     {Quantity.unit && renderMathNode(Quantity.unit)}
                 </Component>
             );
@@ -1964,7 +1902,7 @@ export const renderMathNode = (node: MathNode, primes = 0): React.ReactNode => {
                         _classNames: styles.editable_span,
                     }}
                 >
-                    {Identifier.pre_script && renderMathNode(Identifier.pre_script)}
+                    {Identifier.pre_script && renderScriptNode(Identifier.pre_script, node.id, 0)}
                     {Identifier.mid_script ? (
                         <Component type="Mover">
                             <Component type="Munder">
@@ -2003,67 +1941,15 @@ export const renderMathNode = (node: MathNode, primes = 0): React.ReactNode => {
                     ) : (
                         StringMapNode(Identifier.body)
                     )}
-                    {(Identifier.post_script || Identifier.primes > 0) &&
-                        renderMathNode(
-                            Identifier.post_script ||
-                                ({
-                                    id: '',
-                                    content: {
-                                        Script: {
-                                            subscripts: [],
-                                            superscripts: [],
-                                        },
-                                    },
-                                } as MathNode),
+                    {(Identifier.post_script) &&
+                        renderScriptNode(
+                            Identifier.post_script,
+                            node.id,
                             Identifier.primes
                         )}
                 </Component>
             );
-        case 'Script':
-            const { Script } = node.content as Extract<MathNodeContent, { Script: any }>;
-            return (
-                <Component
-                    type="Msubsup"
-                    _props={{
-                        id: node.id,
-                        _classNames: styles.editable_span,
-                    }}
-                >
-                    {primes > 0 && !Script.superscripts.length ? (
-                        <Mrow dataType="sup" key="dot">
-                            {[...Array(primes)].map((_, ind) => {
-                                return (
-                                    <Component type="Mo" key={'dot' + ind}>
-                                        '
-                                    </Component>
-                                );
-                            })}
-                        </Mrow>
-                    ) : null}
-                    {Script.subscripts.map((item, ind) => {
-                        return (
-                            <Mrow dataType="sub" key={'_sub' + ind}>
-                                {renderMathNode(item)}
-                            </Mrow>
-                        );
-                    })}
-                    {Script.superscripts.map((item, ind) => {
-                        return (
-                            <Mrow dataType="sup" key={'_sup' + ind}>
-                                {ind === 0 &&
-                                    [...Array(primes)].map((_, ind) => {
-                                        return (
-                                            <Component type="Mo" key={'dot' + ind}>
-                                                '
-                                            </Component>
-                                        );
-                                    })}
-                                {renderMathNode(item)}
-                            </Mrow>
-                        );
-                    })}
-                </Component>
-            );
+
         case 'Unit':
             const { Unit } = node.content as Extract<MathNodeContent, { Unit: any }>;
             return (
@@ -2079,9 +1965,6 @@ export const renderMathNode = (node: MathNode, primes = 0): React.ReactNode => {
                     {renderMathNode(Unit.flattened_form)}
                 </Component>
             );
-        case 'BaseUnit':
-            const { BaseUnit } = node.content as Extract<MathNodeContent, { BaseUnit: any }>;
-            return StringMapNode(BaseUnit, node.id);
         case 'Relationship':
             const { Relationship } = node.content as Extract<
                 MathNodeContent,
@@ -2182,9 +2065,56 @@ export const renderMathNode = (node: MathNode, primes = 0): React.ReactNode => {
                     }}
                 >
                     {renderMathNode(FunctionDefinition.custom_function)}
+                    {FunctionDefinition.definition && <Component type="Mo">=</Component>}
                     {FunctionDefinition.definition && renderMathNode(FunctionDefinition.definition)}
                 </Component>
             );
     }
     return null;
 };
+
+function renderScriptNode(Script: ScriptNode, id: string, primes: number) {
+    return (
+        <Component
+            type="Msubsup"
+            _props={{
+                id,
+                _classNames: styles.editable_span,
+            }}
+        >
+            {primes > 0 && !Script.superscripts.length ? (
+                <Mrow dataType="sup" key="dot">
+                    {[...Array(primes)].map((_, ind) => {
+                        return (
+                            <Component type="Mo" key={'dot' + ind}>
+                                '
+                            </Component>
+                        );
+                    })}
+                </Mrow>
+            ) : null}
+            {Script.subscripts.map((item, ind) => {
+                return (
+                    <Mrow dataType="sub" key={'_sub' + ind}>
+                        {renderMathNode(item)}
+                    </Mrow>
+                );
+            })}
+            {Script.superscripts.map((item, ind) => {
+                return (
+                    <Mrow dataType="sup" key={'_sup' + ind}>
+                        {ind === 0 &&
+                            [...Array(primes)].map((_, ind) => {
+                                return (
+                                    <Component type="Mo" key={'dot' + ind}>
+                                        '
+                                    </Component>
+                                );
+                            })}
+                        {renderMathNode(item)}
+                    </Mrow>
+                );
+            })}
+        </Component>
+    );
+}
