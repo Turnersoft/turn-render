@@ -35,14 +35,14 @@ impl MathNode {
     pub fn identifier(input: String) -> MathNode {
         MathNode {
             id: input.clone(),
-            content: Box::new(MathNodeContent::Identifier {
+            content: Box::new(MathNodeContent::Identifier(IdentifierNode {
                 body: input,
                 pre_script: None,
                 mid_script: None,
                 post_script: None,
                 primes: 0,
                 is_function: false,
-            }),
+            })),
         }
     }
 }
@@ -50,9 +50,11 @@ impl MathNode {
 #[derive(Debug, Clone, Eq, PartialEq, Hash, Serialize, Deserialize, TS)]
 #[ts(export)]
 pub enum MathNodeContent {
-    Empty,
-    Text(String),
-    String(String),
+    Empty, // dummy placeholder
+
+    Text(String), // this is in story font
+
+    String(String), // this is in latex math font
 
     // bracketed scopes
     Bracketed {
@@ -101,27 +103,13 @@ pub enum MathNodeContent {
         exponent: Box<MathNode>,
     },
 
-    // Unary Functions
-    LogFunction {
-        base: Option<MathNode>, // "2", "10", "e", "empty" etc.
+    UnaryPostfixOperation {
         parameter: Box<MathNode>,
+        operator: Box<MathNode>, // "!", "T", "%"
     },
-    Log2 {
+    UnaryPrefixOperation {
         parameter: Box<MathNode>,
-    },
-    Log10 {
-        parameter: Box<MathNode>,
-    },
-    Ln {
-        parameter: Box<MathNode>,
-    },
-    UnaryPostfix {
-        parameter: Box<MathNode>,
-        operator: String, // "!", "T", "%"
-    },
-    UnaryPrefix {
-        parameter: Box<MathNode>,
-        operator: String, // "-", "√"
+        operator: Box<MathNode>, // "-", "∇", "∇²"
     },
 
     // this is different than SimpleUnaryFunction, this will use the special notation |x| instead of abs(x)
@@ -130,50 +118,28 @@ pub enum MathNodeContent {
     },
 
     // general function names
-    CustomFunction {
-        name: Box<MathNode>,
-        parameters: Vec<MathNode>,
-    },
-
-    // sin, cos, opposite etc
-    SimpleUnaryFunction {
-        name: String,
-        parameter: Box<MathNode>,
-    },
-
-    SimpleMultinaryFunction {
-        name: String,
+    FunctionCall {
+        name: IdentifierNode,
         parameters: Vec<MathNode>,
     },
 
     Quantity {
         number: String,
+        scientific_notation: Option<MathNode>, // we need the id
         unit: Option<MathNode>,
     }, // Add more content types as needed
-    Identifier {
-        body: String,
-        pre_script: Option<Box<MathNode>>,
-        mid_script: Option<SpecialMiddleScriptNode>,
-        post_script: Option<Box<MathNode>>,
-        primes: usize,
-        is_function: bool,
-    },
-    Script {
-        subscripts: Vec<MathNode>,
-        superscripts: Vec<MathNode>,
-    },
-
-    Unit {
-        original_form: Box<MathNode>,  // multiplication
-        flattened_form: Box<MathNode>, // multiplication
-    },
 
     ScientificNotation {
         magnitude: Box<MathNode>,
         style: ScientificNotationStyle,
     },
 
-    BaseUnit(String),
+    Identifier(IdentifierNode),
+
+    Unit {
+        original_form: Box<MathNode>,  // multiplication
+        flattened_form: Box<MathNode>, // multiplication
+    },
 
     // universal relations for all theories
     Relationship {
@@ -189,12 +155,12 @@ pub enum MathNodeContent {
 
     // variable declarations
     VariableDefinition {
-        name: Box<MathNode>,
+        name: Box<MathNode>, // should only be MathNodeContent::identifier
         definition: Option<MathNode>,
     },
 
     FunctionDefinition {
-        custom_function: Box<MathNode>,
+        custom_function: Box<MathNode>, // this ia MathNodeContent::FunctionCall
         definition: Option<MathNode>,
     },
 
@@ -215,42 +181,6 @@ pub enum MathNodeContent {
         domain: Option<Box<MathNode>>, // Optional geometric domain rendered beneath the integral signs
     },
 
-    // formalism
-    Theorem {
-        name: String,
-        description: String,
-        goal: Box<MathNode>,
-        proofs: Vec<MathNode>, // ProofForest
-    },
-
-    ProofGoal {
-        statement: Box<MathNode>,   // The main statement being proven
-        quantifiers: Vec<MathNode>, // Quantified objects in this state
-        variables: Vec<MathNode>,   // Variables with assigned values
-    },
-
-    ProofForest {
-        // Summary of the forest state
-        roots: Vec<MathNode>, // a vec of proof trees
-    },
-
-    Quantifier {
-        quantification: QuantificationNode,
-        variable: Box<MathNode>,
-        var_type: Box<MathNode>,
-    },
-
-    // math description
-    EmbeddedSentence {
-        subject: Box<MathNode>,
-        verb: String,
-        object: Box<MathNode>,
-    },
-
-    ElementOf {
-        target: Box<MathNode>,
-    },
-
     // Quantified expression structure (e.g., "∀ x ∈ S" or "∃ x : P(x)")
     // This is a fundamental mathematical structure used across all theories
     QuantifiedExpression {
@@ -259,6 +189,24 @@ pub enum MathNodeContent {
         domain: Option<Box<MathNode>>,    // Optional domain (the "∈ S" part)
         predicate: Option<Box<MathNode>>, // Optional predicate (the ": P(x)" part)
     },
+}
+
+#[derive(Debug, Clone, Eq, PartialEq, Hash, Serialize, Deserialize, TS)]
+#[ts(export)]
+pub struct IdentifierNode {
+    pub body: String,
+    pub pre_script: Option<ScriptNode>,
+    pub mid_script: Option<SpecialMiddleScriptNode>,
+    pub post_script: Option<ScriptNode>,
+    pub primes: usize,
+    pub is_function: bool,
+}
+
+#[derive(Debug, Clone, Eq, PartialEq, Hash, Serialize, Deserialize, TS)]
+#[ts(export)]
+pub struct ScriptNode {
+    pub subscripts: Vec<MathNode>,
+    pub superscripts: Vec<MathNode>,
 }
 
 #[derive(Debug, Clone, Eq, PartialEq, Hash, Serialize, Deserialize, TS)]

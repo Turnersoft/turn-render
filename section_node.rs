@@ -1,4 +1,7 @@
-use super::math_node::MathNode;
+use super::{
+    MathNodeContent,
+    math_node::{IdentifierNode, MathNode, RelationOperatorNode, ScriptNode},
+};
 use serde::{Deserialize, Serialize};
 use std::collections::{BTreeMap, HashMap};
 use ts_rs::TS;
@@ -111,13 +114,13 @@ pub enum AnimationTriggerType {
 #[ts(export)]
 pub enum SectionContentNode {
     Paragraph(ParagraphNode),
-    MathBlock {
+    MathNode {
         // For display-style math equations (block-level)
         math: MathNode,
         label: Option<String>, // For equation numbering/referencing
         caption: Option<ParagraphNode>,
     },
-    StructuredMath(StructuredMathContentNode), // Definitions, Theorems, Proofs, etc.
+    StructuredMath(StructuredMathNode), // Definitions, Theorems, Proofs, etc.
     List(ListNode),
     Table(TableNode),
     CodeBlock(CodeBlockNode),
@@ -341,7 +344,7 @@ pub enum ControlLayout {
 /// Represents formal mathematical structures like definitions, theorems, etc.
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize, TS)]
 #[ts(export)]
-pub enum StructuredMathContentNode {
+pub enum StructuredMathNode {
     Definition {
         term_display: Vec<RichTextSegment>,
         formal_term: Option<MathNode>,
@@ -353,19 +356,10 @@ pub enum StructuredMathContentNode {
     TheoremLike {
         kind: TheoremLikeKind,
         label: Option<String>,
-        statement: Vec<SectionContentNode>,
-        proof: Option<Box<ProofDisplayNode>>,
+        statement: TheoremStatement,
+        proof: Option<ProofDisplayNode>,
         abstraction_meta: Option<AbstractionMetadata>,
     },
-    // NEW: Fully structured theorem with no text conversion
-    StructuredTheoremLike {
-        kind: TheoremLikeKind,
-        label: Option<String>,
-        statement: StructuredStatement,
-        proof: Option<StructuredProofDisplayNode>,
-        abstraction_meta: Option<AbstractionMetadata>,
-    },
-    Proof(ProofDisplayNode),
     Example {
         label: Option<String>,
         introduction: Vec<SectionContentNode>,
@@ -403,6 +397,16 @@ pub enum StructuredMathContentNode {
         variant_links: Vec<LinkTarget>,
         abstraction_meta: Option<AbstractionMetadata>,
     },
+}
+
+/// Represents different ways a theorem statement can be expressed
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, TS)]
+#[ts(export)]
+pub enum TheoremStatement {
+    /// Traditional content-based statement
+    Content(Vec<SectionContentNode>),
+    /// Structured mathematical statement
+    Mathematical(MathNode),
 }
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize, TS)]
@@ -1866,7 +1870,7 @@ pub trait ToSectionNode {
 
     /// Renders the object as a Level 1 (L1) schema section.
     /// This is separate from to_section_node because L1 objects are never instantiated directly.
-    /// Implementers should override this for proper L1 schema rendering
+    /// Implementations should override this for proper L1 schema rendering
     fn render_as_l1_schema(&self, id_prefix: &str) -> Section {
         // Default implementation uses to_section_node but adds a warning
         // Implementations should override this for proper L1 schema rendering
@@ -2047,10 +2051,10 @@ pub type MathDocument = MathematicalContent;
 /// Represents a structured proof goal with proper mathematical formatting
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize, TS)]
 #[ts(export)]
-pub struct StructuredProofGoal {
+pub struct Goal {
     pub quantified_objects: Vec<QuantifiedObject>,
     pub variable_bindings: Vec<VariableBinding>,
-    pub statement: StructuredStatement,
+    pub statement: MathNode,
     pub goal_type: GoalType,
 }
 
@@ -2061,7 +2065,7 @@ pub struct QuantifiedObject {
     pub variable: String,
     pub quantifier_type: QuantifierType,
     pub object_type: String, // Could be expanded to a full type system
-    pub constraints: Vec<String>,
+    pub constraints: Vec<MathNode>,
     pub description: Option<String>,
 }
 
@@ -2081,7 +2085,7 @@ pub enum QuantifierType {
 #[ts(export)]
 pub struct VariableBinding {
     pub variable_name: String,
-    pub value: StructuredExpression,
+    pub value: MathNode,
     pub binding_type: BindingType,
 }
 
@@ -2096,55 +2100,6 @@ pub enum BindingType {
     Let,
 }
 
-/// Represents a mathematical statement in structured form
-#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, TS)]
-#[ts(export)]
-pub enum StructuredStatement {
-    Equality {
-        left: StructuredExpression,
-        right: StructuredExpression,
-        justification: Option<String>,
-    },
-    Inequality {
-        left: StructuredExpression,
-        right: StructuredExpression,
-        relation: InequalityType,
-    },
-    Implication {
-        premise: Box<StructuredStatement>,
-        conclusion: Box<StructuredStatement>,
-    },
-    Equivalence {
-        left: Box<StructuredStatement>,
-        right: Box<StructuredStatement>,
-    },
-    Conjunction {
-        statements: Vec<StructuredStatement>,
-    },
-    Disjunction {
-        statements: Vec<StructuredStatement>,
-    },
-    Negation {
-        statement: Box<StructuredStatement>,
-    },
-    Membership {
-        element: StructuredExpression,
-        set: StructuredExpression,
-    },
-    PropertyAssertion {
-        object: StructuredExpression,
-        property: String,
-        property_args: Vec<StructuredExpression>,
-    },
-    Todo {
-        description: String,
-        context: Vec<String>,
-    },
-    GroupRelation {
-        relation: StructuredGroupRelation,
-    },
-}
-
 /// Types of inequality relations
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize, TS)]
 #[ts(export)]
@@ -2154,48 +2109,6 @@ pub enum InequalityType {
     GreaterThan,
     GreaterThanOrEqual,
     NotEqual,
-}
-
-/// Represents mathematical expressions in structured form
-#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, TS)]
-#[ts(export)]
-pub enum StructuredExpression {
-    Variable {
-        name: String,
-        subscript: Option<String>,
-        superscript: Option<String>,
-    },
-    Number {
-        value: String,
-        number_type: NumberType,
-    },
-    Operation {
-        operator: OperationType,
-        operands: Vec<StructuredExpression>,
-    },
-    Function {
-        name: String,
-        arguments: Vec<StructuredExpression>,
-    },
-    Set {
-        elements: Vec<StructuredExpression>,
-        set_type: SetType,
-    },
-    Tuple {
-        elements: Vec<StructuredExpression>,
-    },
-    Parenthesized {
-        expression: Box<StructuredExpression>,
-    },
-    Placeholder {
-        description: String,
-    },
-    GroupExpression {
-        expression: Box<StructuredGroupExpression>,
-    },
-    MathObject {
-        object: Box<StructuredMathObject>,
-    },
 }
 
 /// Types of numbers
@@ -2251,35 +2164,35 @@ pub enum GoalType {
 /// Represents a structured proof tactic
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize, TS)]
 #[ts(export)]
-pub enum StructuredTactic {
+pub enum Tactic {
     Introduction {
         variable: String,
-        assumption: Option<StructuredStatement>,
+        assumption: Option<MathNode>,
     },
     Elimination {
-        target: StructuredExpression,
+        target: MathNode,
         method: EliminationMethod,
     },
     Substitution {
-        target: StructuredExpression,
-        replacement: StructuredExpression,
+        target: MathNode,
+        replacement: MathNode,
         location: Option<Vec<usize>>,
     },
     TheoremApplication {
         theorem_name: String,
-        instantiation: Vec<(String, StructuredExpression)>,
-        target: Option<StructuredExpression>,
+        instantiation: Vec<(String, MathNode)>,
+        target: Option<MathNode>,
     },
     CaseAnalysis {
-        cases: Vec<StructuredCase>,
+        cases: Vec<Case>,
     },
     Induction {
         variable: String,
-        base_case: StructuredProofGoal,
-        inductive_step: StructuredProofGoal,
+        base_case: Goal,
+        inductive_step: Goal,
     },
     Contradiction {
-        assumption: StructuredStatement,
+        assumption: MathNode,
     },
     DirectProof,
     Custom {
@@ -2303,36 +2216,10 @@ pub enum EliminationMethod {
 /// Represents a case in case analysis
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize, TS)]
 #[ts(export)]
-pub struct StructuredCase {
-    pub condition: StructuredStatement,
-    pub proof: StructuredProofGoal,
+pub struct Case {
+    pub condition: MathNode,
+    pub proof: Goal,
     pub case_name: Option<String>,
-}
-
-/// Enhanced ProofStepNode with structured content
-#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, TS)]
-#[ts(export)]
-pub enum StructuredProofStepNode {
-    StructuredStatement {
-        goal: StructuredProofGoal,
-        tactic: StructuredTactic,
-        status: ProofStepStatus,
-    },
-    StructuredElaboration {
-        context: StructuredProofGoal,
-        details: Vec<SectionContentNode>,
-    },
-    StructuredCaseAnalysis {
-        introduction: Option<ParagraphNode>,
-        cases: Vec<StructuredProofCase>,
-    },
-    StructuredInduction {
-        variable: String,
-        base_case: Box<StructuredProofDisplayNode>,
-        inductive_step: Box<StructuredProofDisplayNode>,
-    },
-    // Backward compatibility
-    Fallback(ProofStepNode),
 }
 
 /// Status of proof steps
@@ -2349,329 +2236,8 @@ pub enum ProofStepStatus {
 /// Structured proof case
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize, TS)]
 #[ts(export)]
-pub struct StructuredProofCase {
-    pub condition: StructuredStatement,
-    pub proof: StructuredProofDisplayNode,
+pub struct ProofCase {
+    pub condition: MathNode,
+    pub proof: ProofDisplayNode,
     pub case_name: Option<String>,
-}
-
-/// Enhanced ProofDisplayNode with structured content
-#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, TS)]
-#[ts(export)]
-pub struct StructuredProofDisplayNode {
-    pub title: Option<ParagraphNode>,
-    pub strategy: Vec<SectionContentNode>,
-    pub steps: Vec<StructuredProofStepNode>,
-    pub qed_symbol: Option<String>,
-}
-
-// --- Helper functions for creating structured content ---
-
-/// Create a structured variable expression
-pub fn structured_var(name: &str) -> StructuredExpression {
-    StructuredExpression::Variable {
-        name: name.to_string(),
-        subscript: None,
-        superscript: None,
-    }
-}
-
-/// Create a structured variable with subscript
-pub fn structured_var_sub(name: &str, subscript: &str) -> StructuredExpression {
-    StructuredExpression::Variable {
-        name: name.to_string(),
-        subscript: Some(subscript.to_string()),
-        superscript: None,
-    }
-}
-
-/// Create a structured number
-pub fn structured_num(value: &str, num_type: NumberType) -> StructuredExpression {
-    StructuredExpression::Number {
-        value: value.to_string(),
-        number_type: num_type,
-    }
-}
-
-/// Create a structured operation
-pub fn structured_op(
-    op: OperationType,
-    operands: Vec<StructuredExpression>,
-) -> StructuredExpression {
-    StructuredExpression::Operation {
-        operator: op,
-        operands,
-    }
-}
-
-/// Create a structured equality statement
-pub fn structured_eq(
-    left: StructuredExpression,
-    right: StructuredExpression,
-) -> StructuredStatement {
-    StructuredStatement::Equality {
-        left,
-        right,
-        justification: None,
-    }
-}
-
-/// Create a placeholder for complex expressions that need more work
-pub fn structured_placeholder(desc: &str) -> StructuredExpression {
-    StructuredExpression::Placeholder {
-        description: desc.to_string(),
-    }
-}
-
-/// Create a todo statement for incomplete proofs
-pub fn structured_todo(desc: &str) -> StructuredStatement {
-    StructuredStatement::Todo {
-        description: desc.to_string(),
-        context: vec![],
-    }
-}
-
-// --- NEW: Structured Group Theory Types ---
-
-/// Represents a group theory expression in structured form
-#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, TS)]
-#[ts(export)]
-pub enum StructuredGroupExpression {
-    Element {
-        group: Box<StructuredExpression>,
-        element: Box<StructuredGroupElement>,
-    },
-    Identity {
-        group: Box<StructuredExpression>,
-    },
-    Operation {
-        group: Box<StructuredExpression>,
-        left: Box<StructuredExpression>,
-        right: Box<StructuredExpression>,
-        operation_type: GroupOperationType,
-    },
-    Inverse {
-        group: Box<StructuredExpression>,
-        element: Box<StructuredExpression>,
-    },
-    Power {
-        group: Box<StructuredExpression>,
-        base: Box<StructuredExpression>,
-        exponent: Box<StructuredExpression>,
-    },
-    Commutator {
-        group: Box<StructuredExpression>,
-        first: Box<StructuredExpression>,
-        second: Box<StructuredExpression>,
-    },
-    Coset {
-        group: Box<StructuredExpression>,
-        element: Box<StructuredExpression>,
-        subgroup: Box<StructuredExpression>,
-        is_left: bool,
-    },
-    GroupOrder {
-        group: Box<StructuredExpression>,
-    },
-    ElementOrder {
-        element: Box<StructuredExpression>,
-        group: Box<StructuredExpression>,
-    },
-    Homomorphism {
-        domain: Box<StructuredExpression>,
-        codomain: Box<StructuredExpression>,
-    },
-}
-
-/// Types of group operations
-#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, TS)]
-#[ts(export)]
-pub enum GroupOperationType {
-    Addition,
-    Multiplication,
-    Composition,
-}
-
-/// Represents a group element in structured form
-#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, TS)]
-#[ts(export)]
-pub enum StructuredGroupElement {
-    Integer(i64),
-    Permutation(Vec<usize>),
-    Matrix(Vec<Vec<i64>>),
-    Symbol(String),
-}
-
-/// Represents a group theory relation in structured form
-#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, TS)]
-#[ts(export)]
-pub enum StructuredGroupRelation {
-    IsSubgroupOf {
-        subgroup: Box<StructuredExpression>,
-        group: Box<StructuredExpression>,
-    },
-    IsNormalSubgroupOf {
-        subgroup: Box<StructuredExpression>,
-        group: Box<StructuredExpression>,
-    },
-    IsIsomorphicTo {
-        first: Box<StructuredExpression>,
-        second: Box<StructuredExpression>,
-    },
-    IsQuotientOf {
-        quotient: Box<StructuredExpression>,
-        group: Box<StructuredExpression>,
-        normal_subgroup: Box<StructuredExpression>,
-    },
-    HasOrder {
-        group: Box<StructuredExpression>,
-        order: Box<StructuredExpression>,
-    },
-    HasOrderInGroup {
-        element: Box<StructuredExpression>,
-        group: Box<StructuredExpression>,
-        order: Box<StructuredExpression>,
-    },
-    IsCyclicWithGenerator {
-        group: Box<StructuredExpression>,
-        generator: Box<StructuredExpression>,
-    },
-    OrderDivides {
-        first_group: Box<StructuredExpression>,
-        second_group: Box<StructuredExpression>,
-    },
-}
-
-/// Represents a group property in structured form
-#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, TS)]
-#[ts(export)]
-pub enum StructuredGroupProperty {
-    Abelian,
-    Finite,
-    Infinite,
-    Cyclic,
-    Simple,
-    Solvable,
-    Nilpotent,
-    TorsionFree,
-    Divisible,
-}
-
-/// Represents a mathematical object in structured form (replaces simple strings)
-#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, TS)]
-#[ts(export)]
-pub enum StructuredMathObject {
-    Group {
-        structure: Box<StructuredExpression>,
-        properties: Vec<StructuredGroupProperty>,
-    },
-    Ring {
-        structure: Box<StructuredExpression>,
-        properties: Vec<StructuredRingProperty>,
-    },
-    Field {
-        structure: Box<StructuredExpression>,
-        properties: Vec<StructuredFieldProperty>,
-    },
-    Set {
-        elements: Vec<StructuredExpression>,
-        set_type: StructuredSetType,
-    },
-    Element {
-        value: Box<StructuredExpression>,
-        parent_object: Box<StructuredMathObject>,
-    },
-    Function {
-        domain: Box<StructuredMathObject>,
-        codomain: Box<StructuredMathObject>,
-        definition: Option<Box<StructuredExpression>>,
-    },
-    Space {
-        structure: Box<StructuredExpression>,
-        space_type: StructuredSpaceType,
-    },
-    NumberType(StructuredNumberType),
-}
-
-/// Ring properties
-#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, TS)]
-#[ts(export)]
-pub enum StructuredRingProperty {
-    Commutative,
-    Unital,
-    Integral,
-    Principal,
-    Euclidean,
-    Field,
-}
-
-/// Field properties  
-#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, TS)]
-#[ts(export)]
-pub enum StructuredFieldProperty {
-    Finite,
-    Algebraic,
-    Transcendental,
-    Perfect,
-    Separable,
-}
-
-/// Set types
-#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, TS)]
-#[ts(export)]
-pub enum StructuredSetType {
-    Finite,
-    Infinite,
-    Countable,
-    Uncountable,
-    Open,
-    Closed,
-    Compact,
-}
-
-/// Space types
-#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, TS)]
-#[ts(export)]
-pub enum StructuredSpaceType {
-    Topological,
-    Metric,
-    Vector,
-    Normed,
-    Banach,
-    Hilbert,
-}
-
-/// Structured number types
-#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, TS)]
-#[ts(export)]
-pub enum StructuredNumberType {
-    Natural,
-    Integer,
-    Rational,
-    Irrational,
-    Real,
-    Complex,
-    Algebraic,
-    Transcendental,
-}
-
-// --- Update StructuredExpression to include group expressions ---
-
-/// Create a structured group expression
-pub fn structured_group_expr(expr: StructuredGroupExpression) -> StructuredExpression {
-    StructuredExpression::GroupExpression {
-        expression: Box::new(expr),
-    }
-}
-
-/// Create a structured mathematical object
-pub fn structured_math_object(obj: StructuredMathObject) -> StructuredExpression {
-    StructuredExpression::MathObject {
-        object: Box::new(obj),
-    }
-}
-
-/// Create a structured group relation statement
-pub fn structured_group_relation(rel: StructuredGroupRelation) -> StructuredStatement {
-    StructuredStatement::GroupRelation { relation: rel }
 }

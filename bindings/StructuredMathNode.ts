@@ -9,11 +9,12 @@ import type { RichTextSegment } from "./RichTextSegment";
 import type { SectionContentNode } from "./SectionContentNode";
 import type { SelectableProperty } from "./SelectableProperty";
 import type { TheoremLikeKind } from "./TheoremLikeKind";
+import type { TheoremStatement } from "./TheoremStatement";
 
 /**
  * Represents formal mathematical structures like definitions, theorems, etc.
  */
-export type StructuredMathContentNode =
+export type StructuredMathNode =
   | {
     "Definition": {
       term_display: Array<RichTextSegment>;
@@ -28,12 +29,11 @@ export type StructuredMathContentNode =
     "TheoremLike": {
       kind: TheoremLikeKind;
       label: string | null;
-      statement: Array<SectionContentNode>;
+      statement: TheoremStatement;
       proof: ProofDisplayNode | null;
       abstraction_meta: AbstractionMetadata | null;
     };
   }
-  | { "Proof": ProofDisplayNode }
   | {
     "Example": {
       label: string | null;

@@ -15,7 +15,7 @@ import type { PanelLayout } from "./PanelLayout";
 import type { ParagraphNode } from "./ParagraphNode";
 import type { Section } from "./Section";
 import type { SideBySideLayout } from "./SideBySideLayout";
-import type { StructuredMathContentNode } from "./StructuredMathContentNode";
+import type { StructuredMathNode } from "./StructuredMathNode";
 import type { TableNode } from "./TableNode";
 import type { ThematicBreakNode } from "./ThematicBreakNode";
 
@@ -26,13 +26,13 @@ import type { ThematicBreakNode } from "./ThematicBreakNode";
 export type SectionContentNode =
   | { "Paragraph": ParagraphNode }
   | {
-    "MathBlock": {
+    "MathNode": {
       math: MathNode;
       label: string | null;
       caption: ParagraphNode | null;
     };
   }
-  | { "StructuredMath": StructuredMathContentNode }
+  | { "StructuredMath": StructuredMathNode }
   | { "List": ListNode }
   | { "Table": TableNode }
   | { "CodeBlock": CodeBlockNode }

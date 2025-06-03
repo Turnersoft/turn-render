@@ -3,13 +3,13 @@ import type { BracketSize } from "./BracketSize";
 import type { BracketStyle } from "./BracketStyle";
 import type { DifferentialStyle } from "./DifferentialStyle";
 import type { DivisionStyle } from "./DivisionStyle";
+import type { IdentifierNode } from "./IdentifierNode";
 import type { MathNode } from "./MathNode";
 import type { QuantificationNode } from "./QuantificationNode";
 import type { RefinedAddOrSubOperator } from "./RefinedAddOrSubOperator";
 import type { RefinedMulOrDivOperation } from "./RefinedMulOrDivOperation";
 import type { RelationOperatorNode } from "./RelationOperatorNode";
 import type { ScientificNotationStyle } from "./ScientificNotationStyle";
-import type { SpecialMiddleScriptNode } from "./SpecialMiddleScriptNode";
 import type { UnaryRelationOperatorNode } from "./UnaryRelationOperatorNode";
 
 export type MathNodeContent =
@@ -47,36 +47,25 @@ export type MathNodeContent =
   }
   | { "Fraction": { numerator: MathNode; denominator: MathNode } }
   | { "Power": { base: MathNode; exponent: MathNode } }
-  | { "LogFunction": { base: MathNode | null; parameter: MathNode } }
-  | { "Log2": { parameter: MathNode } }
-  | { "Log10": { parameter: MathNode } }
-  | { "Ln": { parameter: MathNode } }
-  | { "UnaryPostfix": { parameter: MathNode; operator: string } }
-  | { "UnaryPrefix": { parameter: MathNode; operator: string } }
+  | { "UnaryPostfixOperation": { parameter: MathNode; operator: MathNode } }
+  | { "UnaryPrefixOperation": { parameter: MathNode; operator: MathNode } }
   | { "Abs": { parameter: MathNode } }
-  | { "CustomFunction": { name: MathNode; parameters: Array<MathNode> } }
-  | { "SimpleUnaryFunction": { name: string; parameter: MathNode } }
-  | { "SimpleMultinaryFunction": { name: string; parameters: Array<MathNode> } }
-  | { "Quantity": { number: string; unit: MathNode | null } }
+  | { "FunctionCall": { name: IdentifierNode; parameters: Array<MathNode> } }
   | {
-    "Identifier": {
-      body: string;
-      pre_script: MathNode | null;
-      mid_script: SpecialMiddleScriptNode | null;
-      post_script: MathNode | null;
-      primes: number;
-      is_function: boolean;
+    "Quantity": {
+      number: string;
+      scientific_notation: MathNode | null;
+      unit: MathNode | null;
     };
   }
-  | { "Script": { subscripts: Array<MathNode>; superscripts: Array<MathNode> } }
-  | { "Unit": { original_form: MathNode; flattened_form: MathNode } }
   | {
     "ScientificNotation": {
       magnitude: MathNode;
       style: ScientificNotationStyle;
     };
   }
-  | { "BaseUnit": string }
+  | { "Identifier": IdentifierNode }
+  | { "Unit": { original_form: MathNode; flattened_form: MathNode } }
   | {
     "Relationship": {
       lhs: MathNode;
@@ -119,29 +108,10 @@ export type MathNodeContent =
     };
   }
   | {
-    "Theorem": {
-      name: string;
-      description: string;
-      goal: MathNode;
-      proofs: Array<MathNode>;
-    };
-  }
-  | {
-    "ProofGoal": {
-      statement: MathNode;
-      quantifiers: Array<MathNode>;
+    "QuantifiedExpression": {
+      quantifier: QuantificationNode;
       variables: Array<MathNode>;
+      domain: MathNode | null;
+      predicate: MathNode | null;
     };
-  }
-  | { "ProofForest": { roots: Array<MathNode> } }
-  | {
-    "Quantifier": {
-      quantification: QuantificationNode;
-      variable: MathNode;
-      var_type: MathNode;
-    };
-  }
-  | {
-    "EmbeddedSentence": { subject: MathNode; verb: string; object: MathNode };
-  }
-  | { "ElementOf": { target: MathNode } };
+  };
