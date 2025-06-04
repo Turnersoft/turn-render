@@ -12,6 +12,10 @@ import type { TableNode } from '../../bindings/TableNode.ts';
 import type { StructuredMathNode } from '../../bindings/StructuredMathNode.ts';
 import type { CodeBlockNode } from '../../bindings/CodeBlockNode.ts';
 import type { ImageNode } from '../../bindings/ImageNode.ts';
+import type { ProofDisplayNode } from '../../bindings/ProofDisplayNode.ts';
+import type { ProofStepNode } from '../../bindings/ProofStepNode.ts';
+import type { ProofCaseNode } from '../../bindings/ProofCaseNode.ts';
+import type { RichTextSegment } from '../../bindings/RichTextSegment.ts';
 
 import styles from './section_node.module.scss';
 
@@ -336,10 +340,7 @@ const StructuredMathRenderer: React.FC<{ structuredMath: StructuredMathNode }> =
           </div>
           {TheoremLike.proof && (
             <div className={styles.theoremProof}>
-              {/* Render proof display node - would need additional logic based on ProofDisplayNode structure */}
-              <div className={styles.proofPlaceholder}>
-                [Proof rendering not yet implemented]
-              </div>
+              <ProofDisplayRenderer proof={TheoremLike.proof} />
             </div>
           )}
         </div>
@@ -701,5 +702,256 @@ const UnknownContentRenderer: React.FC<{ node: SectionContentNode }> = ({ node }
     </span>
   </div>
 );
+
+const ProofDisplayRenderer: React.FC<{ proof: ProofDisplayNode }> = ({ proof }) => {
+  try {
+    if (!proof) {
+      return (
+        <div className={styles.proofDisplay}>
+          <div className={styles.proofTitle}>
+            [Invalid proof data]
+          </div>
+        </div>
+      );
+    }
+
+    return (
+      <div className={styles.proofDisplay}>
+        {proof.title?.segments && (
+          <div className={styles.proofTitle}>
+            <RichTextRenderer segments={proof.title.segments} />
+          </div>
+        )}
+        
+        {proof.strategy && proof.strategy.length > 0 && (
+          <div className={styles.proofStrategy}>
+            <h4 className={styles.strategyTitle}>Strategy:</h4>
+            {proof.strategy.map((contentNode, index) => (
+              <ContentNodeRenderer key={index} node={contentNode} />
+            ))}
+          </div>
+        )}
+        
+        <div className={styles.proofSteps}>
+          {proof.steps?.map((step, index) => (
+            <ProofStepRenderer key={index} step={step} stepNumber={index + 1} />
+          )) || null}
+        </div>
+        
+        {proof.qed_symbol && (
+          <div className={styles.qedSymbol}>
+            {proof.qed_symbol}
+          </div>
+        )}
+      </div>
+    );
+  } catch (error) {
+    console.error('Error rendering proof display:', error);
+    return (
+      <div className={styles.proofDisplay}>
+        <div className={styles.proofTitle}>
+          [Error rendering proof: {error instanceof Error ? error.message : 'Unknown error'}]
+        </div>
+      </div>
+    );
+  }
+};
+
+const ProofStepRenderer: React.FC<{ step: ProofStepNode; stepNumber: number }> = ({ step, stepNumber }) => {
+  // Add error boundary for this component
+  try {
+    // Get the variant key from the union type
+    const variantKey = Object.keys(step)[0] as keyof ProofStepNode;
+    
+    switch (variantKey) {
+      case 'Statement': {
+        const { Statement } = step as Extract<ProofStepNode, { Statement: { claim: RichTextSegment[]; justification: RichTextSegment[] } }>;
+        return (
+          <div className={styles.proofStatement}>
+            <div className={styles.stepNumber}>{stepNumber}.</div>
+            <div className={styles.statementContent}>
+              <div className={styles.claim}>
+                <RichTextRenderer segments={Statement?.claim || []} />
+              </div>
+              {Statement?.justification && Statement.justification.length > 0 && (
+                <div className={styles.justification}>
+                  <RichTextRenderer segments={Statement.justification} />
+                </div>
+              )}
+            </div>
+          </div>
+        );
+      }
+      
+      case 'Elaboration': {
+        const { Elaboration } = step as Extract<ProofStepNode, { Elaboration: any[] }>;
+        return (
+          <div className={styles.proofElaboration}>
+            <div className={styles.stepNumber}>{stepNumber}.</div>
+            <div className={styles.elaborationContent}>
+              {Elaboration?.map((contentNode, index) => (
+                <ContentNodeRenderer key={index} node={contentNode} />
+              )) || null}
+            </div>
+          </div>
+        );
+      }
+      
+      case 'CaseAnalysis': {
+        const { CaseAnalysis } = step as Extract<ProofStepNode, { CaseAnalysis: { introduction: any; cases: ProofCaseNode[] } }>;
+        return (
+          <div className={styles.proofCaseAnalysis}>
+            <div className={styles.stepNumber}>{stepNumber}.</div>
+            <div className={styles.caseAnalysisContent}>
+              {CaseAnalysis?.introduction?.segments && (
+                <div className={styles.caseIntroduction}>
+                  <RichTextRenderer segments={CaseAnalysis.introduction.segments} />
+                </div>
+              )}
+              <div className={styles.cases}>
+                {CaseAnalysis?.cases?.map((caseNode, index) => (
+                  <ProofCaseRenderer key={index} caseNode={caseNode} caseNumber={index + 1} />
+                )) || null}
+              </div>
+            </div>
+          </div>
+        );
+      }
+      
+      case 'InductiveProof': {
+        const { InductiveProof } = step as Extract<ProofStepNode, { InductiveProof: any }>;
+        return (
+          <div className={styles.proofInductive}>
+            <div className={styles.stepNumber}>{stepNumber}.</div>
+            <div className={styles.inductiveContent}>
+              {InductiveProof?.variable_of_induction && (
+                <div className={styles.inductionVariable}>
+                  <strong>Induction on: </strong>
+                  {renderMathNode(InductiveProof.variable_of_induction)}
+                </div>
+              )}
+              
+              {InductiveProof?.base_case && (
+                <div className={styles.baseCase}>
+                  <h5>Base Case:</h5>
+                  <ProofDisplayRenderer proof={InductiveProof.base_case} />
+                </div>
+              )}
+              
+              {InductiveProof?.inductive_hypothesis?.segments && (
+                <div className={styles.inductiveHypothesis}>
+                  <h5>Inductive Hypothesis:</h5>
+                  <RichTextRenderer segments={InductiveProof.inductive_hypothesis.segments} />
+                </div>
+              )}
+              
+              {InductiveProof?.inductive_step && (
+                <div className={styles.inductiveStep}>
+                  <h5>Inductive Step:</h5>
+                  <ProofDisplayRenderer proof={InductiveProof.inductive_step} />
+                </div>
+              )}
+            </div>
+          </div>
+        );
+      }
+      
+      case 'Assume': {
+        const { Assume } = step as Extract<ProofStepNode, { Assume: any }>;
+        return (
+          <div className={styles.proofAssumption}>
+            <div className={styles.stepNumber}>{stepNumber}.</div>
+            <div className={styles.assumptionContent}>
+              <strong>Assume: </strong>
+              <RichTextRenderer segments={Assume?.segments || []} />
+            </div>
+          </div>
+        );
+      }
+      
+      case 'Goal': {
+        const { Goal } = step as Extract<ProofStepNode, { Goal: any }>;
+        return (
+          <div className={styles.proofGoal}>
+            <div className={styles.stepNumber}>{stepNumber}.</div>
+            <div className={styles.goalContent}>
+              <strong>Goal: </strong>
+              <RichTextRenderer segments={Goal?.segments || []} />
+            </div>
+          </div>
+        );
+      }
+      
+      case 'NestedProof': {
+        const { NestedProof } = step as Extract<ProofStepNode, { NestedProof: ProofDisplayNode }>;
+        return (
+          <div className={styles.proofNested}>
+            <div className={styles.stepNumber}>{stepNumber}.</div>
+            <div className={styles.nestedContent}>
+              {NestedProof && <ProofDisplayRenderer proof={NestedProof} />}
+            </div>
+          </div>
+        );
+      }
+      
+      default:
+        return (
+          <div className={styles.unknownProofStep}>
+            <div className={styles.stepNumber}>{stepNumber}.</div>
+            <span className={styles.unknownType}>
+              [Unknown proof step type: {variantKey}]
+            </span>
+          </div>
+        );
+    }
+  } catch (error) {
+    console.error('Error rendering proof step:', error);
+    return (
+      <div className={styles.unknownProofStep}>
+        <div className={styles.stepNumber}>{stepNumber}.</div>
+        <span className={styles.unknownType}>
+          [Error rendering proof step: {error instanceof Error ? error.message : 'Unknown error'}]
+        </span>
+      </div>
+    );
+  }
+};
+
+const ProofCaseRenderer: React.FC<{ caseNode: ProofCaseNode; caseNumber: number }> = ({ caseNode, caseNumber }) => {
+  try {
+    if (!caseNode) {
+      return (
+        <div className={styles.proofCase}>
+          <div className={styles.caseHeader}>
+            <strong>Case {caseNumber}: </strong>
+            [Invalid case data]
+          </div>
+        </div>
+      );
+    }
+
+    return (
+      <div className={styles.proofCase}>
+        <div className={styles.caseHeader}>
+          <strong>Case {caseNumber}: </strong>
+          <RichTextRenderer segments={caseNode.condition?.segments || []} />
+        </div>
+        <div className={styles.caseProof}>
+          {caseNode.proof_for_case && <ProofDisplayRenderer proof={caseNode.proof_for_case} />}
+        </div>
+      </div>
+    );
+  } catch (error) {
+    console.error('Error rendering proof case:', error);
+    return (
+      <div className={styles.proofCase}>
+        <div className={styles.caseHeader}>
+          <strong>Case {caseNumber}: </strong>
+          [Error rendering case: {error instanceof Error ? error.message : 'Unknown error'}]
+        </div>
+      </div>
+    );
+  }
+};
 
 export default SectionContentRenderer; 

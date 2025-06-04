@@ -1,1 +1,469 @@
- 
+// Section container and general layout
+.sectionsContainer {
+  max-width: 100%;
+  margin: 0 auto;
+  padding: 1rem;
+}
+
+.section {
+  margin-bottom: 2rem;
+  border-left: 3px solid #e0e0e0;
+  padding-left: 1rem;
+
+  &.level1 {
+    border-left-color: #2196f3;
+  }
+
+  &.level2 {
+    border-left-color: #4caf50;
+  }
+
+  &.level3 {
+    border-left-color: #ff9800;
+  }
+
+  &.level4 {
+    border-left-color: #f44336;
+  }
+}
+
+.sectionHeader {
+  margin-bottom: 1.5rem;
+}
+
+.sectionTitle {
+  font-size: 1.5rem;
+  font-weight: 600;
+  margin: 0 0 0.5rem 0;
+  color: #333;
+}
+
+.sectionMeta {
+  display: flex;
+  gap: 0.5rem;
+  font-size: 0.875rem;
+  color: #666;
+
+  .level, .type {
+    padding: 0.25rem 0.5rem;
+    background: #f5f5f5;
+    border-radius: 0.25rem;
+  }
+}
+
+.sectionContent {
+  line-height: 1.6;
+}
+
+// Basic content types
+.paragraph {
+  margin-bottom: 1rem;
+  
+  &.left {
+    text-align: left;
+  }
+  
+  &.center {
+    text-align: center;
+  }
+  
+  &.right {
+    text-align: right;
+  }
+}
+
+.mathBlock {
+  margin: 1.5rem 0;
+  padding: 1rem;
+  background: #f9f9f9;
+  border-left: 4px solid #2196f3;
+  border-radius: 0 4px 4px 0;
+
+  .mathContent {
+    margin-bottom: 0.5rem;
+  }
+
+  .mathLabel {
+    font-size: 0.875rem;
+    color: #666;
+    text-align: right;
+    margin-top: 0.5rem;
+  }
+
+  .mathCaption {
+    font-size: 0.875rem;
+    color: #666;
+    margin-top: 0.5rem;
+    font-style: italic;
+  }
+}
+
+// Structured math content
+.structuredMathDefinition,
+.structuredMathTheorem,
+.structuredMathExample,
+.structuredMathRemark,
+.structuredMathAxiom,
+.structuredMathExercise,
+.structuredMathConstructor,
+.structuredMathCollection {
+  margin: 2rem 0;
+  padding: 1.5rem;
+  border-radius: 8px;
+  background: #fff;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.structuredMathDefinition {
+  border-left: 4px solid #4caf50;
+  
+  .definitionTitle {
+    color: #4caf50;
+    margin: 0 0 1rem 0;
+    font-size: 1.25rem;
+  }
+  
+  .definitionLabel {
+    font-size: 0.875rem;
+    color: #666;
+    text-align: right;
+    margin-bottom: 1rem;
+  }
+}
+
+.structuredMathTheorem {
+  border-left: 4px solid #2196f3;
+  
+  .theoremTitle {
+    color: #2196f3;
+    margin: 0 0 1rem 0;
+    font-size: 1.25rem;
+  }
+  
+  .theoremStatement {
+    margin-bottom: 1.5rem;
+  }
+  
+  .mathematicalStatement {
+    padding: 0.5rem;
+    background: #f5f5f5;
+    border-radius: 4px;
+  }
+}
+
+.structuredMathExample {
+  border-left: 4px solid #ff9800;
+  
+  .exampleTitle {
+    color: #ff9800;
+    margin: 0 0 1rem 0;
+    font-size: 1.25rem;
+  }
+  
+  .exampleIntroduction,
+  .exampleExplanation {
+    margin: 1rem 0;
+    padding: 0.75rem;
+    background: #fff3e0;
+    border-radius: 4px;
+  }
+}
+
+.structuredMathRemark {
+  border-left: 4px solid #9c27b0;
+  
+  .remarkTitle {
+    color: #9c27b0;
+    margin: 0 0 1rem 0;
+    font-size: 1.25rem;
+  }
+}
+
+.structuredMathAxiom {
+  border-left: 4px solid #f44336;
+  
+  .axiomTitle {
+    color: #f44336;
+    margin: 0 0 1rem 0;
+    font-size: 1.25rem;
+  }
+}
+
+.structuredMathExercise {
+  border-left: 4px solid #795548;
+  
+  .exerciseTitle {
+    color: #795548;
+    margin: 0 0 1rem 0;
+    font-size: 1.25rem;
+  }
+  
+  .exercisePlaceholder {
+    padding: 1rem;
+    background: #f5f5f5;
+    border-radius: 4px;
+    font-style: italic;
+    color: #666;
+  }
+}
+
+.structuredMathConstructor {
+  border-left: 4px solid #607d8b;
+  
+  .constructorTitle {
+    color: #607d8b;
+    margin: 0 0 1rem 0;
+    font-size: 1.25rem;
+  }
+}
+
+.structuredMathCollection {
+  border-left: 4px solid #009688;
+  
+  .collectionTitle {
+    color: #009688;
+    margin: 0 0 1rem 0;
+    font-size: 1.25rem;
+  }
+  
+  .collectionVariants {
+    margin-top: 1rem;
+    
+    .variant {
+      margin: 0.5rem 0;
+      padding: 0.5rem;
+      background: #e0f2f1;
+      border-radius: 4px;
+    }
+  }
+}
+
+// Proof display styles
+.theoremProof {
+  margin-top: 1.5rem;
+}
+
+.proofDisplay {
+  padding: 1.5rem;
+  background: #fafafa;
+  border-radius: 8px;
+  border: 1px solid #e0e0e0;
+}
+
+.proofTitle {
+  font-weight: 600;
+  font-size: 1.1rem;
+  margin-bottom: 1rem;
+  color: #333;
+}
+
+.proofStrategy {
+  margin-bottom: 1.5rem;
+  padding: 1rem;
+  background: #f0f8ff;
+  border-left: 3px solid #2196f3;
+  border-radius: 0 4px 4px 0;
+  
+  .strategyTitle {
+    margin: 0 0 0.5rem 0;
+    font-size: 1rem;
+    color: #2196f3;
+  }
+}
+
+.proofSteps {
+  margin: 1rem 0;
+}
+
+.proofStatement,
+.proofElaboration,
+.proofCaseAnalysis,
+.proofInductive,
+.proofAssumption,
+.proofGoal,
+.proofNested,
+.unknownProofStep {
+  display: flex;
+  margin-bottom: 1rem;
+  padding: 0.75rem;
+  background: #fff;
+  border-radius: 6px;
+  border-left: 3px solid #e0e0e0;
+}
+
+.proofStatement {
+  border-left-color: #4caf50;
+  
+  .statementContent {
+    flex: 1;
+    
+    .claim {
+      margin-bottom: 0.5rem;
+    }
+    
+    .justification {
+      font-size: 0.9rem;
+      color: #666;
+      font-style: italic;
+    }
+  }
+}
+
+.proofElaboration {
+  border-left-color: #ff9800;
+}
+
+.proofCaseAnalysis {
+  border-left-color: #9c27b0;
+  flex-direction: column;
+  
+  .caseAnalysisContent {
+    width: 100%;
+  }
+  
+  .caseIntroduction {
+    margin-bottom: 1rem;
+    font-weight: 500;
+  }
+  
+  .cases {
+    margin-left: 1rem;
+  }
+}
+
+.proofCase {
+  margin-bottom: 1rem;
+  padding: 1rem;
+  background: #f8f0ff;
+  border-radius: 6px;
+  border-left: 3px solid #9c27b0;
+  
+  .caseHeader {
+    font-weight: 500;
+    margin-bottom: 0.75rem;
+  }
+  
+  .caseProof {
+    margin-left: 1rem;
+  }
+}
+
+.proofInductive {
+  border-left-color: #ff5722;
+  flex-direction: column;
+  
+  .inductiveContent {
+    width: 100%;
+  }
+  
+  .inductionVariable {
+    margin-bottom: 1rem;
+    padding: 0.5rem;
+    background: #fff3e0;
+    border-radius: 4px;
+  }
+  
+  .baseCase,
+  .inductiveHypothesis,
+  .inductiveStep {
+    margin: 1rem 0;
+    padding: 1rem;
+    background: #fafafa;
+    border-radius: 6px;
+    
+    h5 {
+      margin: 0 0 0.75rem 0;
+      color: #ff5722;
+      font-size: 1rem;
+    }
+  }
+}
+
+.proofAssumption {
+  border-left-color: #795548;
+  background: #f3e5f5;
+  
+  .assumptionContent {
+    flex: 1;
+  }
+}
+
+.proofGoal {
+  border-left-color: #607d8b;
+  background: #e8f5e8;
+  
+  .goalContent {
+    flex: 1;
+  }
+}
+
+.proofNested {
+  border-left-color: #3f51b5;
+  flex-direction: column;
+  
+  .nestedContent {
+    width: 100%;
+    margin-left: 1rem;
+  }
+}
+
+.unknownProofStep {
+  border-left-color: #f44336;
+  background: #ffebee;
+  
+  .unknownType {
+    flex: 1;
+    color: #f44336;
+    font-style: italic;
+  }
+}
+
+.stepNumber {
+  min-width: 2.5rem;
+  font-weight: 600;
+  color: #666;
+  margin-right: 0.75rem;
+}
+
+.qedSymbol {
+  text-align: right;
+  font-size: 1.2rem;
+  font-weight: bold;
+  margin-top: 1rem;
+  color: #333;
+}
+
+// Lists
+.list {
+  margin: 1rem 0;
+}
+
+.listItems {
+  margin-left: 1.5rem;
+  
+  .listItem {
+    margin-bottom: 0.5rem;
+  }
+}
+
+// Placeholder styles
+.proofPlaceholder,
+.exercisePlaceholder {
+  padding: 1rem;
+  background: #f5f5f5;
+  border: 2px dashed #ccc;
+  border-radius: 4px;
+  text-align: center;
+  color: #666;
+  font-style: italic;
+}
+
+.unknownStructuredMath,
+.unknownType {
+  color: #f44336;
+  font-style: italic;
+  padding: 0.5rem;
+  background: #ffebee;
+  border-radius: 4px;
+  border: 1px solid #ffcdd2;
+} 
