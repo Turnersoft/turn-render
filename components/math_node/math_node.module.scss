@@ -143,7 +143,7 @@
   }
   & * {
     letter-spacing: normal;
-    white-space: nowrap;
+    white-space: pre;
   }
 }
 
@@ -218,6 +218,7 @@
   line-height: 0;
   height: auto;
   font-size: 1em;
+  white-space: pre-wrap;
 }
 
 .msub_content {

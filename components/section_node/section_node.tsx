@@ -1,5 +1,5 @@
 import React from 'react';
-import { renderMathNode } from '../math_node/math_node.tsx';
+import { MathDom, renderMathNode,Mtext } from '../math_node/math_node.tsx';
 import { RichTextRenderer } from '../rich_text/rich_text.tsx';
 
 // Import proper binding types instead of duplicating interfaces
@@ -16,8 +16,12 @@ import type { ProofDisplayNode } from '../../bindings/ProofDisplayNode.ts';
 import type { ProofStepNode } from '../../bindings/ProofStepNode.ts';
 import type { ProofCaseNode } from '../../bindings/ProofCaseNode.ts';
 import type { RichTextSegment } from '../../bindings/RichTextSegment.ts';
-
+import type { Goal } from '../../bindings/Goal.ts';
+import type { ProofStepStatus } from '../../bindings/ProofStepStatus.ts';
+import type { Tactic } from '../../bindings/Tactic.ts';
 import styles from './section_node.module.scss';
+
+
 
 interface SectionNodeProps {
   sections: Section[];
@@ -714,7 +718,7 @@ const ProofDisplayRenderer: React.FC<{ proof: ProofDisplayNode }> = ({ proof }) 
         </div>
       );
     }
-
+    
     return (
       <div className={styles.proofDisplay}>
         {proof.title?.segments && (
@@ -757,27 +761,67 @@ const ProofDisplayRenderer: React.FC<{ proof: ProofDisplayNode }> = ({ proof }) 
   }
 };
 
+
+const TacticRenderer: React.FC<{tactic: Tactic}> = ({tactic}) =>{
+  if(typeof tactic === 'string'){
+    return <span>{tactic}</span>
+  }
+
+
+
+
+  return null;
+}
+
+const GoalRenderer: React.FC<{ goal: Goal, index?: number | string }> = ({ goal, index }) => {
+  const {goal_type, quantified_objects, statement, variable_bindings} = goal;
+   return (
+    <div key={index} className={styles.proofStepsGoalWrap}>
+      {statement && <div>
+          <div className={styles.proofGoal + ' ' + styles.proofStepsGoal}>
+            <strong>Goal</strong>
+            <em style={{fontStyle:'italic'}}>{goal_type}</em>
+            {renderMathNode(statement)}
+            </div> 
+        </div>}
+    </div>
+   )
+}
+
 const ProofStepRenderer: React.FC<{ step: ProofStepNode; stepNumber: number }> = ({ step, stepNumber }) => {
   // Add error boundary for this component
   try {
     // Get the variant key from the union type
     const variantKey = Object.keys(step)[0] as keyof ProofStepNode;
+    console.log(step, 888);
     
     switch (variantKey) {
       case 'Statement': {
-        const { Statement } = step as Extract<ProofStepNode, { Statement: { claim: RichTextSegment[]; justification: RichTextSegment[] } }>;
+        const { Statement } = step as Extract<ProofStepNode, { Statement: { claim: RichTextSegment[]; justification: RichTextSegment[]; goal: Goal; status: ProofStepStatus; tactic: Tactic} }>;
         return (
           <div className={styles.proofStatement}>
             <div className={styles.stepNumber}>{stepNumber}.</div>
             <div className={styles.statementContent}>
-              <div className={styles.claim}>
+              {
+                Statement?.status && (<span>{Statement?.status}</span>)
+              }
+              {
+                Statement?.tactic && <TacticRenderer tactic={Statement.tactic}></TacticRenderer>
+              }
+              {
+                Statement?.goal && <GoalRenderer goal={Statement.goal}></GoalRenderer>
+              }
+              {
+                Statement?.claim && (<div className={styles.claim}>
                 <RichTextRenderer segments={Statement?.claim || []} />
-              </div>
+              </div>)
+              }
               {Statement?.justification && Statement.justification.length > 0 && (
                 <div className={styles.justification}>
                   <RichTextRenderer segments={Statement.justification} />
                 </div>
               )}
+              
             </div>
           </div>
         );
