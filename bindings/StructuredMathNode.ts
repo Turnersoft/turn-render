@@ -3,8 +3,8 @@ import type { AbstractionMetadata } from "./AbstractionMetadata";
 import type { CollapsibleBlockNode } from "./CollapsibleBlockNode";
 import type { LinkTarget } from "./LinkTarget";
 import type { MathNode } from "./MathNode";
-import type { ParagraphNode } from "./ParagraphNode";
 import type { ProofDisplayNode } from "./ProofDisplayNode";
+import type { RichText } from "./RichText";
 import type { RichTextSegment } from "./RichTextSegment";
 import type { SectionContentNode } from "./SectionContentNode";
 import type { SelectableProperty } from "./SelectableProperty";
@@ -17,7 +17,7 @@ import type { TheoremStatement } from "./TheoremStatement";
 export type StructuredMathNode =
   | {
     "Definition": {
-      term_display: Array<RichTextSegment>;
+      term_display: RichText;
       formal_term: MathNode | null;
       label: string | null;
       body: Array<SectionContentNode>;
@@ -72,7 +72,7 @@ export type StructuredMathNode =
   | {
     "CollectionView": {
       collection_type: string;
-      description: ParagraphNode;
+      description: RichText;
       variants: Array<[string, string]>;
       variant_links: Array<LinkTarget>;
       abstraction_meta: AbstractionMetadata | null;

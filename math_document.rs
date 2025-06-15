@@ -5,7 +5,7 @@ use serde::{Deserialize, Serialize};
 use ts_rs::TS;
 
 pub trait ToMathDocument {
-    fn to_math_document(&self) -> MathDocument;
+    fn to_math_document(&self, id_prefix: &str) -> MathDocument;
 }
 
 /// The main container for mathematical content with a unique ID and content type

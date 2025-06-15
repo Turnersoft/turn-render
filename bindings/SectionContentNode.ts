@@ -12,7 +12,7 @@ import type { ListNode } from "./ListNode";
 import type { MathDocument } from "./MathDocument";
 import type { MathNode } from "./MathNode";
 import type { PanelLayout } from "./PanelLayout";
-import type { ParagraphNode } from "./ParagraphNode";
+import type { RichText } from "./RichText";
 import type { Section } from "./Section";
 import type { SideBySideLayout } from "./SideBySideLayout";
 import type { StructuredMathNode } from "./StructuredMathNode";
@@ -24,12 +24,13 @@ import type { ThematicBreakNode } from "./ThematicBreakNode";
  * This is the primary building block for document content.
  */
 export type SectionContentNode =
-  | { "Paragraph": ParagraphNode }
+  | { "SubSection": Section }
+  | { "RichText": RichText }
   | {
     "MathNode": {
       math: MathNode;
       label: string | null;
-      caption: ParagraphNode | null;
+      caption: RichText | null;
     };
   }
   | { "StructuredMath": StructuredMathNode }
@@ -42,12 +43,7 @@ export type SectionContentNode =
   | { "Grid": GridNode }
   | { "Columns": ColumnsNode }
   | { "ThematicBreak": ThematicBreakNode }
-  | {
-    "QuoteBlock": {
-      content: Array<ParagraphNode>;
-      attribution: ParagraphNode | null;
-    };
-  }
+  | { "QuoteBlock": { content: Array<RichText>; attribution: RichText | null } }
   | { "AlertBox": { style: AlertBoxStyle; content: Array<SectionContentNode> } }
   | {
     "CustomComponent": {
@@ -57,7 +53,6 @@ export type SectionContentNode =
     };
   }
   | { "EmbeddedSectionRef": string }
-  | { "SubSection": Section }
   | { "SideBySideLayout": SideBySideLayout }
   | { "PanelLayout": PanelLayout }
   | { "AnnotationOverlay": AnnotationOverlay }

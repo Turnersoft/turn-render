@@ -3,9 +3,9 @@ import type { RichTextSegment } from "./RichTextSegment";
 import type { TextAlignment } from "./TextAlignment";
 
 /**
- * Represents a paragraph of rich text.
+ * Represents a paragraph of rich text. It doesn't have line breaks
  */
-export type ParagraphNode = {
+export type RichText = {
   segments: Array<RichTextSegment>;
   alignment: TextAlignment | null;
 };

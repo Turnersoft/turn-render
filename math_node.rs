@@ -45,6 +45,26 @@ impl MathNode {
             }),
         }
     }
+
+    pub fn identifier_with_simple_sub_scripts(input: String, sub_scripts: Vec<String>) -> MathNode {
+        MathNode {
+            id: input.clone(),
+            content: Box::new(MathNodeContent::Identifier {
+                body: input,
+                pre_script: None,
+                mid_script: None,
+                post_script: Some(ScriptNode {
+                    subscripts: sub_scripts
+                        .iter()
+                        .map(|s| MathNode::identifier(s.clone()))
+                        .collect(),
+                    superscripts: vec![],
+                }),
+                primes: 0,
+                is_function: false,
+            }),
+        }
+    }
 }
 
 #[derive(Debug, Clone, Eq, PartialEq, Hash, Serialize, Deserialize, TS)]

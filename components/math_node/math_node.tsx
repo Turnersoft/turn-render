@@ -1,4 +1,4 @@
-import React, { CSSProperties, ReactElement, ReactNode, useEffect, useRef, useState } from 'react';
+import React, { CSSProperties, useEffect, useRef, useState } from 'react';
 import classNames from 'classnames';
 import styles from './math_node.module.scss';
 import { MathNode } from '../../bindings/MathNode.ts';

@@ -7,7 +7,7 @@ import type { QuantifierType } from "./QuantifierType";
  */
 export type QuantifiedObject = {
   variable: string;
-  quantifier_type: QuantifierType;
+  quantification: QuantifierType;
   object_type: string;
   constraints: Array<MathNode>;
   description: string | null;

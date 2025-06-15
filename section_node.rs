@@ -1,3 +1,5 @@
+use crate::subjects::math::theories::differential_geometry::SectionType;
+
 use super::*;
 use serde::{Deserialize, Serialize};
 use std::collections::{BTreeMap, HashMap};
@@ -9,13 +11,6 @@ pub trait ToSectionNode {
     /// - `id_prefix`: A prefix to ensure unique IDs for generated nodes.
     /// Implementers will need to compute/access AbstractionLevel ad-hoc if needed.
     fn to_section_node(&self, id_prefix: &str) -> Section;
-
-    /// Generates a full document representation.
-    /// Implementers are responsible for determining the appropriate AbstractionLevel for the main section.
-    fn to_math_document(&self, id_prefix: &str) -> MathDocument;
-
-    fn to_tooltip_node(&self, id_prefix: &str) -> Vec<RichTextSegment>;
-    fn to_reference_node(&self, id_prefix: &str) -> Vec<RichTextSegment>;
 
     /// Renders the object as a Level 1 (L1) schema section.
     /// This is separate from to_section_node because L1 objects are never instantiated directly.
@@ -118,7 +113,7 @@ pub enum RichTextSegment {
         /// The visible content of the link, can be rich text itself.
         content: Vec<RichTextSegment>,
         target: LinkTarget,
-        tooltip: Option<String>,
+        tooltip: Option<String>, // TODO: id of the tooltip page
     },
     FootnoteReference(String), // ID of a footnote
     CodeInline(String),        // For short inline code snippets, e.g., `variable_name`
@@ -139,10 +134,10 @@ pub enum TextStyle {
     FontFamily(String),
 }
 
-/// Represents a paragraph of rich text.
+/// Represents a paragraph of rich text. It doesn't have line breaks
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize, TS)]
 #[ts(export)]
-pub struct ParagraphNode {
+pub struct RichText {
     pub segments: Vec<RichTextSegment>,
     pub alignment: Option<TextAlignment>,
 }
@@ -209,14 +204,18 @@ pub enum AnimationTriggerType {
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize, TS)]
 #[ts(export)]
 pub enum SectionContentNode {
-    Paragraph(ParagraphNode),
+    // New variant for subsections
+    SubSection(Box<Section>), // Box to avoid recursive type definition issues
+    // non-recursive content nodes
+    RichText(RichText),
     MathNode {
         // For display-style math equations (block-level)
         math: MathNode,
         label: Option<String>, // For equation numbering/referencing
-        caption: Option<ParagraphNode>,
+        caption: Option<RichText>,
     },
     StructuredMath(StructuredMathNode), // Definitions, Theorems, Proofs, etc.
+
     List(ListNode),
     Table(TableNode),
     CodeBlock(CodeBlockNode),
@@ -227,8 +226,8 @@ pub enum SectionContentNode {
     Columns(ColumnsNode),
     ThematicBreak(ThematicBreakNode), // Horizontal rule
     QuoteBlock {
-        content: Vec<ParagraphNode>,
-        attribution: Option<ParagraphNode>,
+        content: Vec<RichText>,
+        attribution: Option<RichText>,
     },
     AlertBox {
         // For notes, warnings, tips
@@ -243,8 +242,6 @@ pub enum SectionContentNode {
     },
     // Embeds another section, useful for transclusion or master documents.
     EmbeddedSectionRef(String), // ID of another SectionNode to embed
-    // New variant for subsections
-    SubSection(Box<Section>), // Box to avoid recursive type definition issues
 
     // NEW: Enhanced layout and interaction types
     SideBySideLayout(SideBySideLayout), // For comparison pages, transformation mappings
@@ -297,7 +294,7 @@ pub enum PanelLayoutType {
 #[ts(export)]
 pub struct Panel {
     pub id: String,
-    pub title: Option<ParagraphNode>,
+    pub title: Option<RichText>,
     pub content: Vec<SectionContentNode>,
     pub panel_role: PanelRole,
     pub initially_visible: Option<bool>,
@@ -419,7 +416,7 @@ pub enum ControlLayout {
 #[ts(export)]
 pub enum StructuredMathNode {
     Definition {
-        term_display: Vec<RichTextSegment>,
+        term_display: RichText,
         formal_term: Option<MathNode>,
         label: Option<String>,
         body: Vec<SectionContentNode>,
@@ -465,21 +462,11 @@ pub enum StructuredMathNode {
     },
     CollectionView {
         collection_type: String,
-        description: ParagraphNode,
+        description: RichText,
         variants: Vec<(String, String)>,
         variant_links: Vec<LinkTarget>,
         abstraction_meta: Option<AbstractionMetadata>,
     },
-}
-
-/// Represents different ways a theorem statement can be expressed
-#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, TS)]
-#[ts(export)]
-pub enum TheoremStatement {
-    /// Traditional content-based statement
-    Content(Vec<SectionContentNode>),
-    /// Structured mathematical statement
-    Mathematical(MathNode),
 }
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize, TS)]
@@ -508,45 +495,122 @@ pub enum TheoremLikeKind {
 
 // --- Proof Display Structures ---
 
-/// Represents a display-oriented proof structure.
+/// Represents different ways a theorem statement can be expressed
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, TS)]
+#[ts(export)]
+pub enum TheoremStatement {
+    Content(Vec<SectionContentNode>),
+    Mathematical(MathNode),
+}
+
+/// Represents a display-oriented proof structure (for frontend compatibility)
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize, TS)]
 #[ts(export)]
 pub struct ProofDisplayNode {
-    pub title: Option<ParagraphNode>, // e.g., "Proof.", "Proof of Theorem 1.2."
-    pub strategy: Vec<SectionContentNode>, // Optional outline of the proof strategy
+    pub title: Option<RichText>,
+    pub strategy: Vec<SectionContentNode>,
     pub steps: Vec<ProofStepNode>,
-    pub qed_symbol: Option<String>, // e.g., "□", "∎", or "" for none
+    pub qed_symbol: Option<String>,
+}
+
+/// Represents a single step or block within a proof's display
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, TS)]
+#[ts(export)]
+pub enum ProofStepNode {
+    Statement {
+        claim: Vec<RichTextSegment>,
+        justification: Vec<RichTextSegment>,
+    },
+    Elaboration(Vec<SectionContentNode>),
+    CaseAnalysis {
+        introduction: Option<RichText>,
+        cases: Vec<ProofCaseNode>,
+    },
+    InductiveProof {
+        variable_of_induction: MathNode,
+        base_case: ProofDisplayNode,
+        inductive_hypothesis: RichText,
+        inductive_step: ProofDisplayNode,
+    },
+    Assume(RichText),
+    Goal(RichText),
+    NestedProof(ProofDisplayNode),
+}
+
+/// Represents a case in case analysis
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, TS)]
+#[ts(export)]
+pub struct ProofCaseNode {
+    pub condition: RichText,
+    pub proof_for_case: ProofDisplayNode,
+}
+
+/// Represents a display-oriented proof structure with tree-like branching.
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, TS)]
+#[ts(export)]
+pub struct ProofNodeDisplay {
+    // pub title: Option<RichText>,   // e.g., "Proof.", "Proof of Theorem 1.2."
+    // pub strategy: Option<Section>, // Optional outline of the proof strategy
+    pub step: ProofStepDisplay,
+    /// Child proof branches - for representing proof tree structure
+    pub children: Vec<ProofNodeDisplay>,
+}
+
+pub trait ToProofDisplay {
+    /// Convert this object to a proof display node (frontend compatible)
+    fn to_proof_display(&self) -> ProofDisplayNode;
+
+    /// Convert this object to a vector of proof display nodes (for multiple proofs)
+    fn to_proof_display_vec(&self) -> Vec<ProofDisplayNode> {
+        vec![self.to_proof_display()]
+    }
+}
+
+pub trait ToProofStep {
+    fn to_proof_step(&self) -> ProofStepNode;
 }
 
 /// Represents a single step or block within a proof's display.
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize, TS)]
 #[ts(export)]
-pub enum ProofStepNode {
+pub enum ProofStepDisplay {
+    /// A tactic application showing what changed in the ProofGoal
+    Tactic {
+        /// The tactic that was applied
+        tactic_name: String,
+        /// Parameters of the tactic (if any)
+        parameters: Vec<String>,
+        /// Human-readable description of what happened
+        description: Section,
+        /// Before/after state (optional for interactivity)
+        state_change: Option<ProofGoalChange>,
+    },
+    /// Traditional statement-style step
     Statement {
-        claim: Vec<RichTextSegment>, // The mathematical claim or derivation for this step
-        justification: Vec<RichTextSegment>, // e.g., "by Definition 1", "from (3.2)"
+        claim: Section,
+        justification: Section,
     },
-    Elaboration(Vec<SectionContentNode>), // A more detailed explanation or sub-derivation
+    /// Case analysis with branches
     CaseAnalysis {
-        introduction: Option<ParagraphNode>,
-        cases: Vec<ProofCaseNode>,
+        introduction: Option<Section>,
+        cases: Vec<Section>,
     },
-    InductiveProof {
-        variable_of_induction: MathNode,
-        base_case: Box<ProofDisplayNode>,
-        inductive_hypothesis: ParagraphNode, // Statement of P(k)
-        inductive_step: Box<ProofDisplayNode>, // Proof of P(k) => P(k+1)
-    },
-    Assume(ParagraphNode), // For assumptions in direct proofs or contradiction
-    Goal(ParagraphNode),   // Stating a subgoal
-    NestedProof(Box<ProofDisplayNode>), // For a sub-lemma or smaller part proven inline
+    /// Nested proof structure
+    NestedProof(Box<ProofNodeDisplay>),
 }
 
+/// Simple representation of what changed in a ProofGoal after a tactic
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize, TS)]
 #[ts(export)]
-pub struct ProofCaseNode {
-    pub condition: ParagraphNode, // e.g., "Case 1: n is even."
-    pub proof_for_case: ProofDisplayNode,
+pub struct ProofGoalChange {
+    /// Names of quantifiers that were added/removed/modified
+    pub quantifier_changes: Vec<String>,
+    /// Names of value variables that were added/removed/modified  
+    pub variable_changes: Vec<String>,
+    /// Whether the main statement changed
+    pub statement_changed: bool,
+    /// Summary of the change
+    pub summary: String,
 }
 
 // --- Layout and Utility Content Types ---
@@ -595,7 +659,7 @@ pub enum OrderedListStyle {
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize, TS)]
 #[ts(export)]
 pub struct TableNode {
-    pub caption: Option<ParagraphNode>,
+    pub caption: Option<RichText>,
     pub header_rows: Vec<TableRowNode>,
     pub body_rows: Vec<TableRowNode>,
     pub footer_rows: Vec<TableRowNode>,
@@ -649,7 +713,7 @@ pub struct TableStyleOptions {
 pub struct CodeBlockNode {
     pub code: String,
     pub language: Option<String>, // e.g., "rust", "python", "latex", "lean", "plaintext"
-    pub caption: Option<ParagraphNode>,
+    pub caption: Option<RichText>,
     pub show_line_numbers: Option<bool>,
     pub highlight_lines: Vec<usize>,
     pub is_executable: Option<bool>, // For interactive code blocks
@@ -660,7 +724,7 @@ pub struct CodeBlockNode {
 pub struct ImageNode {
     pub src: String, // URL or path
     pub alt_text: Option<String>,
-    pub caption: Option<ParagraphNode>,
+    pub caption: Option<RichText>,
     pub width: Option<String>,
     pub height: Option<String>,
     pub alignment: Option<HorizontalAlignment>,
@@ -679,7 +743,7 @@ pub enum HorizontalAlignment {
 pub struct InteractiveDiagramNode {
     pub diagram_type_id: String, // Identifier for the type of diagram (e.g., "commutative_diagram", "function_plot")
     pub data: String,            // Diagram-specific data
-    pub caption: Option<ParagraphNode>,
+    pub caption: Option<RichText>,
     pub config_options: Option<String>, // UI options for the diagram
 }
 
@@ -742,8 +806,8 @@ pub enum AlertBoxStyle {
 #[ts(export)]
 pub struct Section {
     // Renamed from SectionNode to avoid confusion with enum SectionContentNode
-    pub id: String, // Unique ID for linking, navigation, and referencing
-    pub title: Option<ParagraphNode>, // The title of the section
+    pub id: String,              // Unique ID for linking, navigation, and referencing
+    pub title: Option<RichText>, // The title of the section
     pub content: Vec<SectionContentNode>, // Ordered list of content blocks within this section
     pub metadata: Vec<(String, String)>, // For tags, abstraction level, visibility, etc.
     pub display_options: Option<SectionDisplayOptions>,
@@ -770,22 +834,12 @@ pub struct SelectableProperty {
 
 // --- NEW: Structured Proof Content Types ---
 
-/// Represents a structured proof goal with proper mathematical formatting
-#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, TS)]
-#[ts(export)]
-pub struct Goal {
-    pub quantified_objects: Vec<QuantifiedObject>,
-    pub variable_bindings: Vec<VariableBinding>,
-    pub statement: MathNode,
-    pub goal_type: GoalType,
-}
-
 /// Represents a quantified mathematical object in structured form
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize, TS)]
 #[ts(export)]
 pub struct QuantifiedObject {
     pub variable: String,
-    pub quantifier_type: QuantifierType,
+    pub quantification: QuantifierType,
     pub object_type: String, // Could be expanded to a full type system
     pub constraints: Vec<MathNode>,
     pub description: Option<String>,
@@ -869,97 +923,4 @@ pub enum SetType {
     Implicit, // {x | P(x)}
     Standard, // ℕ, ℤ, ℝ, etc.
     Empty,
-}
-
-/// Types of proof goals
-#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, TS)]
-#[ts(export)]
-pub enum GoalType {
-    Prove,
-    Disprove,
-    Show,
-    Establish,
-    Verify,
-    Construct,
-}
-
-/// Represents a structured proof tactic
-#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, TS)]
-#[ts(export)]
-pub enum Tactic {
-    Introduction {
-        variable: String,
-        assumption: Option<MathNode>,
-    },
-    Elimination {
-        target: MathNode,
-        method: EliminationMethod,
-    },
-    Substitution {
-        target: MathNode,
-        replacement: MathNode,
-        location: Option<Vec<usize>>,
-    },
-    TheoremApplication {
-        theorem_name: String,
-        instantiation: Vec<(String, MathNode)>,
-        target: Option<MathNode>,
-    },
-    CaseAnalysis {
-        cases: Vec<Case>,
-    },
-    Induction {
-        variable: String,
-        base_case: Goal,
-        inductive_step: Goal,
-    },
-    Contradiction {
-        assumption: MathNode,
-    },
-    DirectProof,
-    Custom {
-        name: String,
-        description: String,
-        arguments: Vec<String>,
-    },
-}
-
-/// Elimination methods for logical rules
-#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, TS)]
-#[ts(export)]
-pub enum EliminationMethod {
-    ModusPonens,
-    ModusTollens,
-    DisjunctiveSyllogism,
-    UniversalInstantiation,
-    ExistentialInstantiation,
-}
-
-/// Represents a case in case analysis
-#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, TS)]
-#[ts(export)]
-pub struct Case {
-    pub condition: MathNode,
-    pub proof: Goal,
-    pub case_name: Option<String>,
-}
-
-/// Status of proof steps
-#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, TS)]
-#[ts(export)]
-pub enum ProofStepStatus {
-    Complete,
-    InProgress,
-    Todo,
-    WorkInProgress,
-    Abandoned,
-}
-
-/// Structured proof case
-#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, TS)]
-#[ts(export)]
-pub struct ProofCase {
-    pub condition: MathNode,
-    pub proof: ProofDisplayNode,
-    pub case_name: Option<String>,
 }

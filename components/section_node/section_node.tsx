@@ -5,7 +5,7 @@ import { RichTextRenderer } from '../rich_text/rich_text.tsx';
 // Import proper binding types instead of duplicating interfaces
 import type { SectionContentNode } from '../../bindings/SectionContentNode.ts';
 import type { Section } from '../../bindings/Section.ts';
-import type { ParagraphNode } from '../../bindings/ParagraphNode.ts';
+import type { RichText } from '../../bindings/RichText.ts';
 import type { MathNode } from '../../bindings/MathNode.ts';
 import type { ListNode } from '../../bindings/ListNode.ts';
 import type { TableNode } from '../../bindings/TableNode.ts';
@@ -80,13 +80,13 @@ const ContentNodeRenderer: React.FC<{ node: SectionContentNode }> = ({ node }) =
   const variantKey = Object.keys(node)[0] as keyof SectionContentNode;
   
   switch (variantKey) {
-    case 'Paragraph': {
-      const { Paragraph } = node as Extract<SectionContentNode, { Paragraph: ParagraphNode }>;
-      return <ParagraphRenderer paragraph={Paragraph} />;
+    case 'RichText': {
+      const { RichText } = node as Extract<SectionContentNode, { RichText: RichText }>;
+      return <ParagraphRenderer paragraph={RichText} />;
     }
     
     case 'MathNode': {
-      const { MathNode } = node as Extract<SectionContentNode, { MathNode: { math: MathNode; label: string | null; caption: ParagraphNode | null } }>;
+      const { MathNode } = node as Extract<SectionContentNode, { MathNode: { math: MathNode; label: string | null; caption: RichText | null } }>;
       return <MathNodeRenderer mathNodeContent={MathNode} />;
     }
     
@@ -141,7 +141,7 @@ const ContentNodeRenderer: React.FC<{ node: SectionContentNode }> = ({ node }) =
     }
     
     case 'QuoteBlock': {
-      const { QuoteBlock } = node as Extract<SectionContentNode, { QuoteBlock: { content: ParagraphNode[]; attribution: ParagraphNode | null } }>;
+      const { QuoteBlock } = node as Extract<SectionContentNode, { QuoteBlock: { content: RichText[]; attribution: RichText | null } }>;
       return <QuoteBlockRenderer quote={QuoteBlock} />;
     }
     
@@ -196,13 +196,13 @@ const ContentNodeRenderer: React.FC<{ node: SectionContentNode }> = ({ node }) =
 };
 
 // Individual renderer components for each variant
-const ParagraphRenderer: React.FC<{ paragraph: ParagraphNode }> = ({ paragraph }) => (
+const ParagraphRenderer: React.FC<{ paragraph: RichText }> = ({ paragraph }) => (
   <div className={`${styles.paragraph} ${paragraph.alignment ? styles[paragraph.alignment] : ''}`}>
     <RichTextRenderer segments={paragraph.segments} />
   </div>
 );
 
-const MathNodeRenderer: React.FC<{ mathNodeContent: { math: MathNode; label: string | null; caption: ParagraphNode | null } }> = ({ mathNodeContent }) => {
+const MathNodeRenderer: React.FC<{ mathNodeContent: { math: MathNode; label: string | null; caption: RichText | null } }> = ({ mathNodeContent }) => {
   // Check if mathNodeContent exists
   if (!mathNodeContent) {
     return (
@@ -305,7 +305,7 @@ const StructuredMathRenderer: React.FC<{ structuredMath: StructuredMathNode }> =
       return (
         <div className={styles.structuredMathDefinition}>
           <h3 className={styles.definitionTitle}>
-            <RichTextRenderer segments={Definition.term_display} />
+            <RichTextRenderer segments={Definition.term_display.segments} />
           </h3>
           {Definition.label && (
             <div className={styles.definitionLabel}>{Definition.label}</div>
@@ -622,7 +622,7 @@ const ThematicBreakRenderer: React.FC<{ break: any }> = () => (
   <hr className={styles.thematicBreak} />
 );
 
-const QuoteBlockRenderer: React.FC<{ quote: { content: ParagraphNode[]; attribution: ParagraphNode | null } }> = ({ quote }) => (
+const QuoteBlockRenderer: React.FC<{ quote: { content: RichText[]; attribution: RichText | null } }> = ({ quote }) => (
   <blockquote className={styles.quoteBlock}>
     {quote.content.map((paragraph, index) => (
       <ParagraphRenderer key={index} paragraph={paragraph} />
