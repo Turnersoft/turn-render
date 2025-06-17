@@ -5,6 +5,7 @@ import type { ProofDisplayNode } from "./ProofDisplayNode";
 import type { RichText } from "./RichText";
 import type { RichTextSegment } from "./RichTextSegment";
 import type { SectionContentNode } from "./SectionContentNode";
+import type { TacticDisplayNode } from "./TacticDisplayNode";
 
 /**
  * Represents a single step or block within a proof's display
@@ -16,6 +17,7 @@ export type ProofStepNode =
       justification: Array<RichTextSegment>;
     };
   }
+  | { "TacticApplication": TacticDisplayNode }
   | { "Elaboration": Array<SectionContentNode> }
   | {
     "CaseAnalysis": {

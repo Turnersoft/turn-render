@@ -32,37 +32,24 @@ impl MathNode {
         )
     }
 
-    pub fn identifier(input: String) -> MathNode {
+    pub fn identifier(input: Identifier) -> MathNode {
         MathNode {
-            id: input.clone(),
-            content: Box::new(MathNodeContent::Identifier {
-                body: input,
-                pre_script: None,
-                mid_script: None,
-                post_script: None,
-                primes: 0,
-                is_function: false,
-            }),
+            id: input.body.clone(),
+            content: Box::new(MathNodeContent::Identifier(input)),
         }
     }
 
-    pub fn identifier_with_simple_sub_scripts(input: String, sub_scripts: Vec<String>) -> MathNode {
+    pub fn string(input: String) -> MathNode {
         MathNode {
             id: input.clone(),
-            content: Box::new(MathNodeContent::Identifier {
-                body: input,
-                pre_script: None,
-                mid_script: None,
-                post_script: Some(ScriptNode {
-                    subscripts: sub_scripts
-                        .iter()
-                        .map(|s| MathNode::identifier(s.clone()))
-                        .collect(),
-                    superscripts: vec![],
-                }),
-                primes: 0,
-                is_function: false,
-            }),
+            content: Box::new(MathNodeContent::String(input)),
+        }
+    }
+
+    pub fn text(input: String) -> MathNode {
+        MathNode {
+            id: input.clone(),
+            content: Box::new(MathNodeContent::Text(input)),
         }
     }
 }
@@ -127,6 +114,8 @@ pub enum MathNodeContent {
         parameter: Box<MathNode>,
         operator: Box<MathNode>, // "!", "T", "%"
     },
+    // the question is whether symbol should have separate variant? logical not is
+    // is such example, but it probably has no interactivity, so we keep it in .
     UnaryPrefixOperation {
         parameter: Box<MathNode>,
         operator: Box<MathNode>, // "-", "∇", "∇²"
@@ -154,14 +143,7 @@ pub enum MathNodeContent {
         style: ScientificNotationStyle,
     },
 
-    Identifier {
-        body: String,
-        pre_script: Option<ScriptNode>,
-        mid_script: Option<SpecialMiddleScriptNode>,
-        post_script: Option<ScriptNode>,
-        primes: usize,
-        is_function: bool,
-    },
+    Identifier(Identifier),
 
     Unit {
         original_form: Box<MathNode>,  // multiplication
@@ -216,6 +198,77 @@ pub enum MathNodeContent {
         domain: Option<Box<MathNode>>,    // Optional domain (the "∈ S" part)
         predicate: Option<Box<MathNode>>, // Optional predicate (the ": P(x)" part)
     },
+
+    // logical connectives
+    And(Vec<MathNode>),
+    Or(Vec<MathNode>),
+    Not(Box<MathNode>),
+    True,
+    False,
+}
+
+#[derive(Debug, Clone, Eq, PartialEq, Hash, Serialize, Deserialize, TS)]
+#[ts(export)]
+pub struct Identifier {
+    pub body: String,
+    pub pre_script: Option<ScriptNode>,
+    pub mid_script: Option<SpecialMiddleScriptNode>,
+    pub post_script: Option<ScriptNode>,
+    pub primes: usize,
+    pub is_function: bool,
+}
+
+impl Identifier {
+    pub fn new_simple(body: String) -> Self {
+        Identifier {
+            body,
+            pre_script: None,
+            mid_script: None,
+            post_script: None,
+            primes: 0,
+            is_function: false,
+        }
+    }
+    pub fn simple_string_subscript(name: String, subscript: String) -> Self {
+        Identifier {
+            body: name,
+            pre_script: None,
+            mid_script: None,
+            post_script: Some(ScriptNode {
+                subscripts: vec![MathNode::string(subscript)],
+                superscripts: vec![],
+            }),
+            primes: 0,
+            is_function: false,
+        }
+    }
+    pub fn simple_text_subscript(name: String, subscript: String) -> Self {
+        Identifier {
+            body: name,
+            pre_script: None,
+            mid_script: None,
+            post_script: Some(ScriptNode {
+                subscripts: vec![MathNode::text(subscript)],
+                superscripts: vec![],
+            }),
+            primes: 0,
+            is_function: false,
+        }
+    }
+
+    pub fn simple_identifier_subscript(name: String, subscript: Identifier) -> Self {
+        Identifier {
+            body: name,
+            pre_script: None,
+            mid_script: None,
+            post_script: Some(ScriptNode {
+                subscripts: vec![MathNode::identifier(subscript)],
+                superscripts: vec![],
+            }),
+            primes: 0,
+            is_function: false,
+        }
+    }
 }
 
 #[derive(Debug, Clone, Eq, PartialEq, Hash, Serialize, Deserialize, TS)]

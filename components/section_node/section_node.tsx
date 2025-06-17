@@ -783,6 +783,18 @@ const ProofStepRenderer: React.FC<{ step: ProofStepNode; stepNumber: number }> =
         );
       }
       
+      case 'TacticApplication': {
+        const { TacticApplication } = step as Extract<ProofStepNode, { TacticApplication: import('../../bindings/TacticDisplayNode.ts').TacticDisplayNode }>;
+        return (
+          <div className={styles.proofTacticApplication}>
+            <div className={styles.stepNumber}>{stepNumber}.</div>
+            <div className={styles.tacticContent}>
+              <TacticApplicationRenderer tactic={TacticApplication} />
+            </div>
+          </div>
+        );
+      }
+      
       case 'Elaboration': {
         const { Elaboration } = step as Extract<ProofStepNode, { Elaboration: any[] }>;
         return (
@@ -912,6 +924,319 @@ const ProofStepRenderer: React.FC<{ step: ProofStepNode; stepNumber: number }> =
         <span className={styles.unknownType}>
           [Error rendering proof step: {error instanceof Error ? error.message : 'Unknown error'}]
         </span>
+      </div>
+    );
+  }
+};
+
+const TacticApplicationRenderer: React.FC<{ tactic: import('../../bindings/TacticDisplayNode.ts').TacticDisplayNode }> = ({ tactic }) => {
+  try {
+    // Get the variant key from the union type
+    const variantKey = Object.keys(tactic)[0] as keyof import('../../bindings/TacticDisplayNode.ts').TacticDisplayNode;
+    
+    switch (variantKey) {
+      case 'IntroduceQuantifier': {
+        const { IntroduceQuantifier } = tactic as Extract<import('../../bindings/TacticDisplayNode.ts').TacticDisplayNode, { IntroduceQuantifier: any }>;
+        return (
+          <div className={styles.tacticIntroduceQuantifier}>
+            <div className={styles.tacticName}>Introduce Quantifier</div>
+            <div className={styles.tacticDescription}>
+              <RichTextRenderer segments={IntroduceQuantifier.object_description.segments} />
+            </div>
+            {IntroduceQuantifier.before_state && (
+              <div className={styles.beforeState}>
+                <strong>Before:</strong> <RichTextRenderer segments={IntroduceQuantifier.before_state.segments} />
+              </div>
+            )}
+            {IntroduceQuantifier.after_state && (
+              <div className={styles.afterState}>
+                <strong>After:</strong> <RichTextRenderer segments={IntroduceQuantifier.after_state.segments} />
+              </div>
+            )}
+          </div>
+        );
+      }
+      
+      case 'IntroduceFreshVariable': {
+        const { IntroduceFreshVariable } = tactic as Extract<import('../../bindings/TacticDisplayNode.ts').TacticDisplayNode, { IntroduceFreshVariable: any }>;
+        return (
+          <div className={styles.tacticIntroduceFreshVariable}>
+            <div className={styles.tacticName}>Introduce Fresh Variable</div>
+            <div className={styles.tacticDetails}>
+              <div><strong>Target:</strong> <RichTextRenderer segments={IntroduceFreshVariable.target_quantifier.segments} /></div>
+              <div><strong>New Variable:</strong> <RichTextRenderer segments={IntroduceFreshVariable.fresh_variable_name.segments} /></div>
+              <div><strong>Explanation:</strong> <RichTextRenderer segments={IntroduceFreshVariable.explanation.segments} /></div>
+            </div>
+          </div>
+        );
+      }
+      
+      case 'ProvideWitness': {
+        const { ProvideWitness } = tactic as Extract<import('../../bindings/TacticDisplayNode.ts').TacticDisplayNode, { ProvideWitness: any }>;
+        return (
+          <div className={styles.tacticProvideWitness}>
+            <div className={styles.tacticName}>Provide Witness</div>
+            <div className={styles.tacticDetails}>
+              <div><strong>Target:</strong> <RichTextRenderer segments={ProvideWitness.target_quantifier.segments} /></div>
+                             <div><strong>Witness:</strong> {renderMathNode(ProvideWitness.witness_expression)}</div>
+              <div><strong>Explanation:</strong> <RichTextRenderer segments={ProvideWitness.witness_explanation.segments} /></div>
+              {ProvideWitness.verification_steps.length > 0 && (
+                <div className={styles.verificationSteps}>
+                  <strong>Verification:</strong>
+                  {ProvideWitness.verification_steps.map((step, index) => (
+                    <ContentNodeRenderer key={index} node={step} />
+                  ))}
+                </div>
+              )}
+            </div>
+          </div>
+        );
+      }
+      
+      case 'ExactWith': {
+        const { ExactWith } = tactic as Extract<import('../../bindings/TacticDisplayNode.ts').TacticDisplayNode, { ExactWith: any }>;
+        return (
+          <div className={styles.tacticExactWith}>
+            <div className={styles.tacticName}>Exact (Apply Theorem)</div>
+            <div className={styles.tacticDetails}>
+              <div><strong>Theorem:</strong> <RichTextRenderer segments={ExactWith.theorem_name.segments} /></div>
+                             <div><strong>Statement:</strong> <RichTextRenderer segments={ExactWith.theorem_statement.segments} /></div>
+               {ExactWith.instantiation_mapping.length > 0 && (
+                 <div className={styles.instantiations}>
+                   <strong>Instantiations:</strong>
+                   {ExactWith.instantiation_mapping.map((pair, index) => (
+                     <div key={index} className={styles.instantiationPair}>
+                       <RichTextRenderer segments={pair.variable_name.segments} /> ↦ {renderMathNode(pair.variable_value)}
+                     </div>
+                   ))}
+                 </div>
+               )}
+            </div>
+          </div>
+        );
+      }
+      
+      case 'Rewrite': {
+        const { Rewrite } = tactic as Extract<import('../../bindings/TacticDisplayNode.ts').TacticDisplayNode, { Rewrite: any }>;
+        return (
+          <div className={styles.tacticRewrite}>
+            <div className={styles.tacticName}>Rewrite</div>
+                         <div className={styles.tacticDetails}>
+               <div><strong>Target:</strong> {renderMathNode(Rewrite.target_expression)}</div>
+               <div><strong>Using:</strong> <RichTextRenderer segments={Rewrite.theorem_name.segments} /></div>
+               <div><strong>Rule:</strong> <RichTextRenderer segments={Rewrite.theorem_rule.segments} /></div>
+               <div><strong>Direction:</strong> 
+                 {'LeftToRight' in Rewrite.direction ? (
+                   <span>Left to Right: {renderMathNode(Rewrite.direction.LeftToRight.left_side)} → {renderMathNode(Rewrite.direction.LeftToRight.right_side)}</span>
+                 ) : (
+                   <span>Right to Left: {renderMathNode(Rewrite.direction.RightToLeft.left_side)} → {renderMathNode(Rewrite.direction.RightToLeft.right_side)}</span>
+                 )}
+               </div>
+               {Rewrite.step_by_step_transformation.length > 0 && (
+                 <div className={styles.rewriteSteps}>
+                   <strong>Steps:</strong>
+                   {Rewrite.step_by_step_transformation.map((step, index) => (
+                     <div key={index} className={styles.rewriteStep}>
+                       {renderMathNode(step.before)} → {renderMathNode(step.after)}
+                       <span className={styles.ruleApplied}> (by <RichTextRenderer segments={step.rule_applied.segments} />)</span>
+                     </div>
+                   ))}
+                 </div>
+               )}
+             </div>
+          </div>
+        );
+      }
+      
+      case 'AssumeImplicationAntecedent': {
+        const { AssumeImplicationAntecedent } = tactic as Extract<import('../../bindings/TacticDisplayNode.ts').TacticDisplayNode, { AssumeImplicationAntecedent: any }>;
+        return (
+          <div className={styles.tacticAssumeAntecedent}>
+            <div className={styles.tacticName}>Assume Implication Antecedent</div>
+            <div className={styles.tacticDetails}>
+              <div><strong>Implication:</strong> {renderMathNode(AssumeImplicationAntecedent.implication_statement)}</div>
+              <div><strong>Hypothesis Name:</strong> <RichTextRenderer segments={AssumeImplicationAntecedent.hypothesis_name.segments} /></div>
+              <div><strong>Antecedent:</strong> {renderMathNode(AssumeImplicationAntecedent.antecedent)}</div>
+              <div><strong>Consequent:</strong> {renderMathNode(AssumeImplicationAntecedent.consequent)}</div>
+              <div><strong>Context:</strong> <RichTextRenderer segments={AssumeImplicationAntecedent.context_explanation.segments} /></div>
+            </div>
+          </div>
+        );
+      }
+      
+      case 'SplitConjunction': {
+        const { SplitConjunction } = tactic as Extract<import('../../bindings/TacticDisplayNode.ts').TacticDisplayNode, { SplitConjunction: any }>;
+        return (
+          <div className={styles.tacticSplitConjunction}>
+            <div className={styles.tacticName}>Split Conjunction</div>
+            <div className={styles.tacticDetails}>
+              <div><strong>Target:</strong> {renderMathNode(SplitConjunction.target_conjunction)}</div>
+              <div><strong>Selected:</strong> conjunct {SplitConjunction.selected_index + 1}</div>
+              <div className={styles.conjuncts}>
+                <strong>Conjuncts:</strong>
+                {SplitConjunction.conjuncts.map((conjunct, index) => (
+                  <div key={index} className={`${styles.conjunct} ${index === SplitConjunction.selected_index ? styles.selected : ''}`}>
+                    {index + 1}. {renderMathNode(conjunct)}
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        );
+      }
+      
+      case 'SplitDisjunction': {
+        const { SplitDisjunction } = tactic as Extract<import('../../bindings/TacticDisplayNode.ts').TacticDisplayNode, { SplitDisjunction: any }>;
+        return (
+          <div className={styles.tacticSplitDisjunction}>
+            <div className={styles.tacticName}>Split Disjunction</div>
+            <div className={styles.tacticDetails}>
+              <div><strong>Target:</strong> {renderMathNode(SplitDisjunction.target_disjunction)}</div>
+              <div><strong>Chosen:</strong> disjunct {SplitDisjunction.chosen_index + 1}</div>
+              <div><strong>Strategy:</strong> <RichTextRenderer segments={SplitDisjunction.strategy_explanation.segments} /></div>
+              <div className={styles.disjuncts}>
+                <strong>Disjuncts:</strong>
+                {SplitDisjunction.disjuncts.map((disjunct, index) => (
+                  <div key={index} className={`${styles.disjunct} ${index === SplitDisjunction.chosen_index ? styles.chosen : ''}`}>
+                    {index + 1}. {renderMathNode(disjunct)}
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        );
+      }
+      
+      case 'Simplify': {
+        const { Simplify } = tactic as Extract<import('../../bindings/TacticDisplayNode.ts').TacticDisplayNode, { Simplify: any }>;
+        return (
+          <div className={styles.tacticSimplify}>
+            <div className={styles.tacticName}>Simplify</div>
+                         <div className={styles.tacticDetails}>
+               <div><strong>Original:</strong> {renderMathNode(Simplify.original_expression)}</div>
+               <div><strong>Simplified:</strong> {renderMathNode(Simplify.simplified_expression)}</div>
+               {Simplify.rules_used.length > 0 && (
+                 <div className={styles.rulesUsed}>
+                   <strong>Rules Used:</strong>
+                   {Simplify.rules_used.map((rule, index) => (
+                     <span key={index} className={styles.rule}>
+                       <RichTextRenderer segments={rule.segments} />
+                     </span>
+                   ))}
+                 </div>
+               )}
+               {Simplify.simplification_steps.length > 0 && (
+                 <div className={styles.simplificationSteps}>
+                   <strong>Steps:</strong>
+                   {Simplify.simplification_steps.map((step, index) => (
+                     <div key={index} className={styles.simplificationStep}>
+                       {renderMathNode(step.before)} → {renderMathNode(step.after)} <span className={styles.stepDescription}>(<RichTextRenderer segments={step.rule_name.segments} />)</span>
+                     </div>
+                   ))}
+                 </div>
+               )}
+             </div>
+          </div>
+        );
+      }
+      
+      case 'Auto': {
+        const { Auto } = tactic as Extract<import('../../bindings/TacticDisplayNode.ts').TacticDisplayNode, { Auto: any }>;
+        return (
+          <div className={styles.tacticAuto}>
+            <div className={styles.tacticName}>Auto</div>
+            <div className={styles.tacticDetails}>
+              <div><strong>Execution:</strong> <RichTextRenderer segments={Auto.execution_summary.segments} /></div>
+              {Auto.search_depth && (
+                <div><strong>Search Depth:</strong> {Auto.search_depth}</div>
+              )}
+              {Auto.tactics_attempted.length > 0 && (
+                <div className={styles.tacticsAttempted}>
+                  <strong>Tactics Attempted:</strong>
+                  {Auto.tactics_attempted.map((tacticName, index) => (
+                    <span key={index} className={styles.tacticAttempted}>
+                      <RichTextRenderer segments={tacticName.segments} />
+                    </span>
+                  ))}
+                </div>
+              )}
+              {Auto.successful_path && (
+                <div className={styles.successfulPath}>
+                  <strong>Successful Path:</strong>
+                  {Auto.successful_path.map((step, index) => (
+                    <span key={index} className={styles.pathStep}>
+                      <RichTextRenderer segments={step.segments} />
+                    </span>
+                  ))}
+                </div>
+              )}
+            </div>
+          </div>
+        );
+      }
+      
+      case 'IntroduceValueVariable': {
+        const { IntroduceValueVariable } = tactic as Extract<import('../../bindings/TacticDisplayNode.ts').TacticDisplayNode, { IntroduceValueVariable: any }>;
+        return (
+          <div className={styles.tacticIntroduceValueVariable}>
+            <div className={styles.tacticName}>Introduce Value Variable</div>
+            <div className={styles.tacticDetails}>
+              <div><strong>Variable Name:</strong> <RichTextRenderer segments={IntroduceValueVariable.variable_name.segments} /></div>
+              <div><strong>Variable Value:</strong> {renderMathNode(IntroduceValueVariable.variable_value)}</div>
+              <div><strong>Binding Type:</strong> {IntroduceValueVariable.binding_type}</div>
+              <div><strong>Context:</strong> <RichTextRenderer segments={IntroduceValueVariable.context_explanation.segments} /></div>
+              {IntroduceValueVariable.position && (
+                <div><strong>Position:</strong> {IntroduceValueVariable.position}</div>
+              )}
+            </div>
+          </div>
+        );
+      }
+
+      case 'Induction': {
+        const { Induction } = tactic as Extract<import('../../bindings/TacticDisplayNode.ts').TacticDisplayNode, { Induction: any }>;
+        return (
+          <div className={styles.tacticInduction}>
+            <div className={styles.tacticName}>Induction</div>
+            <div className={styles.tacticDetails}>
+              <div><strong>Variable:</strong> <RichTextRenderer segments={Induction.induction_variable.segments} /></div>
+              <div><strong>Base Case Value:</strong> {renderMathNode(Induction.base_case_value)}</div>
+              <div><strong>Inductive Hypothesis:</strong> <RichTextRenderer segments={Induction.inductive_hypothesis.segments} /></div>
+              <div><strong>Principle:</strong> <RichTextRenderer segments={Induction.induction_principle.segments} /></div>
+              
+              <div className={styles.inductionCases}>
+                <div className={styles.baseCase}>
+                  <h5>Base Case:</h5>
+                  <ProofDisplayRenderer proof={Induction.base_case_proof} />
+                </div>
+                <div className={styles.inductiveStep}>
+                  <h5>Inductive Step:</h5>
+                  <ProofDisplayRenderer proof={Induction.inductive_step_proof} />
+                </div>
+              </div>
+            </div>
+          </div>
+        );
+      }
+      
+      default:
+        return (
+          <div className={styles.unknownTactic}>
+            <div className={styles.tacticName}>Unknown Tactic: {variantKey}</div>
+            <div className={styles.tacticDetails}>
+              <pre>{JSON.stringify(tactic, null, 2)}</pre>
+            </div>
+          </div>
+        );
+    }
+  } catch (error) {
+    console.error('Error rendering tactic application:', error);
+    return (
+      <div className={styles.unknownTactic}>
+        <div className={styles.tacticName}>Error Rendering Tactic</div>
+        <div className={styles.tacticDetails}>
+          {error instanceof Error ? error.message : 'Unknown error'}
+        </div>
       </div>
     );
   }

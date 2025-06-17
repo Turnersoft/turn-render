@@ -3,14 +3,13 @@ import type { BracketSize } from "./BracketSize";
 import type { BracketStyle } from "./BracketStyle";
 import type { DifferentialStyle } from "./DifferentialStyle";
 import type { DivisionStyle } from "./DivisionStyle";
+import type { Identifier } from "./Identifier";
 import type { MathNode } from "./MathNode";
 import type { QuantificationNode } from "./QuantificationNode";
 import type { RefinedAddOrSubOperator } from "./RefinedAddOrSubOperator";
 import type { RefinedMulOrDivOperation } from "./RefinedMulOrDivOperation";
 import type { RelationOperatorNode } from "./RelationOperatorNode";
 import type { ScientificNotationStyle } from "./ScientificNotationStyle";
-import type { ScriptNode } from "./ScriptNode";
-import type { SpecialMiddleScriptNode } from "./SpecialMiddleScriptNode";
 import type { UnaryRelationOperatorNode } from "./UnaryRelationOperatorNode";
 
 export type MathNodeContent =
@@ -65,16 +64,7 @@ export type MathNodeContent =
       style: ScientificNotationStyle;
     };
   }
-  | {
-    "Identifier": {
-      body: string;
-      pre_script: ScriptNode | null;
-      mid_script: SpecialMiddleScriptNode | null;
-      post_script: ScriptNode | null;
-      primes: number;
-      is_function: boolean;
-    };
-  }
+  | { "Identifier": Identifier }
   | { "Unit": { original_form: MathNode; flattened_form: MathNode } }
   | {
     "Relationship": {
@@ -124,4 +114,9 @@ export type MathNodeContent =
       domain: MathNode | null;
       predicate: MathNode | null;
     };
-  };
+  }
+  | { "And": Array<MathNode> }
+  | { "Or": Array<MathNode> }
+  | { "Not": MathNode }
+  | "True"
+  | "False";

@@ -1187,6 +1187,28 @@ const renderTurnTextLineNode = (node: TurnTextLineNode, lineNo: number): React.R
 
 const StringMapNode = (_string?: string, id?: string | number) => {
     if (!_string) return null;
+    
+    // Special handling for placeholder text - render as single text block
+    const isPlaceholderText = _string.includes(" ") || 
+                             _string === "transformed expression" ||
+                             _string === "Expression with variable" ||
+                             _string === "Expression with substituted value";
+    
+    if (isPlaceholderText) {
+        return (
+            <Component
+                type="Mtext"
+                _props={{
+                    id: id,
+                    _classNames: styles.editable_span,
+                    style: { fontStyle: 'italic', color: '#666' }
+                }}
+            >
+                {_string}
+            </Component>
+        );
+    }
+    
     if (_string.length > 1) {
         return (
             <Component

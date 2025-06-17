@@ -1,5 +1,3 @@
-use crate::subjects::math::theories::differential_geometry::SectionType;
-
 use super::*;
 use serde::{Deserialize, Serialize};
 use std::collections::{BTreeMap, HashMap};
@@ -409,9 +407,34 @@ pub enum ControlLayout {
     Floating,
 }
 
+/// Interactive control element
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, TS)]
+#[ts(export)]
+pub struct Control {
+    pub id: String,
+    pub label: Option<RichText>,
+    pub control_type: ControlType,
+    pub default_value: Option<String>,
+    pub validation_rules: Vec<String>,
+}
+
+/// Types of interactive controls
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, TS)]
+#[ts(export)]
+pub enum ControlType {
+    Slider { min: f64, max: f64, step: f64 },
+    TextInput { placeholder: Option<String> },
+    NumberInput { min: Option<f64>, max: Option<f64> },
+    Checkbox,
+    RadioGroup { options: Vec<String> },
+    Dropdown { options: Vec<String> },
+    Button { action: String },
+}
+
 // --- Structured Mathematical Content Types ---
 
 /// Represents formal mathematical structures like definitions, theorems, etc.
+/// This matches the TypeScript StructuredMathNode bindings
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize, TS)]
 #[ts(export)]
 pub enum StructuredMathNode {
@@ -517,10 +540,16 @@ pub struct ProofDisplayNode {
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize, TS)]
 #[ts(export)]
 pub enum ProofStepNode {
+    // Legacy simple statement format
     Statement {
         claim: Vec<RichTextSegment>,
         justification: Vec<RichTextSegment>,
     },
+
+    // Rich tactic-based proof steps
+    TacticApplication(TacticDisplayNode),
+
+    // Structural proof elements
     Elaboration(Vec<SectionContentNode>),
     CaseAnalysis {
         introduction: Option<RichText>,
@@ -543,6 +572,345 @@ pub enum ProofStepNode {
 pub struct ProofCaseNode {
     pub condition: RichText,
     pub proof_for_case: ProofDisplayNode,
+}
+
+/// Rich display representation of tactic applications
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, TS)]
+#[ts(export)]
+pub enum TacticDisplayNode {
+    // ========== QUANTIFIER TACTICS ==========
+    IntroduceQuantifier {
+        object_description: RichText,
+        position: Option<usize>,
+        before_state: Option<RichText>,
+        after_state: Option<RichText>,
+    },
+
+    IntroduceFreshVariable {
+        target_quantifier: RichText,
+        fresh_variable_name: RichText,
+        explanation: RichText,
+        mathematical_context: Option<RichText>,
+    },
+
+    ProvideWitness {
+        target_quantifier: RichText,
+        witness_expression: MathNode,
+        witness_explanation: RichText,
+        verification_steps: Vec<SectionContentNode>,
+    },
+
+    ReorderQuantifiers {
+        original_order: Vec<RichText>,
+        new_order: Vec<RichText>,
+        justification: RichText,
+    },
+
+    UniversalCaseAnalysis {
+        target_quantifier: RichText,
+        cases: Vec<CaseDisplayNode>,
+        exhaustiveness_proof: Option<RichText>,
+    },
+
+    // ========== VALUE VARIABLE TACTICS ==========
+    IntroduceValueVariable {
+        variable_name: RichText,
+        variable_value: MathNode,
+        binding_type: VariableBindingType,
+        context_explanation: RichText,
+        position: Option<usize>,
+    },
+
+    SubstituteValueVariable {
+        target_variable: RichText,
+        substitution_preview: SubstitutionPreview,
+        justification: RichText,
+    },
+
+    RewriteInValueBinding {
+        target_variable: RichText,
+        target_subexpression: MathNode,
+        replacement: MathNode,
+        justification: Vec<SectionContentNode>,
+        step_by_step: Vec<RewriteStep>,
+    },
+
+    RemoveValueVariable {
+        target_variable: RichText,
+        reason: RichText,
+        cleanup_explanation: Option<RichText>,
+    },
+
+    // ========== STATEMENT TACTICS ==========
+    ExactWith {
+        theorem_name: RichText,
+        theorem_statement: RichText,
+        instantiation_mapping: Vec<InstantiationPair>,
+        match_verification: MatchVerification,
+        theorem_link: Option<LinkTarget>,
+    },
+
+    Rewrite {
+        target_expression: MathNode,
+        theorem_name: RichText,
+        theorem_rule: RichText,
+        instantiation_mapping: Vec<InstantiationPair>,
+        direction: RewriteDirectionDisplay,
+        step_by_step_transformation: Vec<RewriteStep>,
+        theorem_link: Option<LinkTarget>,
+    },
+
+    AssumeImplicationAntecedent {
+        implication_statement: MathNode,
+        hypothesis_name: RichText,
+        antecedent: MathNode,
+        consequent: MathNode,
+        context_explanation: RichText,
+    },
+
+    SplitConjunction {
+        target_conjunction: MathNode,
+        conjuncts: Vec<MathNode>,
+        selected_index: usize,
+        remaining_goals: Vec<MathNode>,
+    },
+
+    SplitDisjunction {
+        target_disjunction: MathNode,
+        disjuncts: Vec<MathNode>,
+        chosen_index: usize,
+        chosen_disjunct: MathNode,
+        strategy_explanation: RichText,
+    },
+
+    StatementCaseAnalysis {
+        target_expression: MathNode,
+        cases: Vec<CaseDisplayNode>,
+        exhaustiveness_proof: Option<RichText>,
+    },
+
+    Simplify {
+        target_path: Vec<usize>,
+        original_expression: MathNode,
+        simplified_expression: MathNode,
+        simplification_steps: Vec<SimplificationStep>,
+        rules_used: Vec<RichText>,
+    },
+
+    // ========== META TACTICS ==========
+    Auto {
+        automated_tactic_type: AutomatedTacticDisplay,
+        search_depth: Option<u8>,
+        tactics_attempted: Vec<RichText>,
+        successful_path: Option<Vec<RichText>>,
+        execution_summary: RichText,
+    },
+
+    Induction {
+        target_relation: MathNode,
+        induction_variable: RichText,
+        base_case_value: MathNode,
+        base_case_proof: ProofDisplayNode,
+        inductive_hypothesis: RichText,
+        inductive_step_proof: ProofDisplayNode,
+        induction_principle: RichText,
+    },
+}
+
+/// Display representation of case analysis
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, TS)]
+#[ts(export)]
+pub struct CaseDisplayNode {
+    pub case_name: RichText,
+    pub condition: MathNode,
+    pub values: Vec<MathNode>,
+    pub case_explanation: RichText,
+    pub proof_outline: Option<Vec<SectionContentNode>>,
+}
+
+/// Display representation of variable binding types
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, TS)]
+#[ts(export)]
+pub enum VariableBindingType {
+    Assumption,
+    Definition,
+    Hypothesis,
+    Given,
+    Let,
+}
+
+/// Display representation of substitution preview
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, TS)]
+#[ts(export)]
+pub struct SubstitutionPreview {
+    pub before: MathNode,
+    pub after: MathNode,
+    pub highlighted_changes: Vec<SubstitutionHighlight>,
+}
+
+/// Highlight information for substitutions
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, TS)]
+#[ts(export)]
+pub struct SubstitutionHighlight {
+    pub path: Vec<usize>,
+    pub original_text: RichText,
+    pub replacement_text: RichText,
+    pub explanation: Option<RichText>,
+}
+
+/// Display representation of rewrite steps
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, TS)]
+#[ts(export)]
+pub struct RewriteStep {
+    pub step_number: usize,
+    pub before: MathNode,
+    pub after: MathNode,
+    pub rule_applied: RichText,
+    pub explanation: RichText,
+    pub highlighted_region: Option<Vec<usize>>,
+}
+
+/// Display representation of instantiation pairs
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, TS)]
+#[ts(export)]
+pub struct InstantiationPair {
+    pub variable_name: RichText,
+    pub variable_value: MathNode,
+    pub type_information: Option<RichText>,
+}
+
+/// Display representation of match verification
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, TS)]
+#[ts(export)]
+pub struct MatchVerification {
+    pub pattern: MathNode,
+    pub target: MathNode,
+    pub match_success: bool,
+    pub match_explanation: RichText,
+    pub unification_details: Vec<UnificationDetail>,
+}
+
+/// Details of unification in pattern matching
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, TS)]
+#[ts(export)]
+pub struct UnificationDetail {
+    pub pattern_part: MathNode,
+    pub target_part: MathNode,
+    pub unification_type: UnificationType,
+    pub explanation: RichText,
+}
+
+/// Types of unification
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, TS)]
+#[ts(export)]
+pub enum UnificationType {
+    ExactMatch,
+    VariableBinding,
+    StructuralMatch,
+    TypeCoercion,
+}
+
+/// Display representation of rewrite direction
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, TS)]
+#[ts(export)]
+pub enum RewriteDirectionDisplay {
+    LeftToRight {
+        left_side: MathNode,
+        right_side: MathNode,
+        explanation: RichText,
+    },
+    RightToLeft {
+        left_side: MathNode,
+        right_side: MathNode,
+        explanation: RichText,
+    },
+}
+
+/// Display representation of simplification steps
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, TS)]
+#[ts(export)]
+pub struct SimplificationStep {
+    pub step_number: usize,
+    pub before: MathNode,
+    pub after: MathNode,
+    pub rule_name: RichText,
+    pub rule_explanation: RichText,
+    pub algebraic_justification: Option<RichText>,
+}
+
+/// Display representation of automated tactics
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, TS)]
+#[ts(export)]
+pub enum AutomatedTacticDisplay {
+    FindProof {
+        target_relation: MathNode,
+        search_strategy: RichText,
+        theorems_considered: Vec<TheoremReference>,
+        proof_found: Option<ProofDisplayNode>,
+    },
+    Simplify {
+        target_expression: MathNode,
+        simplification_rules: Vec<RichText>,
+        final_result: MathNode,
+    },
+    ByAssumption {
+        matching_assumption: MathNode,
+        assumption_name: RichText,
+        match_explanation: RichText,
+    },
+    Contradiction {
+        contradictory_statements: Vec<MathNode>,
+        contradiction_explanation: RichText,
+        ex_falso_principle: RichText,
+    },
+    Auto {
+        search_tree: Option<SearchTreeDisplay>,
+        successful_tactics: Vec<RichText>,
+        failed_attempts: Vec<FailedAttempt>,
+    },
+}
+
+/// Reference to a theorem
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, TS)]
+#[ts(export)]
+pub struct TheoremReference {
+    pub theorem_id: String,
+    pub theorem_name: RichText,
+    pub theorem_statement: RichText,
+    pub relevance_score: Option<f64>,
+    pub link: Option<LinkTarget>,
+}
+
+/// Display representation of search tree for automated tactics
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, TS)]
+#[ts(export)]
+pub struct SearchTreeDisplay {
+    pub root_goal: MathNode,
+    pub search_nodes: Vec<SearchNodeDisplay>,
+    pub successful_path: Vec<usize>,
+    pub max_depth_reached: usize,
+}
+
+/// Individual node in search tree
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, TS)]
+#[ts(export)]
+pub struct SearchNodeDisplay {
+    pub node_id: usize,
+    pub parent_id: Option<usize>,
+    pub goal_state: MathNode,
+    pub tactic_applied: Option<RichText>,
+    pub success: bool,
+    pub children: Vec<usize>,
+}
+
+/// Failed attempt in automated search
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, TS)]
+#[ts(export)]
+pub struct FailedAttempt {
+    pub tactic_name: RichText,
+    pub failure_reason: RichText,
+    pub goal_state: MathNode,
+    pub error_details: Option<RichText>,
 }
 
 /// Represents a display-oriented proof structure with tree-like branching.

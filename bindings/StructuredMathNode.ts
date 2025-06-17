@@ -13,6 +13,7 @@ import type { TheoremStatement } from "./TheoremStatement";
 
 /**
  * Represents formal mathematical structures like definitions, theorems, etc.
+ * This matches the TypeScript StructuredMathNode bindings
  */
 export type StructuredMathNode =
   | {
