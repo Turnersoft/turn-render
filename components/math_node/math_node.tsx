@@ -28,6 +28,8 @@ const hasMarginList = [
     '=',
     '×',
     '·',
+    '⇒',
+    '⇔'
 ];
 
 const _relationOperator: {[key: string]: string} = {
@@ -210,7 +212,7 @@ export const MathDom = ({
     children?: React.ReactNode;
     lineNo?: number;
     id?: number | string;
-    style: any;
+    style?: any;
 }) => {
     return (
         <div
@@ -299,11 +301,13 @@ export const Mo = ({
     id = '',
     isUnit = false,
     _classNames,
+    useMargin= false
 }: {
     children?: string;
     id?: number | string;
     isUnit?: boolean;
     _classNames?: string;
+    useMargin?: boolean
 }) => {
     const moRef = useRef<HTMLSpanElement>(null);
     const [content, setContent] = useState('');
@@ -322,7 +326,7 @@ export const Mo = ({
     const hasMargin = () => {
         if (!content || !content.trim()) return false;
         const contentText = moRef.current?.parentElement?.textContent || '';
-        return hasMarginList.includes(content.trim()) && !isUnit;
+        return (hasMarginList.includes(content.trim()) && !isUnit) || useMargin;
     };
 
     const fontS2 = () => {
@@ -1049,6 +1053,7 @@ const Component = ({
         width?: string;
         dataType?: 'sub' | 'sup';
         lineNo?: string | number;
+        useMargin?: boolean
     };
     children?: React.ReactNode;
 }) => {
@@ -2012,7 +2017,9 @@ export const renderMathNode = (node: MathNode): React.ReactNode => {
                     }}
                 >
                     {renderMathNode(Relationship.lhs)}
-                    <Component type="Mo">
+                    <Component type="Mo" _props={{
+                        useMargin: true
+                    }}>
                         {getRelationOperatorSymbol(Relationship.operator)}
                     </Component>
                     {renderMathNode(Relationship.rhs)}
