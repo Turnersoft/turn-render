@@ -28,6 +28,11 @@ const hasMarginList = [
     '=',
     '×',
     '·',
+    // Logical connectives
+    '∧',
+    '∨',
+    '⇒',
+    '⇔',
 ];
 
 const _relationOperator: {[key: string]: string} = {
@@ -2089,6 +2094,109 @@ export const renderMathNode = (node: MathNode): React.ReactNode => {
                     {renderMathNode(FunctionDefinition.custom_function)}
                     {FunctionDefinition.definition && <Component type="Mo">=</Component>}
                     {FunctionDefinition.definition && renderMathNode(FunctionDefinition.definition)}
+                </Component>
+            );
+
+        case 'And':
+            const { And } = node.content as Extract<MathNodeContent, { And: MathNode[] }>;
+            return (
+                <Component
+                    type="Mrow"
+                    _props={{
+                        id: node.id,
+                        _classNames: styles.editable_span,
+                    }}
+                >
+                    {And.map((mathNode, index) => (
+                        <Component type="Mrow" key={index}>
+                            {index > 0 && (
+                                <>
+                                    <Component
+                                        type="Mspace"
+                                        _props={{ width: '0.167' }}
+                                    ></Component>
+                                    <Component type="Mo">∧</Component>
+                                    <Component
+                                        type="Mspace"
+                                        _props={{ width: '0.167' }}
+                                    ></Component>
+                                </>
+                            )}
+                            {renderMathNode(mathNode)}
+                        </Component>
+                    ))}
+                </Component>
+            );
+
+        case 'Or':
+            const { Or } = node.content as Extract<MathNodeContent, { Or: MathNode[] }>;
+            return (
+                <Component
+                    type="Mrow"
+                    _props={{
+                        id: node.id,
+                        _classNames: styles.editable_span,
+                    }}
+                >
+                    {Or.map((mathNode, index) => (
+                        <Component type="Mrow" key={index}>
+                            {index > 0 && (
+                                <>
+                                    <Component
+                                        type="Mspace"
+                                        _props={{ width: '0.167' }}
+                                    ></Component>
+                                    <Component type="Mo">∨</Component>
+                                    <Component
+                                        type="Mspace"
+                                        _props={{ width: '0.167' }}
+                                    ></Component>
+                                </>
+                            )}
+                            {renderMathNode(mathNode)}
+                        </Component>
+                    ))}
+                </Component>
+            );
+
+        case 'Not':
+            const { Not } = node.content as Extract<MathNodeContent, { Not: MathNode }>;
+            return (
+                <Component
+                    type="Mrow"
+                    _props={{
+                        id: node.id,
+                        _classNames: styles.editable_span,
+                    }}
+                >
+                    <Component type="Mo">¬</Component>
+                    {renderMathNode(Not)}
+                </Component>
+            );
+
+        case 'True':
+            return (
+                <Component
+                    type="Mrow"
+                    _props={{
+                        id: node.id,
+                        _classNames: styles.editable_span,
+                    }}
+                >
+                    <Component type="Mo">⊤</Component>
+                </Component>
+            );
+
+        case 'False':
+            return (
+                <Component
+                    type="Mrow"
+                    _props={{
+                        id: node.id,
+                        _classNames: styles.editable_span,
+                    }}
+                >
+                    <Component type="Mo">⊥</Component>
                 </Component>
             );
     }

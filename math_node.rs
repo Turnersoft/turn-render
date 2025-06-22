@@ -271,6 +271,12 @@ impl Identifier {
     }
 }
 
+impl ToString for Identifier {
+    fn to_string(&self) -> String {
+        format!("{}", self.body)
+    }
+}
+
 #[derive(Debug, Clone, Eq, PartialEq, Hash, Serialize, Deserialize, TS)]
 #[ts(export)]
 pub struct ScriptNode {
