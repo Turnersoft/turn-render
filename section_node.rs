@@ -140,6 +140,15 @@ pub struct RichText {
     pub alignment: Option<TextAlignment>,
 }
 
+impl RichText {
+    pub fn text(text: String) -> RichText {
+        RichText {
+            segments: vec![RichTextSegment::Text(text)],
+            alignment: None,
+        }
+    }
+}
+
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize, TS)]
 #[ts(export)]
 pub enum TextAlignment {

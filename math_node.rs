@@ -1,3 +1,5 @@
+use crate::subjects::math::formalism::location::Located;
+use crate::subjects::math::formalism::relations::MathRelation;
 use serde::{Deserialize, Serialize};
 use serde_json::{Value, json};
 use ts_rs::TS;
@@ -218,6 +220,24 @@ pub struct Identifier {
     pub is_function: bool,
 }
 
+impl PartialOrd for Identifier {
+    fn partial_cmp(&self, other: &Self) -> Option<std::cmp::Ordering> {
+        Some(self.cmp(other))
+    }
+}
+
+impl Ord for Identifier {
+    fn cmp(&self, other: &Self) -> std::cmp::Ordering {
+        self.body.cmp(&other.body)
+    }
+}
+
+impl std::fmt::Display for Identifier {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{}", self.body)
+    }
+}
+
 impl Identifier {
     pub fn new_simple(body: String) -> Self {
         Identifier {
@@ -268,12 +288,6 @@ impl Identifier {
             primes: 0,
             is_function: false,
         }
-    }
-}
-
-impl ToString for Identifier {
-    fn to_string(&self) -> String {
-        format!("{}", self.body)
     }
 }
 
@@ -593,4 +607,11 @@ pub enum BaseUnitTypeNode {
 
 pub trait ToTurnMath {
     fn to_turn_math(&self, master_id: String) -> MathNode;
+}
+
+impl<T: ToTurnMath> ToTurnMath for Located<T> {
+    fn to_turn_math(&self, _master_id: String) -> MathNode {
+        // The master_id is ignored, because Located has its own id.
+        self.data.to_turn_math(self.id.clone())
+    }
 }

@@ -1027,9 +1027,16 @@ const TacticApplicationRenderer: React.FC<{ tactic: import('../../bindings/Tacti
                <div><strong>Rule:</strong> <RichTextRenderer segments={Rewrite.theorem_rule.segments} /></div>
                <div><strong>Direction:</strong> 
                  {'LeftToRight' in Rewrite.direction ? (
-                   <span>Left to Right: {renderMathNode(Rewrite.direction.LeftToRight.left_side)} → {renderMathNode(Rewrite.direction.LeftToRight.right_side)}</span>
+                   <span>Left to Right</span>
                  ) : (
-                   <span>Right to Left: {renderMathNode(Rewrite.direction.RightToLeft.left_side)} → {renderMathNode(Rewrite.direction.RightToLeft.right_side)}</span>
+                   <span>Right to Left</span>
+                 )}
+               </div>
+               <div><strong>Result:</strong> {' '}
+                 {'LeftToRight' in Rewrite.direction ? (
+                   renderMathNode(Rewrite.direction.LeftToRight.right_side)
+                 ) : (
+                   renderMathNode(Rewrite.direction.RightToLeft.right_side)
                  )}
                </div>
                {Rewrite.step_by_step_transformation.length > 0 && (
@@ -1179,15 +1186,8 @@ const TacticApplicationRenderer: React.FC<{ tactic: import('../../bindings/Tacti
         const { IntroduceValueVariable } = tactic as Extract<import('../../bindings/TacticDisplayNode.ts').TacticDisplayNode, { IntroduceValueVariable: any }>;
         return (
           <div className={styles.tacticIntroduceValueVariable}>
-            <div className={styles.tacticName}>Introduce Value Variable</div>
             <div className={styles.tacticDetails}>
-              <div><strong>Variable Name:</strong> <RichTextRenderer segments={IntroduceValueVariable.variable_name.segments} /></div>
-              <div><strong>Variable Value:</strong> {renderMathNode(IntroduceValueVariable.variable_value)}</div>
-              <div><strong>Binding Type:</strong> {IntroduceValueVariable.binding_type}</div>
-              <div><strong>Context:</strong> <RichTextRenderer segments={IntroduceValueVariable.context_explanation.segments} /></div>
-              {IntroduceValueVariable.position && (
-                <div><strong>Position:</strong> {IntroduceValueVariable.position}</div>
-              )}
+              <RichTextRenderer segments={IntroduceValueVariable.variable_name.segments} />
             </div>
           </div>
         );
