@@ -1,6 +1,9 @@
 use super::*;
 use serde::{Deserialize, Serialize};
-use std::collections::{BTreeMap, HashMap};
+use std::{
+    collections::{BTreeMap, HashMap},
+    sync::Arc,
+};
 use ts_rs::TS;
 
 /// Trait for converting mathematical objects into rich SectionNode structures.
@@ -187,7 +190,7 @@ pub enum LinkTarget {
     GlossaryTerm(String),               // Link to a term in a glossary
     BibliographyKey(String),            // Link to a bibliography entry
     InteractiveElementId(String), // Link to trigger/focus an interactive component on the page
-    TooltipDocument(Box<MathDocument>), // NEW: Embedded tooltip document
+    TooltipDocument(Arc<MathDocument>), // NEW: Embedded tooltip document
     AnimationTrigger {
         // NEW: Trigger for animations
         animation_id: String,
@@ -212,7 +215,7 @@ pub enum AnimationTriggerType {
 #[ts(export)]
 pub enum SectionContentNode {
     // New variant for subsections
-    SubSection(Box<Section>), // Box to avoid recursive type definition issues
+    SubSection(Arc<Section>), // Box to avoid recursive type definition issues
     // non-recursive content nodes
     RichText(RichText),
     MathNode {
@@ -255,7 +258,7 @@ pub enum SectionContentNode {
     PanelLayout(PanelLayout),           // For resource panels, multi-panel displays
     AnnotationOverlay(AnnotationOverlay), // For type mappings, explanatory overlays
     InteractiveControls(InteractiveControls), // For playgrounds with parameter controls
-    EmbeddedDocument(Box<MathDocument>), // For nested documents, tooltips
+    EmbeddedDocument(Arc<MathDocument>), // For nested documents, tooltips
 }
 
 // --- NEW: Enhanced Layout Types ---
@@ -481,7 +484,7 @@ pub enum StructuredMathNode {
         label: Option<String>,
         problem_statement: Vec<SectionContentNode>,
         hints: Vec<CollapsibleBlockNode>,
-        solution: Option<Box<CollapsibleBlockNode>>,
+        solution: Option<Arc<CollapsibleBlockNode>>,
     },
     ConstructorDefinition {
         title_display: Vec<RichTextSegment>,
@@ -973,7 +976,7 @@ pub enum ProofStepDisplay {
         cases: Vec<Section>,
     },
     /// Nested proof structure
-    NestedProof(Box<ProofNodeDisplay>),
+    NestedProof(Arc<ProofNodeDisplay>),
 }
 
 /// Simple representation of what changed in a ProofGoal after a tactic

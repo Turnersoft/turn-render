@@ -1,3 +1,5 @@
+use std::sync::Arc;
+
 use crate::subjects::math::formalism::location::Located;
 use crate::subjects::math::formalism::relations::MathRelation;
 use serde::{Deserialize, Serialize};
@@ -8,14 +10,14 @@ use ts_rs::TS;
 #[ts(export)]
 pub struct MathNode {
     pub id: String,
-    pub content: Box<MathNodeContent>,
+    pub content: Arc<MathNodeContent>,
 }
 
 impl MathNode {
     pub fn empty() -> MathNode {
         MathNode {
             id: String::new(),
-            content: Box::new(MathNodeContent::Empty),
+            content: Arc::new(MathNodeContent::Empty),
         }
     }
     pub fn is_quantity(&self) -> bool {
@@ -37,21 +39,21 @@ impl MathNode {
     pub fn identifier(input: Identifier) -> MathNode {
         MathNode {
             id: input.body.clone(),
-            content: Box::new(MathNodeContent::Identifier(input)),
+            content: Arc::new(MathNodeContent::Identifier(input)),
         }
     }
 
     pub fn string(input: String) -> MathNode {
         MathNode {
             id: input.clone(),
-            content: Box::new(MathNodeContent::String(input)),
+            content: Arc::new(MathNodeContent::String(input)),
         }
     }
 
     pub fn text(input: String) -> MathNode {
         MathNode {
             id: input.clone(),
-            content: Box::new(MathNodeContent::Text(input)),
+            content: Arc::new(MathNodeContent::Text(input)),
         }
     }
 }
@@ -67,7 +69,7 @@ pub enum MathNodeContent {
 
     // bracketed scopes
     Bracketed {
-        inner: Box<MathNode>,
+        inner: Arc<MathNode>,
         style: BracketStyle,
         size: BracketSize,
     },
@@ -85,52 +87,52 @@ pub enum MathNodeContent {
         terms: Vec<(RefinedAddOrSubOperator, MathNode)>,
     },
     Division {
-        numerator: Box<MathNode>,
-        denominator: Box<MathNode>,
+        numerator: Arc<MathNode>,
+        denominator: Arc<MathNode>,
         style: DivisionStyle,
     },
 
     SumNotation {
-        summand: Box<MathNode>,
+        summand: Arc<MathNode>,
         variable: Option<MathNode>,
-        lower_limit: Option<Box<MathNode>>,
-        upper_limit: Option<Box<MathNode>>,
+        lower_limit: Option<Arc<MathNode>>,
+        upper_limit: Option<Arc<MathNode>>,
     },
     ProductNotation {
-        multiplicand: Box<MathNode>,
+        multiplicand: Arc<MathNode>,
         variable: Option<MathNode>,
-        lower_limit: Option<Box<MathNode>>,
-        upper_limit: Option<Box<MathNode>>,
+        lower_limit: Option<Arc<MathNode>>,
+        upper_limit: Option<Arc<MathNode>>,
     },
     Fraction {
-        numerator: Box<MathNode>,
-        denominator: Box<MathNode>,
+        numerator: Arc<MathNode>,
+        denominator: Arc<MathNode>,
     },
 
     Power {
-        base: Box<MathNode>,
-        exponent: Box<MathNode>,
+        base: Arc<MathNode>,
+        exponent: Arc<MathNode>,
     },
 
     UnaryPostfixOperation {
-        parameter: Box<MathNode>,
-        operator: Box<MathNode>, // "!", "T", "%"
+        parameter: Arc<MathNode>,
+        operator: Arc<MathNode>, // "!", "T", "%"
     },
     // the question is whether symbol should have separate variant? logical not is
     // is such example, but it probably has no interactivity, so we keep it in .
     UnaryPrefixOperation {
-        parameter: Box<MathNode>,
-        operator: Box<MathNode>, // "-", "∇", "∇²"
+        parameter: Arc<MathNode>,
+        operator: Arc<MathNode>, // "-", "∇", "∇²"
     },
 
     // this is different than SimpleUnaryFunction, this will use the special notation |x| instead of abs(x)
     Abs {
-        parameter: Box<MathNode>,
+        parameter: Arc<MathNode>,
     },
 
     // general function names
     FunctionCall {
-        name: Box<MathNode>,
+        name: Arc<MathNode>,
         parameters: Vec<MathNode>,
     },
 
@@ -141,55 +143,55 @@ pub enum MathNodeContent {
     }, // Add more content types as needed
 
     ScientificNotation {
-        magnitude: Box<MathNode>,
+        magnitude: Arc<MathNode>,
         style: ScientificNotationStyle,
     },
 
     Identifier(Identifier),
 
     Unit {
-        original_form: Box<MathNode>,  // multiplication
-        flattened_form: Box<MathNode>, // multiplication
+        original_form: Arc<MathNode>,  // multiplication
+        flattened_form: Arc<MathNode>, // multiplication
     },
 
     // universal relations for all theories
     Relationship {
-        lhs: Box<MathNode>,
-        rhs: Box<MathNode>,
+        lhs: Arc<MathNode>,
+        rhs: Arc<MathNode>,
         operator: RelationOperatorNode,
     },
 
     UnaryRelationship {
-        subject: Box<MathNode>,
+        subject: Arc<MathNode>,
         predicate: UnaryRelationOperatorNode,
     },
 
     // variable declarations
     VariableDefinition {
-        name: Box<MathNode>, // should only be MathNodeContent::identifier
+        name: Arc<MathNode>, // should only be MathNodeContent::identifier
         definition: Option<MathNode>,
     },
 
     FunctionDefinition {
-        custom_function: Box<MathNode>, // this ia MathNodeContent::FunctionCall
+        custom_function: Arc<MathNode>, // this ia MathNodeContent::FunctionCall
         definition: Option<MathNode>,
     },
 
     // Calculus
     Limit {
-        function: Box<MathNode>,
+        function: Arc<MathNode>,
         variable: String,
-        approaching_value: Box<MathNode>,
+        approaching_value: Arc<MathNode>,
     },
     Differential {
-        target: Box<MathNode>,
-        order: Box<MathNode>,
+        target: Arc<MathNode>,
+        order: Arc<MathNode>,
         diff_style: DifferentialStyle,
     },
     Integration {
-        integrand: Box<MathNode>,
-        differentials: Vec<(Box<MathNode>, Option<Box<MathNode>>, Option<Box<MathNode>>)>, // Array of (differential, lower_bound, upper_bound)
-        domain: Option<Box<MathNode>>, // Optional geometric domain rendered beneath the integral signs
+        integrand: Arc<MathNode>,
+        differentials: Vec<(Arc<MathNode>, Option<Arc<MathNode>>, Option<Arc<MathNode>>)>, // Array of (differential, lower_bound, upper_bound)
+        domain: Option<Arc<MathNode>>, // Optional geometric domain rendered beneath the integral signs
     },
 
     // Quantified expression structure (e.g., "∀ x ∈ S" or "∃ x : P(x)")
@@ -197,14 +199,14 @@ pub enum MathNodeContent {
     QuantifiedExpression {
         quantifier: QuantificationNode,
         variables: Vec<MathNode>,         // The quantified variables
-        domain: Option<Box<MathNode>>,    // Optional domain (the "∈ S" part)
-        predicate: Option<Box<MathNode>>, // Optional predicate (the ": P(x)" part)
+        domain: Option<Arc<MathNode>>,    // Optional domain (the "∈ S" part)
+        predicate: Option<Arc<MathNode>>, // Optional predicate (the ": P(x)" part)
     },
 
     // logical connectives
     And(Vec<MathNode>),
     Or(Vec<MathNode>),
-    Not(Box<MathNode>),
+    Not(Arc<MathNode>),
     True,
     False,
 }
@@ -330,11 +332,11 @@ pub enum IntegralDomain {
     /// Regular integral with no domain specification
     Regular,
     /// Integral over a geometric domain (e.g., ∫[C], ∫[D])
-    Geometric(Box<MathNode>),
+    Geometric(Arc<MathNode>),
     /// Integral with parameter domain (e.g., ∫[C|t:R])
     ParametricGeometric {
-        path: Box<MathNode>,
-        parameters: Vec<(Box<MathNode>, Box<MathNode>)>, // (parameter, domain) pairs
+        path: Arc<MathNode>,
+        parameters: Vec<(Arc<MathNode>, Arc<MathNode>)>, // (parameter, domain) pairs
     },
 }
 
