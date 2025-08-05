@@ -467,3 +467,235 @@
   border-radius: 4px;
   border: 1px solid #ffcdd2;
 } 
+
+// Enhanced proof visualization styles
+.branchingContainer {
+  border: 2px solid #e0e0e0;
+  border-radius: 8px;
+  padding: 16px;
+  margin: 16px 0;
+  background: #fafafa;
+  
+  .containerHeader {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 16px;
+    padding-bottom: 8px;
+    border-bottom: 1px solid #ddd;
+    
+    .containerType {
+      font-weight: bold;
+      color: #2c3e50;
+      font-size: 1.1em;
+    }
+    
+    .containerId {
+      font-family: monospace;
+      color: #7f8c8d;
+      font-size: 0.9em;
+    }
+  }
+  
+  .containerNodes {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+  
+  .containerMetadata {
+    margin-top: 12px;
+    padding-top: 8px;
+    border-top: 1px solid #eee;
+    font-size: 0.9em;
+    color: #7f8c8d;
+    
+    .metadataItem {
+      margin-right: 12px;
+    }
+  }
+}
+
+.branchingNode {
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  padding: 12px;
+  background: white;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  
+  &.proofGoal {
+    border-left: 4px solid #3498db;
+    background: linear-gradient(135deg, #ecf0f1 0%, #f8f9fa 100%);
+  }
+  
+  &.proofStep {
+    border-left: 4px solid #e74c3c;
+    background: linear-gradient(135deg, #fdf2f2 0%, #fefefe 100%);
+  }
+  
+  &.completed {
+    border-left: 4px solid #27ae60;
+    background: linear-gradient(135deg, #e8f5e8 0%, #f8fef8 100%);
+    
+    .nodeState {
+      color: #27ae60;
+      font-weight: bold;
+    }
+  }
+  
+  .stepNumber {
+    position: absolute;
+    left: -8px;
+    top: 50%;
+    transform: translateY(-50%);
+    background: #2c3e50;
+    color: white;
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+    font-size: 0.9em;
+    z-index: 1;
+  }
+  
+  .nodeHeader {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-left: 20px;
+    
+    .nodeType {
+      font-weight: bold;
+      color: #2c3e50;
+      font-size: 1em;
+    }
+    
+    .nodeId {
+      font-family: monospace;
+      color: #7f8c8d;
+      font-size: 0.8em;
+    }
+    
+    .nodeState {
+      padding: 2px 8px;
+      border-radius: 12px;
+      font-size: 0.8em;
+      font-weight: 500;
+      
+      &.completedState {
+        background: #27ae60;
+        color: white;
+      }
+    }
+  }
+  
+  .contextVariables {
+    margin-left: 20px;
+    
+    .label {
+      font-weight: bold;
+      color: #34495e;
+      margin-right: 8px;
+    }
+    
+    .variablesList {
+      display: inline-flex;
+      gap: 8px;
+      
+      .variableCount {
+        background: #ecf0f1;
+        padding: 2px 6px;
+        border-radius: 4px;
+        font-size: 0.9em;
+        color: #2c3e50;
+      }
+    }
+  }
+  
+  .nodeContent {
+    margin-left: 20px;
+    margin-top: 8px;
+    
+    // Style mathematical expressions
+    :global(.mathBlock) {
+      background: #f8f9fa;
+      border: 1px solid #e9ecef;
+      border-radius: 4px;
+      padding: 8px 12px;
+      margin: 4px 0;
+      
+      .mathContent {
+        font-family: 'KaTeX_Math', 'Times New Roman', serif;
+        font-size: 1.1em;
+      }
+    }
+    
+    // Logical expression styles are handled in structured_math_node.module.scss
+  }
+  
+  .tacticInfo {
+    margin-left: 20px;
+    margin-top: 8px;
+    
+    .label {
+      font-weight: bold;
+      color: #34495e;
+      margin-right: 8px;
+    }
+    
+    .tacticDetails {
+      display: inline-block;
+      
+      .tacticName {
+        background: #fff3cd;
+        border: 1px solid #ffeaa7;
+        border-radius: 4px;
+        padding: 4px 8px;
+        font-family: monospace;
+        font-size: 0.9em;
+        color: #856404;
+        display: inline-block;
+        max-width: 100%;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+    }
+  }
+  
+  .nodeChildren {
+    margin-left: 20px;
+    margin-top: 8px;
+    
+    .childNode {
+      padding: 4px 8px;
+      background: #f8f9fa;
+      border-radius: 4px;
+      margin: 2px 0;
+      
+      .childId {
+        font-family: monospace;
+        font-size: 0.9em;
+        color: #6c757d;
+      }
+    }
+  }
+  
+  .nodeMetadata {
+    margin-left: 20px;
+    margin-top: 8px;
+    font-size: 0.8em;
+    color: #6c757d;
+    
+    .metadataItem {
+      margin-right: 12px;
+      display: inline-block;
+    }
+  }
+} 

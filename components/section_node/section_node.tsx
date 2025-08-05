@@ -1,21 +1,20 @@
 import React from 'react';
 import { renderMathNode } from '../math_node/math_node.tsx';
-import { RichTextRenderer } from '../rich_text/rich_text.tsx';
+import { RichTextRenderer, ParagraphRenderer } from '../rich_text/rich_text.tsx';
+import { SecondOrderMathNodeRenderer, CollapsibleBlockRenderer } from '../structured_math_node/structured_math_node.tsx';
 
 // Import proper binding types instead of duplicating interfaces
-import type { SectionContentNode } from '../../bindings/SectionContentNode.ts';
+import type { SectionContentNode } from '../../bindings/SectionContentNode';
 import type { Section } from '../../bindings/Section.ts';
 import type { RichText } from '../../bindings/RichText.ts';
 import type { MathNode } from '../../bindings/MathNode.ts';
 import type { ListNode } from '../../bindings/ListNode.ts';
 import type { TableNode } from '../../bindings/TableNode.ts';
-import type { StructuredMathNode } from '../../bindings/StructuredMathNode.ts';
+import type { SecondOrderMathNode } from '../../bindings/SecondOrderMathNode.ts';
 import type { CodeBlockNode } from '../../bindings/CodeBlockNode.ts';
 import type { ImageNode } from '../../bindings/ImageNode.ts';
-import type { ProofDisplayNode } from '../../bindings/ProofDisplayNode.ts';
-import type { ProofStepNode } from '../../bindings/ProofStepNode.ts';
-import type { ProofCaseNode } from '../../bindings/ProofCaseNode.ts';
-import type { RichTextSegment } from '../../bindings/RichTextSegment.ts';
+import type { BranchingContainer } from '../../bindings/BranchingContainer.ts';
+
 
 import styles from './section_node.module.scss';
 
@@ -67,14 +66,13 @@ const SectionRenderer: React.FC<{ section: Section }> = ({ section }) => {
       )}
       
       <div className={styles.sectionContent}>
-        {section.content.map((contentNode, index) => (
-          <ContentNodeRenderer key={index} node={contentNode} />
-        ))}
+        <ContentNodeRenderer node={section.content} />
       </div>
     </section>
   );
 };
 
+// ContentNodeRenderer - handles all SectionContentNode variants
 const ContentNodeRenderer: React.FC<{ node: SectionContentNode }> = ({ node }) => {
   // Get the variant key from the union type
   const variantKey = Object.keys(node)[0] as keyof SectionContentNode;
@@ -85,14 +83,25 @@ const ContentNodeRenderer: React.FC<{ node: SectionContentNode }> = ({ node }) =
       return <ParagraphRenderer paragraph={RichText} />;
     }
     
-    case 'MathNode': {
-      const { MathNode } = node as Extract<SectionContentNode, { MathNode: { math: MathNode; label: string | null; caption: RichText | null } }>;
-      return <MathNodeRenderer mathNodeContent={MathNode} />;
+    case 'Math': {
+      const { Math } = node as Extract<SectionContentNode, { Math: MathNode }>;
+      return (
+        <div className={styles.mathBlock}>
+          <div className={styles.mathContent}>
+            {renderMathNode(Math)}
+          </div>
+        </div>
+      );
     }
     
-    case 'StructuredMath': {
-      const { StructuredMath } = node as Extract<SectionContentNode, { StructuredMath: StructuredMathNode }>;
-      return <StructuredMathRenderer structuredMath={StructuredMath} />;
+    case 'SecondOrderMath': {
+      const { SecondOrderMath } = node as Extract<SectionContentNode, { SecondOrderMath: SecondOrderMathNode }>;
+      return <SecondOrderMathNodeRenderer secondOrderMath={SecondOrderMath} />;
+    }
+    
+    case 'BranchingContainer': {
+      const { BranchingContainer } = node as Extract<SectionContentNode, { BranchingContainer: BranchingContainer }>;
+      return <BranchingContainerRenderer container={BranchingContainer} />;
     }
     
     case 'List': {
@@ -161,8 +170,8 @@ const ContentNodeRenderer: React.FC<{ node: SectionContentNode }> = ({ node }) =
     }
     
     case 'SubSection': {
-      const { SubSection } = node as Extract<SectionContentNode, { SubSection: Section }>;
-      return <SubSectionRenderer subSection={SubSection} />;
+      const { SubSection } = node as Extract<SectionContentNode, { SubSection: Array<Section> }>;
+      return <SubSectionRenderer subSections={SubSection} />;
     }
     
     case 'SideBySideLayout': {
@@ -196,285 +205,9 @@ const ContentNodeRenderer: React.FC<{ node: SectionContentNode }> = ({ node }) =
 };
 
 // Individual renderer components for each variant
-const ParagraphRenderer: React.FC<{ paragraph: RichText }> = ({ paragraph }) => (
-  <div className={`${styles.paragraph} ${paragraph.alignment ? styles[paragraph.alignment] : ''}`}>
-    <RichTextRenderer segments={paragraph.segments} />
-  </div>
-);
+// ParagraphRenderer is now imported from rich_text.tsx
 
-const MathNodeRenderer: React.FC<{ mathNodeContent: { math: MathNode; label: string | null; caption: RichText | null } }> = ({ mathNodeContent }) => {
-  // Check if mathNodeContent exists
-  if (!mathNodeContent) {
-    return (
-      <div className={styles.mathBlock}>
-        <span style={{color: 'red'}}>Error: No math content provided</span>
-        <details style={{marginTop: '10px', fontSize: '12px', color: '#666'}}>
-          <summary>Debug Info</summary>
-          <pre>mathNodeContent: {JSON.stringify(mathNodeContent, null, 2)}</pre>
-        </details>
-      </div>
-    );
-  }
-  
-  // Check if math property exists
-  if (!mathNodeContent.math) {
-    return (
-      <div className={styles.mathBlock}>
-        <span style={{color: 'red'}}>Error: No math data provided</span>
-        <details style={{marginTop: '10px', fontSize: '12px', color: '#666'}}>
-          <summary>Debug Info</summary>
-          <pre>mathNodeContent: {JSON.stringify(mathNodeContent, null, 2)}</pre>
-        </details>
-      </div>
-    );
-  }
-  
-  // Check if math has the required structure (id and content)
-  if (typeof mathNodeContent.math !== 'object' || !mathNodeContent.math.id || mathNodeContent.math.content === undefined || mathNodeContent.math.content === null) {
-    return (
-      <div className={styles.mathBlock}>
-        <span style={{color: 'red'}}>Error: Math data has invalid structure</span>
-        <details style={{marginTop: '10px', fontSize: '12px', color: '#666'}}>
-          <summary>Debug Info</summary>
-          <pre>mathNodeContent.math: {JSON.stringify(mathNodeContent.math, null, 2)}</pre>
-        </details>
-      </div>
-    );
-  }
-  
-  // Check if content is the Empty string (which is valid)
-  if (mathNodeContent.math.content === 'Empty') {
-    return <div className={styles.mathBlock}><span style={{color: '#888'}}>Empty math content</span></div>;
-  }
-  
-  // Check if content is an object that can be processed with Object.keys
-  if (typeof mathNodeContent.math.content !== 'object' || mathNodeContent.math.content === null) {
-    return (
-      <div className={styles.mathBlock}>
-        <span style={{color: 'red'}}>Error: Math content is not a valid object</span>
-        <details style={{marginTop: '10px', fontSize: '12px', color: '#666'}}>
-          <summary>Debug Info</summary>
-          <pre>content type: {typeof mathNodeContent.math.content}</pre>
-          <pre>content value: {JSON.stringify(mathNodeContent.math.content, null, 2)}</pre>
-        </details>
-      </div>
-    );
-  }
-  
-  let mathElement;
-  try {
-    mathElement = renderMathNode(mathNodeContent.math);
-  } catch (error) {
-    const errorMessage = error instanceof Error ? error.message : 'Unknown error';
-    return (
-      <div className={styles.mathBlock}>
-        <span style={{color: 'red'}}>Error rendering math: {errorMessage}</span>
-        <details style={{marginTop: '10px', fontSize: '12px', color: '#666'}}>
-          <summary>Debug Info</summary>
-          <pre>Error: {error instanceof Error ? error.stack : String(error)}</pre>
-          <pre>Math Node: {JSON.stringify(mathNodeContent.math, null, 2)}</pre>
-        </details>
-      </div>
-    );
-  }
-
-  return (
-    <div className={styles.mathBlock}>
-      <div className={styles.mathContent}>
-        {mathElement}
-      </div>
-      {mathNodeContent.label && (
-        <div className={styles.mathLabel}>{mathNodeContent.label}</div>
-      )}
-      {mathNodeContent.caption && (
-        <div className={styles.mathCaption}>
-          <RichTextRenderer segments={mathNodeContent.caption.segments} />
-        </div>
-      )}
-    </div>
-  );
-};
-
-const StructuredMathRenderer: React.FC<{ structuredMath: StructuredMathNode }> = ({ structuredMath }) => {
-  // Get the variant key from the union type
-  const variantKey = Object.keys(structuredMath)[0] as keyof StructuredMathNode;
-  
-  switch (variantKey) {
-    case 'Definition': {
-      const { Definition } = structuredMath as Extract<StructuredMathNode, { Definition: any }>;
-      return (
-        <div className={styles.structuredMathDefinition}>
-          <h3 className={styles.definitionTitle}>
-            <RichTextRenderer segments={Definition.term_display.segments} />
-          </h3>
-          {Definition.label && (
-            <div className={styles.definitionLabel}>{Definition.label}</div>
-          )}
-          <div className={styles.definitionContent}>
-            {Definition.body.map((contentNode: SectionContentNode, index: number) => (
-              <ContentNodeRenderer key={index} node={contentNode} />
-            ))}
-          </div>
-        </div>
-      );
-    }
-    
-    case 'TheoremLike': {
-      const { TheoremLike } = structuredMath as Extract<StructuredMathNode, { TheoremLike: any }>;
-      return (
-        <div className={styles.structuredMathTheorem}>
-          <h3 className={styles.theoremTitle}>
-            {TheoremLike.kind} {TheoremLike.label && `(${TheoremLike.label})`}
-          </h3>
-          <div className={styles.theoremStatement}>
-            {/* Handle TheoremStatement which can be Content or Mathematical */}
-            {'Content' in TheoremLike.statement ? (
-              TheoremLike.statement.Content.map((contentNode: SectionContentNode, index: number) => (
-                <ContentNodeRenderer key={index} node={contentNode} />
-              ))
-            ) : (
-              <div className={styles.mathematicalStatement}>
-                {TheoremLike.statement.Mathematical && TheoremLike.statement.Mathematical.content ? renderMathNode(TheoremLike.statement.Mathematical) : <span>Invalid mathematical statement</span>}
-              </div>
-            )}
-          </div>
-          {TheoremLike.proof && (
-            <div className={styles.theoremProof}>
-              <ProofDisplayRenderer proof={TheoremLike.proof} />
-            </div>
-          )}
-        </div>
-      );
-    }
-    
-    case 'Example': {
-      const { Example } = structuredMath as Extract<StructuredMathNode, { Example: any }>;
-      return (
-        <div className={styles.structuredMathExample}>
-          <h3 className={styles.exampleTitle}>
-            Example {Example.label && `(${Example.label})`}
-          </h3>
-          {Example.introduction.length > 0 && (
-            <div className={styles.exampleIntroduction}>
-              {Example.introduction.map((contentNode: SectionContentNode, index: number) => (
-                <ContentNodeRenderer key={index} node={contentNode} />
-              ))}
-            </div>
-          )}
-          <div className={styles.exampleBody}>
-            {Example.body.map((contentNode: SectionContentNode, index: number) => (
-              <ContentNodeRenderer key={index} node={contentNode} />
-            ))}
-          </div>
-          {Example.explanation.length > 0 && (
-            <div className={styles.exampleExplanation}>
-              {Example.explanation.map((contentNode: SectionContentNode, index: number) => (
-                <ContentNodeRenderer key={index} node={contentNode} />
-              ))}
-            </div>
-          )}
-        </div>
-      );
-    }
-    
-    case 'Remark': {
-      const { Remark } = structuredMath as Extract<StructuredMathNode, { Remark: any }>;
-      return (
-        <div className={styles.structuredMathRemark}>
-          <h3 className={styles.remarkTitle}>
-            Remark {Remark.label && `(${Remark.label})`}
-          </h3>
-          <div className={styles.remarkContent}>
-            {Remark.body.map((contentNode: SectionContentNode, index: number) => (
-              <ContentNodeRenderer key={index} node={contentNode} />
-            ))}
-          </div>
-        </div>
-      );
-    }
-    
-    case 'Axiom': {
-      const { Axiom } = structuredMath as Extract<StructuredMathNode, { Axiom: any }>;
-      return (
-        <div className={styles.structuredMathAxiom}>
-          <h3 className={styles.axiomTitle}>
-            Axiom {Axiom.label && `(${Axiom.label})`}
-          </h3>
-          <div className={styles.axiomStatement}>
-            {Axiom.statement.map((contentNode: SectionContentNode, index: number) => (
-              <ContentNodeRenderer key={index} node={contentNode} />
-            ))}
-          </div>
-        </div>
-      );
-    }
-    
-    case 'Exercise': {
-      const { Exercise } = structuredMath as Extract<StructuredMathNode, { Exercise: any }>;
-      return (
-        <div className={styles.structuredMathExercise}>
-          <h3 className={styles.exerciseTitle}>
-            Exercise {Exercise.label && `(${Exercise.label})`}
-          </h3>
-          <div className={styles.exerciseProblem}>
-            {Exercise.problem_statement.map((contentNode: SectionContentNode, index: number) => (
-              <ContentNodeRenderer key={index} node={contentNode} />
-            ))}
-          </div>
-          {/* Hints and solution would need CollapsibleBlockNode renderer */}
-          <div className={styles.exercisePlaceholder}>
-            [Exercise hints and solution rendering not yet implemented]
-          </div>
-        </div>
-      );
-    }
-    
-    case 'ConstructorDefinition': {
-      const { ConstructorDefinition } = structuredMath as Extract<StructuredMathNode, { ConstructorDefinition: any }>;
-      return (
-        <div className={styles.structuredMathConstructor}>
-          <h3 className={styles.constructorTitle}>
-            <RichTextRenderer segments={ConstructorDefinition.title_display} />
-            {ConstructorDefinition.label && ` (${ConstructorDefinition.label})`}
-          </h3>
-          <div className={styles.constructorContent}>
-            {ConstructorDefinition.body.map((contentNode: SectionContentNode, index: number) => (
-              <ContentNodeRenderer key={index} node={contentNode} />
-            ))}
-          </div>
-        </div>
-      );
-    }
-    
-    case 'CollectionView': {
-      const { CollectionView } = structuredMath as Extract<StructuredMathNode, { CollectionView: any }>;
-      return (
-        <div className={styles.structuredMathCollection}>
-          <h3 className={styles.collectionTitle}>{CollectionView.collection_type}</h3>
-          <div className={styles.collectionDescription}>
-            <RichTextRenderer segments={CollectionView.description.segments} />
-          </div>
-          <div className={styles.collectionVariants}>
-            {CollectionView.variants.map(([name, description], index) => (
-              <div key={index} className={styles.variant}>
-                <strong>{name}:</strong> {description}
-              </div>
-            ))}
-          </div>
-        </div>
-      );
-    }
-    
-    default:
-      return (
-        <div className={styles.unknownStructuredMath}>
-          <span className={styles.unknownType}>
-            [Unknown structured math type: {variantKey}]
-          </span>
-        </div>
-      );
-  }
-};
+// MathNodeRenderer is now imported from math_node.tsx
 
 const ListRenderer: React.FC<{ list: ListNode }> = ({ list }) => {
   // Handle ListStyle union type properly
@@ -577,18 +310,20 @@ const TableRenderer: React.FC<{ table: TableNode }> = ({ table }) => (
   </div>
 );
 
-const SubSectionRenderer: React.FC<{ subSection: Section }> = ({ subSection }) => (
+const SubSectionRenderer: React.FC<{ subSections: Array<Section> }> = ({ subSections }) => (
   <div className={styles.subsection}>
-    {subSection.title && (
-      <h3 className={styles.subsectionTitle}>
-        <RichTextRenderer segments={subSection.title.segments} />
-      </h3>
-    )}
-    <div className={styles.subsectionContent}>
-      {subSection.content.map((subNode, index) => (
-        <ContentNodeRenderer key={index} node={subNode} />
-      ))}
-    </div>
+    {subSections.map((subSection, index) => (
+      <div key={index} className={styles.subsection}>
+        {subSection.title && (
+          <h3 className={styles.subsectionTitle}>
+            <RichTextRenderer segments={subSection.title.segments} />
+          </h3>
+        )}
+        <div className={styles.subsectionContent}>
+          <ContentNodeRenderer node={subSection.content} />
+        </div>
+      </div>
+    ))}
   </div>
 );
 
@@ -648,9 +383,7 @@ const InteractiveDiagramRenderer: React.FC<{ diagram: any }> = () => (
   <div className={styles.placeholder}>[Interactive Diagram - Not yet implemented]</div>
 );
 
-const CollapsibleBlockRenderer: React.FC<{ block: any }> = () => (
-  <div className={styles.placeholder}>[Collapsible Block - Not yet implemented]</div>
-);
+// CollapsibleBlockRenderer is implemented in structured_math_node.tsx
 
 const GridRenderer: React.FC<{ grid: any }> = () => (
   <div className={styles.placeholder}>[Grid - Not yet implemented]</div>
@@ -700,583 +433,137 @@ const UnknownContentRenderer: React.FC<{ node: SectionContentNode }> = ({ node }
     <span className={styles.unknownType}>
       [Unknown content type: {Object.keys(node)[0]}]
     </span>
+    <pre className={styles.debugInfo}>
+      {JSON.stringify(node, null, 2)}
+    </pre>
   </div>
 );
 
-const ProofDisplayRenderer: React.FC<{ proof: ProofDisplayNode }> = ({ proof }) => {
-  try {
-    if (!proof) {
-      return (
-        <div className={styles.proofDisplay}>
-          <div className={styles.proofTitle}>
-            [Invalid proof data]
-          </div>
-        </div>
-      );
-    }
 
-    return (
-      <div className={styles.proofDisplay}>
-        {proof.title?.segments && (
-          <div className={styles.proofTitle}>
-            <RichTextRenderer segments={proof.title.segments} />
-          </div>
-        )}
-        
-        {proof.strategy && proof.strategy.length > 0 && (
-          <div className={styles.proofStrategy}>
-            <h4 className={styles.strategyTitle}>Strategy:</h4>
-            {proof.strategy.map((contentNode, index) => (
-              <ContentNodeRenderer key={index} node={contentNode} />
-            ))}
-          </div>
-        )}
-        
-        <div className={styles.proofSteps}>
-          {proof.steps?.map((step, index) => (
-            <ProofStepRenderer key={index} step={step} stepNumber={index + 1} />
-          )) || null}
-        </div>
-        
-        {proof.qed_symbol && (
-          <div className={styles.qedSymbol}>
-            {proof.qed_symbol}
-          </div>
-        )}
-      </div>
-    );
-  } catch (error) {
-    console.error('Error rendering proof display:', error);
-    return (
-      <div className={styles.proofDisplay}>
-        <div className={styles.proofTitle}>
-          [Error rendering proof: {error instanceof Error ? error.message : 'Unknown error'}]
-        </div>
-      </div>
-    );
-  }
-};
 
-const ProofStepRenderer: React.FC<{ step: ProofStepNode; stepNumber: number }> = ({ step, stepNumber }) => {
-  // Add error boundary for this component
-  try {
-    // Get the variant key from the union type
-    const variantKey = Object.keys(step)[0] as keyof ProofStepNode;
-    
-    switch (variantKey) {
-      case 'Statement': {
-        const { Statement } = step as Extract<ProofStepNode, { Statement: { claim: RichTextSegment[]; justification: RichTextSegment[] } }>;
-        return (
-          <div className={styles.proofStatement}>
-            <div className={styles.stepNumber}>{stepNumber}.</div>
-            <div className={styles.statementContent}>
-              <div className={styles.claim}>
-                <RichTextRenderer segments={Statement?.claim || []} />
-              </div>
-              {Statement?.justification && Statement.justification.length > 0 && (
-                <div className={styles.justification}>
-                  <RichTextRenderer segments={Statement.justification} />
-                </div>
-              )}
-            </div>
-          </div>
-        );
-      }
-      
-      case 'TacticApplication': {
-        const { TacticApplication } = step as Extract<ProofStepNode, { TacticApplication: import('../../bindings/TacticDisplayNode.ts').TacticDisplayNode }>;
-        return (
-          <div className={styles.proofTacticApplication}>
-            <div className={styles.stepNumber}>{stepNumber}.</div>
-            <div className={styles.tacticContent}>
-              <TacticApplicationRenderer tactic={TacticApplication} />
-            </div>
-          </div>
-        );
-      }
-      
-      case 'Elaboration': {
-        const { Elaboration } = step as Extract<ProofStepNode, { Elaboration: any[] }>;
-        return (
-          <div className={styles.proofElaboration}>
-            <div className={styles.stepNumber}>{stepNumber}.</div>
-            <div className={styles.elaborationContent}>
-              {Elaboration?.map((contentNode, index) => (
-                <ContentNodeRenderer key={index} node={contentNode} />
-              )) || null}
-            </div>
-          </div>
-        );
-      }
-      
-      case 'CaseAnalysis': {
-        const { CaseAnalysis } = step as Extract<ProofStepNode, { CaseAnalysis: { introduction: any; cases: ProofCaseNode[] } }>;
-        return (
-          <div className={styles.proofCaseAnalysis}>
-            <div className={styles.stepNumber}>{stepNumber}.</div>
-            <div className={styles.caseAnalysisContent}>
-              {CaseAnalysis?.introduction?.segments && (
-                <div className={styles.caseIntroduction}>
-                  <RichTextRenderer segments={CaseAnalysis.introduction.segments} />
-                </div>
-              )}
-              <div className={styles.cases}>
-                {CaseAnalysis?.cases?.map((caseNode, index) => (
-                  <ProofCaseRenderer key={index} caseNode={caseNode} caseNumber={index + 1} />
-                )) || null}
-              </div>
-            </div>
-          </div>
-        );
-      }
-      
-      case 'InductiveProof': {
-        const { InductiveProof } = step as Extract<ProofStepNode, { InductiveProof: any }>;
-        return (
-          <div className={styles.proofInductive}>
-            <div className={styles.stepNumber}>{stepNumber}.</div>
-            <div className={styles.inductiveContent}>
-              {InductiveProof?.variable_of_induction && (
-                <div className={styles.inductionVariable}>
-                  <strong>Induction on: </strong>
-                  {renderMathNode(InductiveProof.variable_of_induction)}
-                </div>
-              )}
-              
-              {InductiveProof?.base_case && (
-                <div className={styles.baseCase}>
-                  <h5>Base Case:</h5>
-                  <ProofDisplayRenderer proof={InductiveProof.base_case} />
-                </div>
-              )}
-              
-              {InductiveProof?.inductive_hypothesis?.segments && (
-                <div className={styles.inductiveHypothesis}>
-                  <h5>Inductive Hypothesis:</h5>
-                  <RichTextRenderer segments={InductiveProof.inductive_hypothesis.segments} />
-                </div>
-              )}
-              
-              {InductiveProof?.inductive_step && (
-                <div className={styles.inductiveStep}>
-                  <h5>Inductive Step:</h5>
-                  <ProofDisplayRenderer proof={InductiveProof.inductive_step} />
-                </div>
-              )}
-            </div>
-          </div>
-        );
-      }
-      
-      case 'Assume': {
-        const { Assume } = step as Extract<ProofStepNode, { Assume: any }>;
-        return (
-          <div className={styles.proofAssumption}>
-            <div className={styles.stepNumber}>{stepNumber}.</div>
-            <div className={styles.assumptionContent}>
-              <strong>Assume: </strong>
-              <RichTextRenderer segments={Assume?.segments || []} />
-            </div>
-          </div>
-        );
-      }
-      
-      case 'Goal': {
-        const { Goal } = step as Extract<ProofStepNode, { Goal: any }>;
-        return (
-          <div className={styles.proofGoal}>
-            <div className={styles.stepNumber}>{stepNumber}.</div>
-            <div className={styles.goalContent}>
-              <strong>Goal: </strong>
-              <RichTextRenderer segments={Goal?.segments || []} />
-            </div>
-          </div>
-        );
-      }
-      
-      case 'NestedProof': {
-        const { NestedProof } = step as Extract<ProofStepNode, { NestedProof: ProofDisplayNode }>;
-        return (
-          <div className={styles.proofNested}>
-            <div className={styles.stepNumber}>{stepNumber}.</div>
-            <div className={styles.nestedContent}>
-              {NestedProof && <ProofDisplayRenderer proof={NestedProof} />}
-            </div>
-          </div>
-        );
-      }
-      
-      default:
-        return (
-          <div className={styles.unknownProofStep}>
-            <div className={styles.stepNumber}>{stepNumber}.</div>
-            <span className={styles.unknownType}>
-              [Unknown proof step type: {variantKey}]
+
+
+// BranchingContainerRenderer - handles BranchingContainer
+const BranchingContainerRenderer: React.FC<{ container: BranchingContainer }> = ({ container }) => (
+  <div className={styles.branchingContainer} data-container-id={container.container_id}>
+    <div className={styles.containerHeader}>
+      <span className={styles.containerType}>
+        {typeof container.container_type === 'string' 
+          ? container.container_type 
+          : 'Custom'}
             </span>
           </div>
-        );
-    }
-  } catch (error) {
-    console.error('Error rendering proof step:', error);
-    return (
-      <div className={styles.unknownProofStep}>
-        <div className={styles.stepNumber}>{stepNumber}.</div>
-        <span className={styles.unknownType}>
-          [Error rendering proof step: {error instanceof Error ? error.message : 'Unknown error'}]
-        </span>
-      </div>
-    );
-  }
-};
-
-const TacticApplicationRenderer: React.FC<{ tactic: import('../../bindings/TacticDisplayNode.ts').TacticDisplayNode }> = ({ tactic }) => {
-  try {
-    // Get the variant key from the union type
-    const variantKey = Object.keys(tactic)[0] as keyof import('../../bindings/TacticDisplayNode.ts').TacticDisplayNode;
     
-    switch (variantKey) {
-      case 'IntroduceQuantifier': {
-        const { IntroduceQuantifier } = tactic as Extract<import('../../bindings/TacticDisplayNode.ts').TacticDisplayNode, { IntroduceQuantifier: any }>;
-        return (
-          <div className={styles.tacticIntroduceQuantifier}>
-            <div className={styles.tacticName}>Introduce Quantifier</div>
-            <div className={styles.tacticDescription}>
-              <RichTextRenderer segments={IntroduceQuantifier.object_description.segments} />
-            </div>
-            {IntroduceQuantifier.before_state && (
-              <div className={styles.beforeState}>
-                <strong>Before:</strong> <RichTextRenderer segments={IntroduceQuantifier.before_state.segments} />
-              </div>
-            )}
-            {IntroduceQuantifier.after_state && (
-              <div className={styles.afterState}>
-                <strong>After:</strong> <RichTextRenderer segments={IntroduceQuantifier.after_state.segments} />
-              </div>
-            )}
-          </div>
-        );
-      }
-      
-      case 'IntroduceFreshVariable': {
-        const { IntroduceFreshVariable } = tactic as Extract<import('../../bindings/TacticDisplayNode.ts').TacticDisplayNode, { IntroduceFreshVariable: any }>;
-        return (
-          <div className={styles.tacticIntroduceFreshVariable}>
-            <div className={styles.tacticName}>Introduce Fresh Variable</div>
-            <div className={styles.tacticDetails}>
-              <div><strong>Target:</strong> <RichTextRenderer segments={IntroduceFreshVariable.target_quantifier.segments} /></div>
-              <div><strong>New Variable:</strong> <RichTextRenderer segments={IntroduceFreshVariable.fresh_variable_name.segments} /></div>
-              <div><strong>Explanation:</strong> <RichTextRenderer segments={IntroduceFreshVariable.explanation.segments} /></div>
-            </div>
-          </div>
-        );
-      }
-      
-      case 'ProvideWitness': {
-        const { ProvideWitness } = tactic as Extract<import('../../bindings/TacticDisplayNode.ts').TacticDisplayNode, { ProvideWitness: any }>;
-        return (
-          <div className={styles.tacticProvideWitness}>
-            <div className={styles.tacticName}>Provide Witness</div>
-            <div className={styles.tacticDetails}>
-              <div><strong>Target:</strong> <RichTextRenderer segments={ProvideWitness.target_quantifier.segments} /></div>
-                             <div><strong>Witness:</strong> {renderMathNode(ProvideWitness.witness_expression)}</div>
-              <div><strong>Explanation:</strong> <RichTextRenderer segments={ProvideWitness.witness_explanation.segments} /></div>
-              {ProvideWitness.verification_steps.length > 0 && (
-                <div className={styles.verificationSteps}>
-                  <strong>Verification:</strong>
-                  {ProvideWitness.verification_steps.map((step, index) => (
-                    <ContentNodeRenderer key={index} node={step} />
+    <div className={styles.containerNodes}>
+      {container.nodes.map((node, index) => (
+        <BranchingNodeRenderer key={index} node={node} stepNumber={index + 1} />
                   ))}
                 </div>
-              )}
-            </div>
-          </div>
-        );
-      }
-      
-      case 'ExactWith': {
-        const { ExactWith } = tactic as Extract<import('../../bindings/TacticDisplayNode.ts').TacticDisplayNode, { ExactWith: any }>;
-        return (
-          <div className={styles.tacticExactWith}>
-            <div className={styles.tacticName}>Exact (Apply Theorem)</div>
-            <div className={styles.tacticDetails}>
-              <div><strong>Theorem:</strong> <RichTextRenderer segments={ExactWith.theorem_name.segments} /></div>
-                             <div><strong>Statement:</strong> <RichTextRenderer segments={ExactWith.theorem_statement.segments} /></div>
-               {ExactWith.instantiation_mapping.length > 0 && (
-                 <div className={styles.instantiations}>
-                   <strong>Instantiations:</strong>
-                   {ExactWith.instantiation_mapping.map((pair, index) => (
-                     <div key={index} className={styles.instantiationPair}>
-                       <RichTextRenderer segments={pair.variable_name.segments} /> ↦ {renderMathNode(pair.variable_value)}
-                     </div>
+    
+    {container.container_metadata.length > 0 && (
+      <div className={styles.containerMetadata}>
+        {container.container_metadata.map(([key, value], index) => (
+          <span key={index} className={styles.metadataItem}>
+            {key}: {value}
+          </span>
                    ))}
                  </div>
                )}
-            </div>
           </div>
         );
-      }
-      
-      case 'Rewrite': {
-        const { Rewrite } = tactic as Extract<import('../../bindings/TacticDisplayNode.ts').TacticDisplayNode, { Rewrite: any }>;
+
+// BranchingNodeRenderer - handles BranchingNode
+const BranchingNodeRenderer: React.FC<{ node: any; stepNumber?: number }> = ({ node, stepNumber }) => {
+  const isProofGoal = node.node_type === 'ProofGoal';
+  const isProofStep = node.node_type === 'ProofStep';
+  const isCompleted = node.node_state === 'Completed';
+  
         return (
-          <div className={styles.tacticRewrite}>
-            <div className={styles.tacticName}>Rewrite</div>
-                         <div className={styles.tacticDetails}>
-               <div><strong>Target:</strong> {renderMathNode(Rewrite.target_expression)}</div>
-               <div><strong>Using:</strong> <RichTextRenderer segments={Rewrite.theorem_name.segments} /></div>
-               <div><strong>Rule:</strong> <RichTextRenderer segments={Rewrite.theorem_rule.segments} /></div>
-               <div><strong>Direction:</strong> 
-                 {'LeftToRight' in Rewrite.direction ? (
-                   <span>Left to Right</span>
-                 ) : (
-                   <span>Right to Left</span>
-                 )}
+    <div 
+      className={`${styles.branchingNode} ${isProofGoal ? styles.proofGoal : ''} ${isProofStep ? styles.proofStep : ''} ${isCompleted ? styles.completed : ''}`}
+      data-node-id={node.node_id}
+    >
+      {/* Step Number */}
+      {stepNumber && (
+        <div className={styles.stepNumber}>
+          {stepNumber}
                </div>
-               <div><strong>Result:</strong> {' '}
-                 {'LeftToRight' in Rewrite.direction ? (
-                   renderMathNode(Rewrite.direction.LeftToRight.right_side)
-                 ) : (
-                   renderMathNode(Rewrite.direction.RightToLeft.right_side)
-                 )}
-               </div>
-               {Rewrite.step_by_step_transformation.length > 0 && (
-                 <div className={styles.rewriteSteps}>
-                   <strong>Steps:</strong>
-                   {Rewrite.step_by_step_transformation.map((step, index) => (
-                     <div key={index} className={styles.rewriteStep}>
-                       {renderMathNode(step.before)} → {renderMathNode(step.after)}
-                       <span className={styles.ruleApplied}> (by <RichTextRenderer segments={step.rule_applied.segments} />)</span>
-                     </div>
-                   ))}
-                 </div>
-               )}
-             </div>
-          </div>
-        );
-      }
+      )}
       
-      case 'AssumeImplicationAntecedent': {
-        const { AssumeImplicationAntecedent } = tactic as Extract<import('../../bindings/TacticDisplayNode.ts').TacticDisplayNode, { AssumeImplicationAntecedent: any }>;
-        return (
-          <div className={styles.tacticAssumeAntecedent}>
-            <div className={styles.tacticName}>Assume Implication Antecedent</div>
-            <div className={styles.tacticDetails}>
-              <div><strong>Implication:</strong> {renderMathNode(AssumeImplicationAntecedent.implication_statement)}</div>
-              <div><strong>Hypothesis Name:</strong> <RichTextRenderer segments={AssumeImplicationAntecedent.hypothesis_name.segments} /></div>
-              <div><strong>Antecedent:</strong> {renderMathNode(AssumeImplicationAntecedent.antecedent)}</div>
-              <div><strong>Consequent:</strong> {renderMathNode(AssumeImplicationAntecedent.consequent)}</div>
-              <div><strong>Context:</strong> <RichTextRenderer segments={AssumeImplicationAntecedent.context_explanation.segments} /></div>
+      {/* Node Header */}
+      <div className={styles.nodeHeader}>
+        <span className={styles.nodeType}>{node.node_type}</span>
+        <span className={`${styles.nodeState} ${isCompleted ? styles.completedState : ''}`}>
+          {node.node_state}
+        </span>
             </div>
-          </div>
-        );
-      }
       
-      case 'SplitConjunction': {
-        const { SplitConjunction } = tactic as Extract<import('../../bindings/TacticDisplayNode.ts').TacticDisplayNode, { SplitConjunction: any }>;
-        return (
-          <div className={styles.tacticSplitConjunction}>
-            <div className={styles.tacticName}>Split Conjunction</div>
-            <div className={styles.tacticDetails}>
-              <div><strong>Target:</strong> {renderMathNode(SplitConjunction.target_conjunction)}</div>
-              <div><strong>Selected:</strong> conjunct {SplitConjunction.selected_index + 1}</div>
-              <div className={styles.conjuncts}>
-                <strong>Conjuncts:</strong>
-                {SplitConjunction.conjuncts.map((conjunct, index) => (
-                  <div key={index} className={`${styles.conjunct} ${index === SplitConjunction.selected_index ? styles.selected : ''}`}>
-                    {index + 1}. {renderMathNode(conjunct)}
-                  </div>
+      {/* Context Variables */}
+      {isProofGoal && (
+        <div className={styles.contextVariables}>
+          <span className={styles.label}>Context:</span>
+          <div className={styles.variablesList}>
+            {node.node_metadata
+              .filter(([key]: [string, string]) => key === 'context_size')
+              .map(([_key, value]: [string, string], index: number) => (
+                <span key={index} className={styles.variableCount}>
+                  {value} variables
+                </span>
                 ))}
               </div>
             </div>
-          </div>
-        );
-      }
+      )}
       
-      case 'SplitDisjunction': {
-        const { SplitDisjunction } = tactic as Extract<import('../../bindings/TacticDisplayNode.ts').TacticDisplayNode, { SplitDisjunction: any }>;
-        return (
-          <div className={styles.tacticSplitDisjunction}>
-            <div className={styles.tacticName}>Split Disjunction</div>
-            <div className={styles.tacticDetails}>
-              <div><strong>Target:</strong> {renderMathNode(SplitDisjunction.target_disjunction)}</div>
-              <div><strong>Chosen:</strong> disjunct {SplitDisjunction.chosen_index + 1}</div>
-              <div><strong>Strategy:</strong> <RichTextRenderer segments={SplitDisjunction.strategy_explanation.segments} /></div>
-              <div className={styles.disjuncts}>
-                <strong>Disjuncts:</strong>
-                {SplitDisjunction.disjuncts.map((disjunct, index) => (
-                  <div key={index} className={`${styles.disjunct} ${index === SplitDisjunction.chosen_index ? styles.chosen : ''}`}>
-                    {index + 1}. {renderMathNode(disjunct)}
-                  </div>
+      {/* Main Content */}
+      <div className={styles.nodeContent}>
+        {node.content.map((contentNode: any, index: number) => (
+          <ContentNodeRenderer key={index} node={contentNode} />
                 ))}
               </div>
-            </div>
-          </div>
-        );
-      }
       
-      case 'Simplify': {
-        const { Simplify } = tactic as Extract<import('../../bindings/TacticDisplayNode.ts').TacticDisplayNode, { Simplify: any }>;
-        return (
-          <div className={styles.tacticSimplify}>
-            <div className={styles.tacticName}>Simplify</div>
+      {/* Tactic Information */}
+      {isProofStep && (
+        <div className={styles.tacticInfo}>
+          <span className={styles.label}>Tactic:</span>
                          <div className={styles.tacticDetails}>
-               <div><strong>Original:</strong> {renderMathNode(Simplify.original_expression)}</div>
-               <div><strong>Simplified:</strong> {renderMathNode(Simplify.simplified_expression)}</div>
-               {Simplify.rules_used.length > 0 && (
-                 <div className={styles.rulesUsed}>
-                   <strong>Rules Used:</strong>
-                   {Simplify.rules_used.map((rule, index) => (
-                     <span key={index} className={styles.rule}>
-                       <RichTextRenderer segments={rule.segments} />
+            {node.node_metadata
+              .filter(([key]: [string, string]) => key === 'tactic')
+              .map(([_key, value]: [string, string], index: number) => (
+                <span key={index} className={styles.tacticName}>
+                  {value}
                      </span>
                    ))}
+          </div>
                  </div>
                )}
-               {Simplify.simplification_steps.length > 0 && (
-                 <div className={styles.simplificationSteps}>
-                   <strong>Steps:</strong>
-                   {Simplify.simplification_steps.map((step, index) => (
-                     <div key={index} className={styles.simplificationStep}>
-                       {renderMathNode(step.before)} → {renderMathNode(step.after)} <span className={styles.stepDescription}>(<RichTextRenderer segments={step.rule_name.segments} />)</span>
+      
+      {/* Children (for nested proof structure) */}
+      {node.children.length > 0 && (
+        <div className={styles.nodeChildren}>
+          {node.children.map((childId: string, index: number) => (
+            <div key={index} className={styles.childNode} data-child-id={childId}>
+              <span className={styles.childId}>→ Next</span>
                      </div>
                    ))}
                  </div>
                )}
-             </div>
-          </div>
-        );
-      }
       
-      case 'Auto': {
-        const { Auto } = tactic as Extract<import('../../bindings/TacticDisplayNode.ts').TacticDisplayNode, { Auto: any }>;
-        return (
-          <div className={styles.tacticAuto}>
-            <div className={styles.tacticName}>Auto</div>
-            <div className={styles.tacticDetails}>
-              <div><strong>Execution:</strong> <RichTextRenderer segments={Auto.execution_summary.segments} /></div>
-              {Auto.search_depth && (
-                <div><strong>Search Depth:</strong> {Auto.search_depth}</div>
-              )}
-              {Auto.tactics_attempted.length > 0 && (
-                <div className={styles.tacticsAttempted}>
-                  <strong>Tactics Attempted:</strong>
-                  {Auto.tactics_attempted.map((tacticName, index) => (
-                    <span key={index} className={styles.tacticAttempted}>
-                      <RichTextRenderer segments={tacticName.segments} />
+      {/* Metadata */}
+      {node.node_metadata.length > 0 && (
+        <div className={styles.nodeMetadata}>
+          {node.node_metadata.map(([key, value]: [string, string], index: number) => (
+            <span key={index} className={styles.metadataItem}>
+              {key}: {value}
                     </span>
                   ))}
                 </div>
               )}
-              {Auto.successful_path && (
-                <div className={styles.successfulPath}>
-                  <strong>Successful Path:</strong>
-                  {Auto.successful_path.map((step, index) => (
-                    <span key={index} className={styles.pathStep}>
-                      <RichTextRenderer segments={step.segments} />
-                    </span>
-                  ))}
-                </div>
-              )}
-            </div>
           </div>
         );
-      }
-      
-      case 'IntroduceValueVariable': {
-        const { IntroduceValueVariable } = tactic as Extract<import('../../bindings/TacticDisplayNode.ts').TacticDisplayNode, { IntroduceValueVariable: any }>;
-        return (
-          <div className={styles.tacticIntroduceValueVariable}>
-            <div className={styles.tacticDetails}>
-              <RichTextRenderer segments={IntroduceValueVariable.variable_name.segments} />
-            </div>
-          </div>
-        );
-      }
-
-      case 'Induction': {
-        const { Induction } = tactic as Extract<import('../../bindings/TacticDisplayNode.ts').TacticDisplayNode, { Induction: any }>;
-        return (
-          <div className={styles.tacticInduction}>
-            <div className={styles.tacticName}>Induction</div>
-            <div className={styles.tacticDetails}>
-              <div><strong>Variable:</strong> <RichTextRenderer segments={Induction.induction_variable.segments} /></div>
-              <div><strong>Base Case Value:</strong> {renderMathNode(Induction.base_case_value)}</div>
-              <div><strong>Inductive Hypothesis:</strong> <RichTextRenderer segments={Induction.inductive_hypothesis.segments} /></div>
-              <div><strong>Principle:</strong> <RichTextRenderer segments={Induction.induction_principle.segments} /></div>
-              
-              <div className={styles.inductionCases}>
-                <div className={styles.baseCase}>
-                  <h5>Base Case:</h5>
-                  <ProofDisplayRenderer proof={Induction.base_case_proof} />
-                </div>
-                <div className={styles.inductiveStep}>
-                  <h5>Inductive Step:</h5>
-                  <ProofDisplayRenderer proof={Induction.inductive_step_proof} />
-                </div>
-              </div>
-            </div>
-          </div>
-        );
-      }
-      
-      default:
-        return (
-          <div className={styles.unknownTactic}>
-            <div className={styles.tacticName}>Unknown Tactic: {variantKey}</div>
-            <div className={styles.tacticDetails}>
-              <pre>{JSON.stringify(tactic, null, 2)}</pre>
-            </div>
-          </div>
-        );
-    }
-  } catch (error) {
-    console.error('Error rendering tactic application:', error);
-    return (
-      <div className={styles.unknownTactic}>
-        <div className={styles.tacticName}>Error Rendering Tactic</div>
-        <div className={styles.tacticDetails}>
-          {error instanceof Error ? error.message : 'Unknown error'}
-        </div>
-      </div>
-    );
-  }
 };
 
-const ProofCaseRenderer: React.FC<{ caseNode: ProofCaseNode; caseNumber: number }> = ({ caseNode, caseNumber }) => {
-  try {
-    if (!caseNode) {
-      return (
-        <div className={styles.proofCase}>
-          <div className={styles.caseHeader}>
-            <strong>Case {caseNumber}: </strong>
-            [Invalid case data]
-          </div>
-        </div>
-      );
-    }
 
-    return (
-      <div className={styles.proofCase}>
-        <div className={styles.caseHeader}>
-          <strong>Case {caseNumber}: </strong>
-          <RichTextRenderer segments={caseNode.condition?.segments || []} />
-        </div>
-        <div className={styles.caseProof}>
-          {caseNode.proof_for_case && <ProofDisplayRenderer proof={caseNode.proof_for_case} />}
-        </div>
-      </div>
-    );
-  } catch (error) {
-    console.error('Error rendering proof case:', error);
-    return (
-      <div className={styles.proofCase}>
-        <div className={styles.caseHeader}>
-          <strong>Case {caseNumber}: </strong>
-          [Error rendering case: {error instanceof Error ? error.message : 'Unknown error'}]
-        </div>
-      </div>
-    );
-  }
-};
 
+
+    export { ContentNodeRenderer };
 export default SectionContentRenderer; 

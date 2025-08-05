@@ -98,114 +98,7 @@ pub trait ToSectionNode {
     }
 }
 
-// --- Core Building Blocks for Rich Text ---
-
-/// Represents a segment of rich text, allowing for mixed content within paragraphs, list items, etc.
-#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, TS)]
-#[ts(export)]
-pub enum RichTextSegment {
-    Text(String),
-    StyledText {
-        text: String,
-        styles: Vec<TextStyle>, // e.g., bold, italic, color
-    },
-    Math(MathNode), // Inline mathematical expression
-    Link {
-        /// The visible content of the link, can be rich text itself.
-        content: Vec<RichTextSegment>,
-        target: LinkTarget,
-        tooltip: Option<String>, // TODO: id of the tooltip page
-    },
-    FootnoteReference(String), // ID of a footnote
-    CodeInline(String),        // For short inline code snippets, e.g., `variable_name`
-}
-
-#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, TS)]
-#[ts(export)]
-pub enum TextStyle {
-    Bold,
-    Italic,
-    Underline,
-    Strikethrough,
-    Superscript,
-    Subscript,
-    Color(String), // CSS color string
-    BackgroundColor(String),
-    FontSize(String), // e.g., "1.2em", "10px"
-    FontFamily(String),
-}
-
-/// Represents a paragraph of rich text. It doesn't have line breaks
-#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, TS)]
-#[ts(export)]
-pub struct RichText {
-    pub segments: Vec<RichTextSegment>,
-    pub alignment: Option<TextAlignment>,
-}
-
-impl RichText {
-    pub fn text(text: String) -> RichText {
-        RichText {
-            segments: vec![RichTextSegment::Text(text)],
-            alignment: None,
-        }
-    }
-}
-
-#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, TS)]
-#[ts(export)]
-pub enum TextAlignment {
-    Left,
-    Center,
-    Right,
-    Justify,
-}
-
-/// Defines various targets a link can point to, enabling rich interactivity.
-#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, TS)]
-#[ts(export)]
-pub enum LinkTarget {
-    Url(String),            // External web URL
-    InternalPageId(String), // ID of another MathematicalContent or Section within the system
-    DefinitionId {
-        // Link to a specific defined term or MathNode concept
-        term_id: String,                // Unique ID of the definition or concept
-        theory_context: Option<String>, // e.g., "ZFC", "GroupTheory"
-    },
-    DefinitionAspect {
-        // Link to a specific aspect/property of a definition
-        term_id: String,   // ID of the main definition (e.g., an L2 group instance)
-        aspect_id: String, // Identifier for the property (e.g., "Order", "Commutativity")
-        theory_context: Option<String>,
-    },
-    TheoremId(String), // Link to a specific Theorem, Lemma, etc.
-    ObjectConstructorTemplate {
-        // A page/section acting as a template for creating math objects
-        template_id: String, // ID of the page/section that is the template
-        /// Pre-filled parameters for the template, MathNode can represent concrete values or variables.
-        parameters: Vec<(String, MathNode)>,
-        /// Indicates the desired abstraction level (L1-L4) for the constructed object.
-        target_abstraction_level: Option<u8>,
-    },
-    GlossaryTerm(String),               // Link to a term in a glossary
-    BibliographyKey(String),            // Link to a bibliography entry
-    InteractiveElementId(String), // Link to trigger/focus an interactive component on the page
-    TooltipDocument(Arc<MathDocument>), // NEW: Embedded tooltip document
-    AnimationTrigger {
-        // NEW: Trigger for animations
-        animation_id: String,
-        trigger_type: AnimationTriggerType,
-    },
-}
-
-#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, TS)]
-#[ts(export)]
-pub enum AnimationTriggerType {
-    Click,
-    Hover,
-    Toggle,
-    Sequence,
-}
+// Rich text types are now in rich_text.rs module
 
 // --- High-Level Structural Content Nodes ---
 
@@ -215,22 +108,20 @@ pub enum AnimationTriggerType {
 #[ts(export)]
 pub enum SectionContentNode {
     // New variant for subsections
-    SubSection(Arc<Section>), // Box to avoid recursive type definition issues
+    SubSection(Vec<Section>), // Box to avoid recursive type definition issues
     // non-recursive content nodes
     RichText(RichText),
-    MathNode {
-        // For display-style math equations (block-level)
-        math: MathNode,
-        label: Option<String>, // For equation numbering/referencing
-        caption: Option<RichText>,
-    },
-    StructuredMath(StructuredMathNode), // Definitions, Theorems, Proofs, etc.
+
+    // most like "math"
+    Math(MathNode), // simple inline/standalone math display like $$
+    SecondOrderMath(SecondOrderMathNode), // More cluster info(solution to an ode, that has to be structured), etc.
+    InteractiveDiagram(InteractiveDiagramNode), // More generic than Visualization
+    Theorem,
 
     List(ListNode),
     Table(TableNode),
     CodeBlock(CodeBlockNode),
     Image(ImageNode),
-    InteractiveDiagram(InteractiveDiagramNode), // More generic than Visualization
     CollapsibleBlock(CollapsibleBlockNode),
     Grid(GridNode),
     Columns(ColumnsNode),
@@ -259,7 +150,216 @@ pub enum SectionContentNode {
     AnnotationOverlay(AnnotationOverlay), // For type mappings, explanatory overlays
     InteractiveControls(InteractiveControls), // For playgrounds with parameter controls
     EmbeddedDocument(Arc<MathDocument>), // For nested documents, tooltips
+
+    // NEW: Abstract branching container for any hierarchical structure
+    BranchingContainer(BranchingContainer), // For ProofForest, storyboards, multiverse, etc.
 }
+
+// --- NEW: Abstract Hierarchical Container ---
+
+/// Abstract container for representing any hierarchical, branching structure
+/// Can represent ProofForest, storyboards, multiverse narratives, etc.
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, TS)]
+#[ts(export)]
+pub struct BranchingContainer {
+    pub container_id: String,
+    pub container_type: ContainerType,
+    pub nodes: Vec<BranchingNode>,
+    pub layout_config: Option<ContainerLayout>,
+    pub container_metadata: Vec<(String, String)>,
+}
+
+/// Types of branching containers
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, TS)]
+#[ts(export)]
+pub enum ContainerType {
+    ProofForest,    // Mathematical proof exploration
+    Storyboard,     // Narrative storyboard
+    Multiverse,     // Parallel universe/timeline structure
+    DecisionTree,   // Decision-making tree
+    Workflow,       // Process workflow
+    MindMap,        // Conceptual mind map
+    Timeline,       // Chronological timeline
+    Custom(String), // Custom container type
+}
+
+/// Individual node in a branching container
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, TS)]
+#[ts(export)]
+pub struct BranchingNode {
+    pub node_id: String,
+    pub parent_id: Option<String>, // None for root nodes
+    pub node_type: NodeType,
+    pub content: Vec<SectionContentNode>, // Rich content for this node
+    pub node_metadata: Vec<(String, String)>,
+    pub children: Vec<String>, // IDs of child nodes
+    pub node_state: NodeState,
+}
+
+/// Types of nodes in branching containers
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, TS)]
+#[ts(export)]
+pub enum NodeType {
+    // Proof-specific
+    ProofGoal,
+    ProofStep,
+    ProofManager,
+    ProofCompleted,
+    ProofDisproved,
+
+    // Narrative-specific
+    StoryScene,
+    Character,
+    Event,
+    Timeline,
+
+    // Generic
+    Branch,
+    Leaf,
+    Decision,
+    Outcome,
+    Custom(String),
+}
+
+/// State of a branching node
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, TS)]
+#[ts(export)]
+pub enum NodeState {
+    Active,         // Currently being worked on
+    Completed,      // Successfully completed
+    Failed,         // Failed/abandoned
+    Pending,        // Waiting for input
+    Disproved,      // Proven false (for proofs)
+    Suspended,      // Temporarily paused
+    Custom(String), // Custom state
+}
+
+/// Layout configuration for branching containers
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, TS)]
+#[ts(export)]
+pub struct ContainerLayout {
+    pub layout_type: LayoutType,
+    pub direction: LayoutDirection,
+    pub spacing: Option<String>, // CSS spacing
+    pub alignment: Option<LayoutAlignment>,
+    pub max_depth: Option<usize>,        // Maximum depth to show
+    pub collapse_branches: Option<bool>, // Auto-collapse long branches
+}
+
+/// Types of layout for branching containers
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, TS)]
+#[ts(export)]
+pub enum LayoutType {
+    Tree,           // Traditional tree layout
+    Radial,         // Radial tree layout
+    Timeline,       // Horizontal timeline
+    Grid,           // Grid layout
+    Flow,           // Flowchart style
+    MindMap,        // Mind map style
+    Custom(String), // Custom layout
+}
+
+/// Direction for layout
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, TS)]
+#[ts(export)]
+pub enum LayoutDirection {
+    TopDown,   // Root at top, children below
+    BottomUp,  // Root at bottom, children above
+    LeftRight, // Root at left, children to right
+    RightLeft, // Root at right, children to left
+    Radial,    // Radial from center
+}
+
+/// Alignment within layout
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, TS)]
+#[ts(export)]
+pub enum LayoutAlignment {
+    Start,   // Align to start
+    Center,  // Center align
+    End,     // Align to end
+    Justify, // Justify content
+    Stretch, // Stretch to fill
+}
+
+// --- Example Usage of Abstract Branching Container ---
+//
+// This abstract container can represent any hierarchical, branching structure:
+//
+// 1. ProofForest (from mod.rs):
+// BranchingContainer {
+//     container_id: "proof-1".to_string(),
+//     container_type: ContainerType::ProofForest,
+//     nodes: vec![
+//         BranchingNode {
+//             node_id: "goal-1".to_string(),
+//             parent_id: None,
+//             node_type: NodeType::ProofGoal,
+//             content: vec![
+//                 SectionContentNode::RichText(RichText::text("∀x. P(x) → Q(x)".to_string())),
+//                 SectionContentNode::Math(goal_math_node),
+//             ],
+//             node_state: NodeState::Active,
+//             children: vec!["step-1".to_string()],
+//             node_metadata: vec![("tactic".to_string(), "assume".to_string())],
+//         },
+//         BranchingNode {
+//             node_id: "step-1".to_string(),
+//             parent_id: Some("goal-1".to_string()),
+//             node_type: NodeType::ProofStep,
+//             content: vec![
+//                 SectionContentNode::RichText(RichText::text("Assume P(x)".to_string())),
+//             ],
+//             node_state: NodeState::Completed,
+//             children: vec![],
+//             node_metadata: vec![("tactic".to_string(), "assume".to_string())],
+//         },
+//     ],
+//     layout_config: Some(ContainerLayout {
+//         layout_type: LayoutType::Tree,
+//         direction: LayoutDirection::TopDown,
+//         spacing: Some("20px".to_string()),
+//         alignment: Some(LayoutAlignment::Center),
+//         max_depth: Some(5),
+//         collapse_branches: Some(true),
+//     }),
+//     container_metadata: vec![("status".to_string(), "active".to_string())],
+// }
+//
+// 2. Storyboard/Multiverse:
+// BranchingContainer {
+//     container_id: "story-1".to_string(),
+//     container_type: ContainerType::Storyboard,
+//     nodes: vec![
+//         BranchingNode {
+//             node_id: "scene-1".to_string(),
+//             parent_id: None,
+//             node_type: NodeType::StoryScene,
+//             content: vec![
+//                 SectionContentNode::RichText(RichText::text("Opening scene".to_string())),
+//                 SectionContentNode::Image(image_node),
+//             ],
+//             node_state: NodeState::Completed,
+//             children: vec!["branch-a".to_string(), "branch-b".to_string()],
+//             node_metadata: vec![("location".to_string(), "forest".to_string())],
+//         },
+//     ],
+//     layout_config: Some(ContainerLayout {
+//         layout_type: LayoutType::Timeline,
+//         direction: LayoutDirection::LeftRight,
+//         spacing: Some("50px".to_string()),
+//         alignment: Some(LayoutAlignment::Start),
+//         max_depth: None,
+//         collapse_branches: Some(false),
+//     }),
+//     container_metadata: vec![("genre".to_string(), "adventure".to_string())],
+// }
+//
+// This approach:
+// 1. Single abstract container for all branching structures
+// 2. Rich content support via SectionContentNode
+// 3. Flexible layout configuration
+// 4. No type duplication
+// 5. Extensible for any narrative or logical structure
 
 // --- NEW: Enhanced Layout Types ---
 
@@ -445,65 +545,6 @@ pub enum ControlType {
 
 // --- Structured Mathematical Content Types ---
 
-/// Represents formal mathematical structures like definitions, theorems, etc.
-/// This matches the TypeScript StructuredMathNode bindings
-#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, TS)]
-#[ts(export)]
-pub enum StructuredMathNode {
-    Definition {
-        term_display: RichText,
-        formal_term: Option<MathNode>,
-        label: Option<String>,
-        body: Vec<SectionContentNode>,
-        abstraction_meta: Option<AbstractionMetadata>,
-        selectable_properties: Vec<SelectableProperty>,
-    },
-    TheoremLike {
-        kind: TheoremLikeKind,
-        label: Option<String>,
-        statement: TheoremStatement,
-        proof: Option<ProofDisplayNode>,
-        abstraction_meta: Option<AbstractionMetadata>,
-    },
-    Example {
-        label: Option<String>,
-        introduction: Vec<SectionContentNode>,
-        body: Vec<SectionContentNode>,
-        explanation: Vec<SectionContentNode>,
-    },
-    Remark {
-        label: Option<String>,
-        body: Vec<SectionContentNode>,
-    },
-    Axiom {
-        label: Option<String>,
-        statement: Vec<SectionContentNode>,
-        abstraction_meta: Option<AbstractionMetadata>,
-    },
-    Exercise {
-        label: Option<String>,
-        problem_statement: Vec<SectionContentNode>,
-        hints: Vec<CollapsibleBlockNode>,
-        solution: Option<Arc<CollapsibleBlockNode>>,
-    },
-    ConstructorDefinition {
-        title_display: Vec<RichTextSegment>,
-        label: Option<String>,
-        body: Vec<SectionContentNode>,
-        formal_parameters: Vec<(String, Vec<RichTextSegment>)>,
-        return_type_summary: Vec<RichTextSegment>,
-        return_type_link: Option<LinkTarget>,
-        abstraction_meta: Option<AbstractionMetadata>,
-    },
-    CollectionView {
-        collection_type: String,
-        description: RichText,
-        variants: Vec<(String, String)>,
-        variant_links: Vec<LinkTarget>,
-        abstraction_meta: Option<AbstractionMetadata>,
-    },
-}
-
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize, TS)]
 #[ts(export)]
 pub struct AbstractionMetadata {
@@ -515,482 +556,6 @@ pub struct AbstractionMetadata {
     pub specified_parameters: Vec<(String, MathNode)>,
     /// For L2, properties that are universally quantified (or "any valid option").
     pub universally_quantified_properties: Vec<String>,
-}
-
-#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, TS)]
-#[ts(export)]
-pub enum TheoremLikeKind {
-    Theorem,
-    Lemma,
-    Proposition,
-    Corollary,
-    Conjecture,
-    Principle,
-}
-
-// --- Proof Display Structures ---
-
-/// Represents different ways a theorem statement can be expressed
-#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, TS)]
-#[ts(export)]
-pub enum TheoremStatement {
-    Content(Vec<SectionContentNode>),
-    Mathematical(MathNode),
-}
-
-/// Represents a display-oriented proof structure (for frontend compatibility)
-#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, TS)]
-#[ts(export)]
-pub struct ProofDisplayNode {
-    pub title: Option<RichText>,
-    pub strategy: Vec<SectionContentNode>,
-    pub steps: Vec<ProofStepNode>,
-    pub qed_symbol: Option<String>,
-}
-
-/// Represents a single step or block within a proof's display
-#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, TS)]
-#[ts(export)]
-pub enum ProofStepNode {
-    // Legacy simple statement format
-    Statement {
-        claim: Vec<RichTextSegment>,
-        justification: Vec<RichTextSegment>,
-    },
-
-    // Rich tactic-based proof steps
-    TacticApplication(TacticDisplayNode),
-
-    // Structural proof elements
-    Elaboration(Vec<SectionContentNode>),
-    CaseAnalysis {
-        introduction: Option<RichText>,
-        cases: Vec<ProofCaseNode>,
-    },
-    InductiveProof {
-        variable_of_induction: MathNode,
-        base_case: ProofDisplayNode,
-        inductive_hypothesis: RichText,
-        inductive_step: ProofDisplayNode,
-    },
-    Assume(RichText),
-    Goal(RichText),
-    NestedProof(ProofDisplayNode),
-}
-
-/// Represents a case in case analysis
-#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, TS)]
-#[ts(export)]
-pub struct ProofCaseNode {
-    pub condition: RichText,
-    pub proof_for_case: ProofDisplayNode,
-}
-
-/// Rich display representation of tactic applications
-#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, TS)]
-#[ts(export)]
-pub enum TacticDisplayNode {
-    // ========== QUANTIFIER TACTICS ==========
-    IntroduceQuantifier {
-        object_description: RichText,
-        position: Option<usize>,
-        before_state: Option<RichText>,
-        after_state: Option<RichText>,
-    },
-
-    IntroduceFreshVariable {
-        target_quantifier: RichText,
-        fresh_variable_name: RichText,
-        explanation: RichText,
-        mathematical_context: Option<RichText>,
-    },
-
-    ProvideWitness {
-        target_quantifier: RichText,
-        witness_expression: MathNode,
-        witness_explanation: RichText,
-        verification_steps: Vec<SectionContentNode>,
-    },
-
-    ReorderQuantifiers {
-        original_order: Vec<RichText>,
-        new_order: Vec<RichText>,
-        justification: RichText,
-    },
-
-    UniversalCaseAnalysis {
-        target_quantifier: RichText,
-        cases: Vec<CaseDisplayNode>,
-        exhaustiveness_proof: Option<RichText>,
-    },
-
-    // ========== VALUE VARIABLE TACTICS ==========
-    IntroduceValueVariable {
-        variable_name: RichText,
-        variable_value: MathNode,
-        binding_type: VariableBindingType,
-        context_explanation: RichText,
-        position: Option<usize>,
-    },
-
-    SubstituteValueVariable {
-        target_variable: RichText,
-        substitution_preview: SubstitutionPreview,
-        justification: RichText,
-    },
-
-    RewriteInValueBinding {
-        target_variable: RichText,
-        target_subexpression: MathNode,
-        replacement: MathNode,
-        justification: Vec<SectionContentNode>,
-        step_by_step: Vec<RewriteStep>,
-    },
-
-    RemoveValueVariable {
-        target_variable: RichText,
-        reason: RichText,
-        cleanup_explanation: Option<RichText>,
-    },
-
-    // ========== STATEMENT TACTICS ==========
-    ExactWith {
-        theorem_name: RichText,
-        theorem_statement: RichText,
-        instantiation_mapping: Vec<InstantiationPair>,
-        match_verification: MatchVerification,
-        theorem_link: Option<LinkTarget>,
-    },
-
-    Rewrite {
-        target_expression: MathNode,
-        theorem_name: RichText,
-        theorem_rule: RichText,
-        instantiation_mapping: Vec<InstantiationPair>,
-        direction: RewriteDirectionDisplay,
-        step_by_step_transformation: Vec<RewriteStep>,
-        theorem_link: Option<LinkTarget>,
-    },
-
-    AssumeImplicationAntecedent {
-        implication_statement: MathNode,
-        hypothesis_name: RichText,
-        antecedent: MathNode,
-        consequent: MathNode,
-        context_explanation: RichText,
-    },
-
-    SplitConjunction {
-        target_conjunction: MathNode,
-        conjuncts: Vec<MathNode>,
-        selected_index: usize,
-        remaining_goals: Vec<MathNode>,
-    },
-
-    SplitDisjunction {
-        target_disjunction: MathNode,
-        disjuncts: Vec<MathNode>,
-        chosen_index: usize,
-        chosen_disjunct: MathNode,
-        strategy_explanation: RichText,
-    },
-
-    StatementCaseAnalysis {
-        target_expression: MathNode,
-        cases: Vec<CaseDisplayNode>,
-        exhaustiveness_proof: Option<RichText>,
-    },
-
-    Simplify {
-        target_path: Vec<usize>,
-        original_expression: MathNode,
-        simplified_expression: MathNode,
-        simplification_steps: Vec<SimplificationStep>,
-        rules_used: Vec<RichText>,
-    },
-
-    // ========== META TACTICS ==========
-    Auto {
-        automated_tactic_type: AutomatedTacticDisplay,
-        search_depth: Option<u8>,
-        tactics_attempted: Vec<RichText>,
-        successful_path: Option<Vec<RichText>>,
-        execution_summary: RichText,
-    },
-
-    Induction {
-        target_relation: MathNode,
-        induction_variable: RichText,
-        base_case_value: MathNode,
-        base_case_proof: ProofDisplayNode,
-        inductive_hypothesis: RichText,
-        inductive_step_proof: ProofDisplayNode,
-        induction_principle: RichText,
-    },
-}
-
-/// Display representation of case analysis
-#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, TS)]
-#[ts(export)]
-pub struct CaseDisplayNode {
-    pub case_name: RichText,
-    pub condition: MathNode,
-    pub values: Vec<MathNode>,
-    pub case_explanation: RichText,
-    pub proof_outline: Option<Vec<SectionContentNode>>,
-}
-
-/// Display representation of variable binding types
-#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, TS)]
-#[ts(export)]
-pub enum VariableBindingType {
-    Assumption,
-    Definition,
-    Hypothesis,
-    Given,
-    Let,
-}
-
-/// Display representation of substitution preview
-#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, TS)]
-#[ts(export)]
-pub struct SubstitutionPreview {
-    pub before: MathNode,
-    pub after: MathNode,
-    pub highlighted_changes: Vec<SubstitutionHighlight>,
-}
-
-/// Highlight information for substitutions
-#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, TS)]
-#[ts(export)]
-pub struct SubstitutionHighlight {
-    pub path: Vec<usize>,
-    pub original_text: RichText,
-    pub replacement_text: RichText,
-    pub explanation: Option<RichText>,
-}
-
-/// Display representation of rewrite steps
-#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, TS)]
-#[ts(export)]
-pub struct RewriteStep {
-    pub step_number: usize,
-    pub before: MathNode,
-    pub after: MathNode,
-    pub rule_applied: RichText,
-    pub explanation: RichText,
-    pub highlighted_region: Option<Vec<usize>>,
-}
-
-/// Display representation of instantiation pairs
-#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, TS)]
-#[ts(export)]
-pub struct InstantiationPair {
-    pub variable_name: RichText,
-    pub variable_value: MathNode,
-    pub type_information: Option<RichText>,
-}
-
-/// Display representation of match verification
-#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, TS)]
-#[ts(export)]
-pub struct MatchVerification {
-    pub pattern: MathNode,
-    pub target: MathNode,
-    pub match_success: bool,
-    pub match_explanation: RichText,
-    pub unification_details: Vec<UnificationDetail>,
-}
-
-/// Details of unification in pattern matching
-#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, TS)]
-#[ts(export)]
-pub struct UnificationDetail {
-    pub pattern_part: MathNode,
-    pub target_part: MathNode,
-    pub unification_type: UnificationType,
-    pub explanation: RichText,
-}
-
-/// Types of unification
-#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, TS)]
-#[ts(export)]
-pub enum UnificationType {
-    ExactMatch,
-    VariableBinding,
-    StructuralMatch,
-    TypeCoercion,
-}
-
-/// Display representation of rewrite direction
-#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, TS)]
-#[ts(export)]
-pub enum RewriteDirectionDisplay {
-    LeftToRight {
-        left_side: MathNode,
-        right_side: MathNode,
-        explanation: RichText,
-    },
-    RightToLeft {
-        left_side: MathNode,
-        right_side: MathNode,
-        explanation: RichText,
-    },
-}
-
-/// Display representation of simplification steps
-#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, TS)]
-#[ts(export)]
-pub struct SimplificationStep {
-    pub step_number: usize,
-    pub before: MathNode,
-    pub after: MathNode,
-    pub rule_name: RichText,
-    pub rule_explanation: RichText,
-    pub algebraic_justification: Option<RichText>,
-}
-
-/// Display representation of automated tactics
-#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, TS)]
-#[ts(export)]
-pub enum AutomatedTacticDisplay {
-    FindProof {
-        target_relation: MathNode,
-        search_strategy: RichText,
-        theorems_considered: Vec<TheoremReference>,
-        proof_found: Option<ProofDisplayNode>,
-    },
-    Simplify {
-        target_expression: MathNode,
-        simplification_rules: Vec<RichText>,
-        final_result: MathNode,
-    },
-    ByAssumption {
-        matching_assumption: MathNode,
-        assumption_name: RichText,
-        match_explanation: RichText,
-    },
-    Contradiction {
-        contradictory_statements: Vec<MathNode>,
-        contradiction_explanation: RichText,
-        ex_falso_principle: RichText,
-    },
-    Auto {
-        search_tree: Option<SearchTreeDisplay>,
-        successful_tactics: Vec<RichText>,
-        failed_attempts: Vec<FailedAttempt>,
-    },
-}
-
-/// Reference to a theorem
-#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, TS)]
-#[ts(export)]
-pub struct TheoremReference {
-    pub theorem_id: String,
-    pub theorem_name: RichText,
-    pub theorem_statement: RichText,
-    pub relevance_score: Option<f64>,
-    pub link: Option<LinkTarget>,
-}
-
-/// Display representation of search tree for automated tactics
-#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, TS)]
-#[ts(export)]
-pub struct SearchTreeDisplay {
-    pub root_goal: MathNode,
-    pub search_nodes: Vec<SearchNodeDisplay>,
-    pub successful_path: Vec<usize>,
-    pub max_depth_reached: usize,
-}
-
-/// Individual node in search tree
-#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, TS)]
-#[ts(export)]
-pub struct SearchNodeDisplay {
-    pub node_id: usize,
-    pub parent_id: Option<usize>,
-    pub goal_state: MathNode,
-    pub tactic_applied: Option<RichText>,
-    pub success: bool,
-    pub children: Vec<usize>,
-}
-
-/// Failed attempt in automated search
-#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, TS)]
-#[ts(export)]
-pub struct FailedAttempt {
-    pub tactic_name: RichText,
-    pub failure_reason: RichText,
-    pub goal_state: MathNode,
-    pub error_details: Option<RichText>,
-}
-
-/// Represents a display-oriented proof structure with tree-like branching.
-#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, TS)]
-#[ts(export)]
-pub struct ProofNodeDisplay {
-    // pub title: Option<RichText>,   // e.g., "Proof.", "Proof of Theorem 1.2."
-    // pub strategy: Option<Section>, // Optional outline of the proof strategy
-    pub step: ProofStepDisplay,
-    /// Child proof branches - for representing proof tree structure
-    pub children: Vec<ProofNodeDisplay>,
-}
-
-pub trait ToProofDisplay {
-    /// Convert this object to a proof display node (frontend compatible)
-    fn to_proof_display(&self) -> ProofDisplayNode;
-
-    /// Convert this object to a vector of proof display nodes (for multiple proofs)
-    fn to_proof_display_vec(&self) -> Vec<ProofDisplayNode> {
-        vec![self.to_proof_display()]
-    }
-}
-
-pub trait ToProofStep {
-    fn to_proof_step(&self) -> ProofStepNode;
-}
-
-/// Represents a single step or block within a proof's display.
-#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, TS)]
-#[ts(export)]
-pub enum ProofStepDisplay {
-    /// A tactic application showing what changed in the ProofGoal
-    Tactic {
-        /// The tactic that was applied
-        tactic_name: String,
-        /// Parameters of the tactic (if any)
-        parameters: Vec<String>,
-        /// Human-readable description of what happened
-        description: Section,
-        /// Before/after state (optional for interactivity)
-        state_change: Option<ProofGoalChange>,
-    },
-    /// Traditional statement-style step
-    Statement {
-        claim: Section,
-        justification: Section,
-    },
-    /// Case analysis with branches
-    CaseAnalysis {
-        introduction: Option<Section>,
-        cases: Vec<Section>,
-    },
-    /// Nested proof structure
-    NestedProof(Arc<ProofNodeDisplay>),
-}
-
-/// Simple representation of what changed in a ProofGoal after a tactic
-#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, TS)]
-#[ts(export)]
-pub struct ProofGoalChange {
-    /// Names of quantifiers that were added/removed/modified
-    pub quantifier_changes: Vec<String>,
-    /// Names of value variables that were added/removed/modified  
-    pub variable_changes: Vec<String>,
-    /// Whether the main statement changed
-    pub statement_changed: bool,
-    /// Summary of the change
-    pub summary: String,
 }
 
 // --- Layout and Utility Content Types ---
@@ -1188,7 +753,7 @@ pub struct Section {
     // Renamed from SectionNode to avoid confusion with enum SectionContentNode
     pub id: String,              // Unique ID for linking, navigation, and referencing
     pub title: Option<RichText>, // The title of the section
-    pub content: Vec<SectionContentNode>, // Ordered list of content blocks within this section
+    pub content: SectionContentNode, // Ordered list of content blocks within this section
     pub metadata: Vec<(String, String)>, // For tags, abstraction level, visibility, etc.
     pub display_options: Option<SectionDisplayOptions>,
 }

@@ -10,7 +10,7 @@ import type { SectionDisplayOptions } from "./SectionDisplayOptions";
 export type Section = {
   id: string;
   title: RichText | null;
-  content: Array<SectionContentNode>;
+  content: SectionContentNode;
   metadata: Array<[string, string]>;
   display_options: SectionDisplayOptions | null;
 };

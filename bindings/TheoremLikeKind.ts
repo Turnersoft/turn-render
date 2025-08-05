@@ -6,4 +6,5 @@ export type TheoremLikeKind =
   | "Proposition"
   | "Corollary"
   | "Conjecture"
-  | "Principle";
+  | "Principle"
+  | "Axiom";

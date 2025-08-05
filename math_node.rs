@@ -2,6 +2,7 @@ use std::sync::Arc;
 
 use crate::subjects::math::formalism::location::Located;
 use crate::subjects::math::formalism::relations::MathRelation;
+use crate::turn_render::RichText;
 use serde::{Deserialize, Serialize};
 use serde_json::{Value, json};
 use ts_rs::TS;
@@ -198,7 +199,7 @@ pub enum MathNodeContent {
     // This is a fundamental mathematical structure used across all theories
     QuantifiedExpression {
         quantifier: QuantificationNode,
-        variables: Vec<MathNode>,         // The quantified variables
+        variables: Vec<Identifier>,       // The quantified variables
         domain: Option<Arc<MathNode>>,    // Optional domain (the "∈ S" part)
         predicate: Option<Arc<MathNode>>, // Optional predicate (the ": P(x)" part)
     },
@@ -611,9 +612,6 @@ pub trait ToTurnMath {
     fn to_turn_math(&self, master_id: String) -> MathNode;
 }
 
-impl<T: ToTurnMath> ToTurnMath for Located<T> {
-    fn to_turn_math(&self, _master_id: String) -> MathNode {
-        // The master_id is ignored, because Located has its own id.
-        self.data.to_turn_math(self.id.clone())
-    }
+pub trait ToRichText {
+    fn to_rich_text(&self) -> RichText;
 }

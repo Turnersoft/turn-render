@@ -1,7 +1,9 @@
 import React from 'react';
 import type { RichTextSegment } from '../../bindings/RichTextSegment';
+import type { RichText } from '../../bindings/RichText';
 import { renderMathNode } from '../math_node/math_node.tsx';
 import LinkRenderer from '../../../link/LinkRenderer';
+import styles from './rich_text.module.scss';
 
 
 interface RichTextRendererProps {
@@ -119,5 +121,12 @@ export const RichTextRenderer: React.FC<RichTextRendererProps> = ({
     </span>
   );
 };
+
+// ParagraphRenderer - handles RichText paragraphs with alignment
+export const ParagraphRenderer: React.FC<{ paragraph: RichText }> = ({ paragraph }) => (
+  <div className={`${styles.paragraph} ${paragraph.alignment ? styles[paragraph.alignment] : ''}`}>
+    <RichTextRenderer segments={paragraph.segments} />
+  </div>
+);
 
 export default RichTextRenderer; 
