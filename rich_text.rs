@@ -6,7 +6,7 @@ use ts_rs::TS;
 // --- Core Building Blocks for Rich Text ---
 
 /// Represents a segment of rich text, allowing for mixed content within paragraphs, list items, etc.
-#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, TS)]
+#[derive(Debug, Clone, Serialize, Deserialize, TS)]
 #[ts(export)]
 pub enum RichTextSegment {
     Text(String),
@@ -47,7 +47,7 @@ pub enum TextStyle {
 }
 
 /// Represents a paragraph of rich text. It doesn't have line breaks
-#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, TS)]
+#[derive(Debug, Clone, Serialize, Deserialize, TS)]
 #[ts(export)]
 pub struct RichText {
     pub segments: Vec<RichTextSegment>,
@@ -73,7 +73,7 @@ pub enum TextAlignment {
 }
 
 /// Defines various targets a link can point to, enabling rich interactivity.
-#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, TS)]
+#[derive(Debug, Clone, Serialize, Deserialize, TS)]
 #[ts(export)]
 pub enum LinkTarget {
     Url(String),            // External web URL

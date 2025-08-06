@@ -570,23 +570,49 @@
     align-items: center;
     margin-left: 20px;
     
-    .nodeType {
+    .tacticName {
       font-weight: bold;
       color: #2c3e50;
-      font-size: 1em;
+      font-size: 1.1em;
+      background: #f8f9fa;
+      padding: 6px 12px;
+      border-radius: 6px;
+      border-left: 3px solid #3498db;
     }
     
-    .nodeId {
-      font-family: monospace;
-      color: #7f8c8d;
-      font-size: 0.8em;
+    .interactiveTactic {
+      font-weight: bold;
+      color: #2c3e50;
+      font-size: 1.1em;
+      background: #e3f2fd;
+      padding: 6px 12px;
+      border-radius: 6px;
+      border-left: 3px solid #2196f3;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      
+      &:hover {
+        background: #bbdefb;
+        transform: translateY(-1px);
+        box-shadow: 0 2px 4px rgba(33, 150, 243, 0.3);
+      }
+      
+      &:active {
+        transform: translateY(0);
+        box-shadow: 0 1px 2px rgba(33, 150, 243, 0.3);
+      }
     }
     
     .nodeState {
-      padding: 2px 8px;
-      border-radius: 12px;
-      font-size: 0.8em;
-      font-weight: 500;
+      padding: 4px 8px;
+      border-radius: 50%;
+      font-size: 1.2em;
+      font-weight: bold;
+      width: 24px;
+      height: 24px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
       
       &.completedState {
         background: #27ae60;
@@ -595,26 +621,17 @@
     }
   }
   
-  .contextVariables {
+  .contextSummary {
     margin-left: 20px;
+    margin-top: 4px;
     
-    .label {
-      font-weight: bold;
-      color: #34495e;
-      margin-right: 8px;
-    }
-    
-    .variablesList {
-      display: inline-flex;
-      gap: 8px;
-      
-      .variableCount {
-        background: #ecf0f1;
-        padding: 2px 6px;
-        border-radius: 4px;
-        font-size: 0.9em;
-        color: #2c3e50;
-      }
+    .contextLabel {
+      font-size: 0.9em;
+      color: #6c757d;
+      background: #e8f5e8;
+      padding: 4px 8px;
+      border-radius: 4px;
+      border-left: 2px solid #4caf50;
     }
   }
   
@@ -639,63 +656,63 @@
     // Logical expression styles are handled in structured_math_node.module.scss
   }
   
-  .tacticInfo {
-    margin-left: 20px;
-    margin-top: 8px;
-    
-    .label {
-      font-weight: bold;
-      color: #34495e;
-      margin-right: 8px;
-    }
-    
-    .tacticDetails {
-      display: inline-block;
-      
-      .tacticName {
-        background: #fff3cd;
-        border: 1px solid #ffeaa7;
-        border-radius: 4px;
-        padding: 4px 8px;
-        font-family: monospace;
-        font-size: 0.9em;
-        color: #856404;
-        display: inline-block;
-        max-width: 100%;
-        overflow: hidden;
-        text-overflow: ellipsis;
-        white-space: nowrap;
-      }
-    }
-  }
+
   
   .nodeChildren {
     margin-left: 20px;
     margin-top: 8px;
     
-    .childNode {
+    .childrenLabel {
+      font-size: 0.9em;
+      color: #6c757d;
+      background: #e3f2fd;
       padding: 4px 8px;
-      background: #f8f9fa;
       border-radius: 4px;
-      margin: 2px 0;
-      
-      .childId {
-        font-family: monospace;
-        font-size: 0.9em;
-        color: #6c757d;
-      }
+      border-left: 2px solid #2196f3;
     }
   }
   
-  .nodeMetadata {
-    margin-left: 20px;
-    margin-top: 8px;
-    font-size: 0.8em;
-    color: #6c757d;
-    
-    .metadataItem {
-      margin-right: 12px;
-      display: inline-block;
-    }
+
+} 
+
+// Global styles for highlighted source elements (from previous proof node)
+:global(.highlighted-source) {
+  background: #ffebee !important;
+  border: 2px solid #f44336 !important;
+  border-radius: 4px !important;
+  box-shadow: 0 0 8px rgba(244, 67, 54, 0.4) !important;
+  animation: highlight-pulse-source 1s ease-in-out;
+}
+
+// Global styles for highlighted target elements (injected into context)
+:global(.highlighted-target) {
+  background: #e8f5e8 !important;
+  border: 2px solid #4caf50 !important;
+  border-radius: 4px !important;
+  box-shadow: 0 0 8px rgba(76, 175, 80, 0.4) !important;
+  animation: highlight-pulse-target 1s ease-in-out;
+}
+
+@keyframes highlight-pulse-source {
+  0% {
+    box-shadow: 0 0 0 rgba(244, 67, 54, 0);
+  }
+  50% {
+    box-shadow: 0 0 12px rgba(244, 67, 54, 0.6);
+  }
+  100% {
+    box-shadow: 0 0 8px rgba(244, 67, 54, 0.4);
+  }
+}
+
+@keyframes highlight-pulse-target {
+  0% {
+    box-shadow: 0 0 0 rgba(76, 175, 80, 0);
+  }
+  50% {
+    box-shadow: 0 0 12px rgba(76, 175, 80, 0.6);
+  }
+  100% {
+    box-shadow: 0 0 8px rgba(76, 175, 80, 0.4);
   }
 } 

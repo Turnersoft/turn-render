@@ -110,7 +110,7 @@ export type MathNodeContent =
   | {
     "QuantifiedExpression": {
       quantifier: QuantificationNode;
-      variables: Array<Identifier>;
+      variables: Array<MathNode>;
       domain: MathNode | null;
       predicate: MathNode | null;
     };

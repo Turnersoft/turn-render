@@ -199,7 +199,7 @@ pub enum MathNodeContent {
     // This is a fundamental mathematical structure used across all theories
     QuantifiedExpression {
         quantifier: QuantificationNode,
-        variables: Vec<Identifier>,       // The quantified variables
+        variables: Vec<MathNode>,         // The quantified variables
         domain: Option<Arc<MathNode>>,    // Optional domain (the "∈ S" part)
         predicate: Option<Arc<MathNode>>, // Optional predicate (the ": P(x)" part)
     },

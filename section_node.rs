@@ -104,7 +104,7 @@ pub trait ToSectionNode {
 
 /// Enum representing the different types of content blocks that can appear in a section.
 /// This is the primary building block for document content.
-#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, TS)]
+#[derive(Debug, Clone, Serialize, Deserialize, TS)]
 #[ts(export)]
 pub enum SectionContentNode {
     // New variant for subsections
@@ -159,7 +159,7 @@ pub enum SectionContentNode {
 
 /// Abstract container for representing any hierarchical, branching structure
 /// Can represent ProofForest, storyboards, multiverse narratives, etc.
-#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, TS)]
+#[derive(Debug, Clone, Serialize, Deserialize, TS)]
 #[ts(export)]
 pub struct BranchingContainer {
     pub container_id: String,
@@ -184,7 +184,7 @@ pub enum ContainerType {
 }
 
 /// Individual node in a branching container
-#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, TS)]
+#[derive(Debug, Clone, Serialize, Deserialize, TS)]
 #[ts(export)]
 pub struct BranchingNode {
     pub node_id: String,
@@ -363,7 +363,7 @@ pub enum LayoutAlignment {
 
 // --- NEW: Enhanced Layout Types ---
 
-#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, TS)]
+#[derive(Debug, Clone, Serialize, Deserialize, TS)]
 #[ts(export)]
 pub struct SideBySideLayout {
     pub left_panel: Panel,
@@ -382,7 +382,7 @@ pub struct SideBySideConfig {
     pub responsive_breakpoint: Option<String>, // Switch to vertical on small screens
 }
 
-#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, TS)]
+#[derive(Debug, Clone, Serialize, Deserialize, TS)]
 #[ts(export)]
 pub struct PanelLayout {
     pub panels: Vec<Panel>,
@@ -400,7 +400,7 @@ pub enum PanelLayoutType {
     FloatingPanels,
 }
 
-#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, TS)]
+#[derive(Debug, Clone, Serialize, Deserialize, TS)]
 #[ts(export)]
 pub struct Panel {
     pub id: String,
@@ -434,7 +434,7 @@ pub struct PanelControls {
     pub allow_reorder: Option<bool>,
 }
 
-#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, TS)]
+#[derive(Debug, Clone, Serialize, Deserialize, TS)]
 #[ts(export)]
 pub struct AnnotationOverlay {
     pub base_content: Vec<SectionContentNode>,
@@ -442,7 +442,7 @@ pub struct AnnotationOverlay {
     pub overlay_style: OverlayStyle,
 }
 
-#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, TS)]
+#[derive(Debug, Clone, Serialize, Deserialize, TS)]
 #[ts(export)]
 pub struct Annotation {
     pub id: String,
@@ -502,7 +502,7 @@ pub struct AnnotationStyling {
     pub opacity: Option<f64>,
 }
 
-#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, TS)]
+#[derive(Debug, Clone, Serialize, Deserialize, TS)]
 #[ts(export)]
 pub struct InteractiveControls {
     pub controls: Vec<Control>,
@@ -520,7 +520,7 @@ pub enum ControlLayout {
 }
 
 /// Interactive control element
-#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, TS)]
+#[derive(Debug, Clone, Serialize, Deserialize, TS)]
 #[ts(export)]
 pub struct Control {
     pub id: String,
@@ -560,7 +560,7 @@ pub struct AbstractionMetadata {
 
 // --- Layout and Utility Content Types ---
 
-#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, TS)]
+#[derive(Debug, Clone, Serialize, Deserialize, TS)]
 #[ts(export)]
 pub struct ListNode {
     pub items: Vec<ListItemNode>,
@@ -568,7 +568,7 @@ pub struct ListNode {
     pub start_index: Option<i32>, // For ordered lists
 }
 
-#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, TS)]
+#[derive(Debug, Clone, Serialize, Deserialize, TS)]
 #[ts(export)]
 pub struct ListItemNode {
     /// Content of a list item can be complex, allowing nested structures.
@@ -601,7 +601,7 @@ pub enum OrderedListStyle {
     RomanUpper, // I, II, III
 }
 
-#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, TS)]
+#[derive(Debug, Clone, Serialize, Deserialize, TS)]
 #[ts(export)]
 pub struct TableNode {
     pub caption: Option<RichText>,
@@ -612,14 +612,14 @@ pub struct TableNode {
     pub table_style_options: Option<TableStyleOptions>,
 }
 
-#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, TS)]
+#[derive(Debug, Clone, Serialize, Deserialize, TS)]
 #[ts(export)]
 pub struct TableRowNode {
     pub cells: Vec<TableCellNode>,
     // pub style: Option<RowStyle>,
 }
 
-#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, TS)]
+#[derive(Debug, Clone, Serialize, Deserialize, TS)]
 #[ts(export)]
 pub struct TableCellNode {
     pub content: Vec<SectionContentNode>,
@@ -653,7 +653,7 @@ pub struct TableStyleOptions {
     // Add other table-wide styles
 }
 
-#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, TS)]
+#[derive(Debug, Clone, Serialize, Deserialize, TS)]
 #[ts(export)]
 pub struct CodeBlockNode {
     pub code: String,
@@ -664,7 +664,7 @@ pub struct CodeBlockNode {
     pub is_executable: Option<bool>, // For interactive code blocks
 }
 
-#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, TS)]
+#[derive(Debug, Clone, Serialize, Deserialize, TS)]
 #[ts(export)]
 pub struct ImageNode {
     pub src: String, // URL or path
@@ -683,7 +683,7 @@ pub enum HorizontalAlignment {
     Right,
 }
 
-#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, TS)]
+#[derive(Debug, Clone, Serialize, Deserialize, TS)]
 #[ts(export)]
 pub struct InteractiveDiagramNode {
     pub diagram_type_id: String, // Identifier for the type of diagram (e.g., "commutative_diagram", "function_plot")
@@ -692,7 +692,7 @@ pub struct InteractiveDiagramNode {
     pub config_options: Option<String>, // UI options for the diagram
 }
 
-#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, TS)]
+#[derive(Debug, Clone, Serialize, Deserialize, TS)]
 #[ts(export)]
 pub struct CollapsibleBlockNode {
     pub summary: Vec<RichTextSegment>, // The visible part when collapsed (clickable)
@@ -700,7 +700,7 @@ pub struct CollapsibleBlockNode {
     pub initially_collapsed: Option<bool>,
 }
 
-#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, TS)]
+#[derive(Debug, Clone, Serialize, Deserialize, TS)]
 #[ts(export)]
 pub struct GridNode {
     pub items: Vec<GridItemNode>,
@@ -710,7 +710,7 @@ pub struct GridNode {
     pub column_gap: Option<String>,
 }
 
-#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, TS)]
+#[derive(Debug, Clone, Serialize, Deserialize, TS)]
 #[ts(export)]
 pub struct GridItemNode {
     pub content: SectionContentNode,
@@ -720,7 +720,7 @@ pub struct GridItemNode {
     pub row_end: Option<usize>, // Or row_span
 }
 
-#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, TS)]
+#[derive(Debug, Clone, Serialize, Deserialize, TS)]
 #[ts(export)]
 pub struct ColumnsNode {
     pub columns_content: Vec<Vec<SectionContentNode>>, // Each inner Vec is a column
@@ -747,7 +747,7 @@ pub enum AlertBoxStyle {
 
 /// A `SectionNode` represents a major, navigable part of a document (like a chapter or a named section).
 /// It can have a title and contains various content blocks. Sections can be nested.
-#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, TS)]
+#[derive(Debug, Clone, Serialize, Deserialize, TS)]
 #[ts(export)]
 pub struct Section {
     // Renamed from SectionNode to avoid confusion with enum SectionContentNode

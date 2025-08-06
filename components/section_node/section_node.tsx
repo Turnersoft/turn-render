@@ -2,6 +2,7 @@ import React from 'react';
 import { renderMathNode } from '../math_node/math_node.tsx';
 import { RichTextRenderer, ParagraphRenderer } from '../rich_text/rich_text.tsx';
 import { SecondOrderMathNodeRenderer, CollapsibleBlockRenderer } from '../structured_math_node/structured_math_node.tsx';
+import { HighlightableComponent } from '../structured_math_node/math_highlighting_wrapper.tsx';
 
 // Import proper binding types instead of duplicating interfaces
 import type { SectionContentNode } from '../../bindings/SectionContentNode';
@@ -73,7 +74,7 @@ const SectionRenderer: React.FC<{ section: Section }> = ({ section }) => {
 };
 
 // ContentNodeRenderer - handles all SectionContentNode variants
-const ContentNodeRenderer: React.FC<{ node: SectionContentNode }> = ({ node }) => {
+const ContentNodeRenderer: React.FC<{ node: SectionContentNode; context?: any }> = ({ node, context }) => {
   // Get the variant key from the union type
   const variantKey = Object.keys(node)[0] as keyof SectionContentNode;
   
@@ -88,7 +89,13 @@ const ContentNodeRenderer: React.FC<{ node: SectionContentNode }> = ({ node }) =
       return (
         <div className={styles.mathBlock}>
           <div className={styles.mathContent}>
-            {renderMathNode(Math)}
+            <HighlightableComponent 
+              id={Math.id} 
+              context={context}
+              className={styles.mathHighlightable}
+            >
+              {renderMathNode(Math)}
+            </HighlightableComponent>
           </div>
         </div>
       );
@@ -314,14 +321,14 @@ const SubSectionRenderer: React.FC<{ subSections: Array<Section> }> = ({ subSect
   <div className={styles.subsection}>
     {subSections.map((subSection, index) => (
       <div key={index} className={styles.subsection}>
-        {subSection.title && (
-          <h3 className={styles.subsectionTitle}>
-            <RichTextRenderer segments={subSection.title.segments} />
-          </h3>
-        )}
-        <div className={styles.subsectionContent}>
+    {subSection.title && (
+      <h3 className={styles.subsectionTitle}>
+        <RichTextRenderer segments={subSection.title.segments} />
+      </h3>
+    )}
+    <div className={styles.subsectionContent}>
           <ContentNodeRenderer node={subSection.content} />
-        </div>
+    </div>
       </div>
     ))}
   </div>
@@ -457,8 +464,8 @@ const BranchingContainerRenderer: React.FC<{ container: BranchingContainer }> = 
     <div className={styles.containerNodes}>
       {container.nodes.map((node, index) => (
         <BranchingNodeRenderer key={index} node={node} stepNumber={index + 1} />
-                  ))}
-                </div>
+            ))}
+          </div>
     
     {container.container_metadata.length > 0 && (
       <div className={styles.containerMetadata}>
@@ -467,16 +474,182 @@ const BranchingContainerRenderer: React.FC<{ container: BranchingContainer }> = 
             {key}: {value}
           </span>
                    ))}
-                 </div>
-               )}
           </div>
-        );
+        )}
+      </div>
+    );
+
+// Interactive Tactic Renderer
+const InteractiveTacticRenderer: React.FC<{ 
+  tacticName: string; 
+  transformationData: any; 
+  onHighlight: (sourceElements: string[], targetElements: string[]) => void;
+}> = ({ tacticName, transformationData, onHighlight }) => {
+  const handleTacticClick = () => {
+    if (transformationData) {
+      // Highlight both source elements (from previous node) and target elements (injected into context)
+      const sourceElements = transformationData.source_elements || [];
+      const targetElements = transformationData.target_elements || [];
+      onHighlight(sourceElements, targetElements);
+    }
+  };
+
+        return (
+    <span 
+      className={styles.interactiveTactic}
+      onClick={handleTacticClick}
+      title="Click to highlight source and target elements"
+    >
+      {tacticName}
+    </span>
+  );
+};
 
 // BranchingNodeRenderer - handles BranchingNode
 const BranchingNodeRenderer: React.FC<{ node: any; stepNumber?: number }> = ({ node, stepNumber }) => {
   const isProofGoal = node.node_type === 'ProofGoal';
   const isProofStep = node.node_type === 'ProofStep';
   const isCompleted = node.node_state === 'Completed';
+  
+  // Extract tactic name from metadata
+  const tacticName = node.node_metadata
+    .find(([key]: [string, string]) => key === 'tactic')?.[1] || '';
+  
+  // Extract transformation data from metadata
+  const transformationDataStr = node.node_metadata
+    .find(([key]: [string, string]) => key === 'transformation_flow')?.[1] || '';
+  
+  let transformationData = null;
+  try {
+    transformationData = transformationDataStr ? JSON.parse(transformationDataStr) : null;
+    if (transformationData) {
+      console.log('Transformation data for node:', node.node_id, transformationData);
+    }
+  } catch (e) {
+    console.warn('Failed to parse transformation data:', e);
+  }
+  
+  // Extract context size from metadata
+  const contextSize = node.node_metadata
+    .find(([key]: [string, string]) => key === 'context_size')?.[1] || '0';
+  
+  // Handle highlighting of source and target elements
+  const handleHighlight = (sourceElements: string[], targetElements: string[]) => {
+    // Remove previous highlights
+    document.querySelectorAll('.highlighted-source, .highlighted-target').forEach(el => {
+      el.classList.remove('highlighted-source', 'highlighted-target');
+    });
+    
+    console.log('Highlighting source elements:', sourceElements);
+    console.log('Highlighting target elements:', targetElements);
+    
+    // Debug: Log all data-id attributes in the current proof node
+    const currentNode = document.querySelector(`[data-node-id="${node.node_id}"]`);
+    if (currentNode) {
+      const allDataIds = currentNode.querySelectorAll('[data-id]');
+      console.log('Available data-id elements in current node:', 
+        Array.from(allDataIds).map(el => ({
+          id: el.getAttribute('data-id'),
+          text: el.textContent?.trim()
+        }))
+      );
+    }
+    
+    // Also check if we have transformation data with actual element IDs
+    if (transformationData && transformationData.source_expressions) {
+      console.log('Transformation data source expressions:', transformationData.source_expressions);
+      // Use actual element IDs from transformation data if available
+      const actualSourceIds = transformationData.source_expressions.map((expr: any) => expr.id);
+      console.log('Actual source element IDs from transformation data:', actualSourceIds);
+      
+      // Highlight using actual element IDs
+      actualSourceIds.forEach((elementId: string) => {
+        const elements = document.querySelectorAll(`[data-id="${elementId}"]`);
+        elements.forEach(el => {
+          el.classList.add('highlighted-source');
+          console.log(`Highlighted source element with actual ID ${elementId}:`, el);
+        });
+      });
+    }
+    
+    // Highlight source elements (from previous proof node) - red/orange
+    sourceElements.forEach(id => {
+      // Try multiple selectors to find source elements
+      const selectors = [
+        `[data-id*="${id}"]`,
+        `[data-id="${id}"]`,
+        `[data-id*="context-name-${id}"]`, // Handle context-name-prefix
+        `[data-id*="-context-name-${id}"]`, // Handle full context-name pattern
+        `[data-id*="-${id}"]`, // Handle any suffix pattern
+        `[id*="${id}"]`,
+        `[class*="${id}"]`
+      ];
+      
+      let found = false;
+      selectors.forEach(selector => {
+        try {
+          const elements = document.querySelectorAll(selector);
+          if (elements.length > 0) {
+            elements.forEach(el => {
+              el.classList.add('highlighted-source');
+              found = true;
+              console.log(`Found source element with selector ${selector}:`, el);
+            });
+          }
+        } catch (e) {
+          // Ignore invalid selectors
+        }
+      });
+      
+      // If not found with selectors, try text content search
+      if (!found) {
+        const allElements = document.querySelectorAll('*');
+        allElements.forEach(el => {
+          if (el.textContent && el.textContent.includes(id)) {
+            el.classList.add('highlighted-source');
+            found = true;
+            console.log(`Found source element by text content:`, el);
+          }
+        });
+      }
+      
+      if (!found) {
+        console.log(`No elements found for source ID: ${id}`);
+      }
+    });
+    
+    // Highlight target elements (injected into current context) - green
+    targetElements.forEach(id => {
+      // Try multiple selectors to find target elements
+      const selectors = [
+        `[data-id*="${id}"]`,
+        `[data-id="${id}"]`,
+        `[id*="${id}"]`,
+        `[class*="${id}"]`,
+        `span:contains("${id}")`,
+        `div:contains("${id}")`
+      ];
+      
+      let found = false;
+      selectors.forEach(selector => {
+        try {
+          const elements = document.querySelectorAll(selector);
+          if (elements.length > 0) {
+            elements.forEach(el => {
+              el.classList.add('highlighted-target');
+              found = true;
+            });
+          }
+        } catch (e) {
+          // Ignore invalid selectors
+        }
+      });
+      
+      if (!found) {
+        console.log(`No elements found for target ID: ${id}`);
+      }
+    });
+  };
   
         return (
     <div 
@@ -486,78 +659,52 @@ const BranchingNodeRenderer: React.FC<{ node: any; stepNumber?: number }> = ({ n
       {/* Step Number */}
       {stepNumber && (
         <div className={styles.stepNumber}>
-          {stepNumber}
-               </div>
-      )}
+          #{stepNumber}
+                 </div>
+               )}
       
       {/* Node Header */}
       <div className={styles.nodeHeader}>
-        <span className={styles.nodeType}>{node.node_type}</span>
-        <span className={`${styles.nodeState} ${isCompleted ? styles.completedState : ''}`}>
-          {node.node_state}
-        </span>
-            </div>
+        {transformationData ? (
+          <InteractiveTacticRenderer 
+            tacticName={tacticName}
+            transformationData={transformationData}
+            onHighlight={handleHighlight}
+          />
+        ) : (
+          <span className={styles.tacticName}>{tacticName}</span>
+        )}
+        {isCompleted && (
+          <span className={`${styles.nodeState} ${styles.completedState}`}>
+            ✓
+                    </span>
+        )}
+                </div>
       
-      {/* Context Variables */}
-      {isProofGoal && (
-        <div className={styles.contextVariables}>
-          <span className={styles.label}>Context:</span>
-          <div className={styles.variablesList}>
-            {node.node_metadata
-              .filter(([key]: [string, string]) => key === 'context_size')
-              .map(([_key, value]: [string, string], index: number) => (
-                <span key={index} className={styles.variableCount}>
-                  {value} variables
-                </span>
-                ))}
-              </div>
+      {/* Context Variables Summary */}
+      {isProofGoal && parseInt(contextSize) > 0 && (
+        <div className={styles.contextSummary}>
+          <span className={styles.contextLabel}>Context: {contextSize} variables</span>
             </div>
       )}
       
       {/* Main Content */}
       <div className={styles.nodeContent}>
         {node.content.map((contentNode: any, index: number) => (
-          <ContentNodeRenderer key={index} node={contentNode} />
-                ))}
-              </div>
-      
-      {/* Tactic Information */}
-      {isProofStep && (
-        <div className={styles.tacticInfo}>
-          <span className={styles.label}>Tactic:</span>
-                         <div className={styles.tacticDetails}>
-            {node.node_metadata
-              .filter(([key]: [string, string]) => key === 'tactic')
-              .map(([_key, value]: [string, string], index: number) => (
-                <span key={index} className={styles.tacticName}>
-                  {value}
-                     </span>
-                   ))}
-          </div>
-                 </div>
-               )}
+          <ContentNodeRenderer 
+            key={index} 
+            node={contentNode} 
+            context={{ proofNodeId: node.node_id, mode: 'within_proof_node' }}
+          />
+        ))}
+                </div>
       
       {/* Children (for nested proof structure) */}
       {node.children.length > 0 && (
         <div className={styles.nodeChildren}>
-          {node.children.map((childId: string, index: number) => (
-            <div key={index} className={styles.childNode} data-child-id={childId}>
-              <span className={styles.childId}>→ Next</span>
-                     </div>
-                   ))}
-                 </div>
-               )}
-      
-      {/* Metadata */}
-      {node.node_metadata.length > 0 && (
-        <div className={styles.nodeMetadata}>
-          {node.node_metadata.map(([key, value]: [string, string], index: number) => (
-            <span key={index} className={styles.metadataItem}>
-              {key}: {value}
-                    </span>
-                  ))}
-                </div>
-              )}
+          <span className={styles.childrenLabel}>→ {node.children.length} subgoals</span>
+            </div>
+      )}
           </div>
         );
 };

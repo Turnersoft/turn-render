@@ -1195,3 +1195,29 @@
     font-size: 0.6em;
   }
 }
+
+// Math highlighting styles
+.math-highlight {
+  background-color: #ffeb3b !important;
+  box-shadow: 0 0 8px rgba(255, 235, 59, 0.6) !important;
+  border-radius: 2px !important;
+  transition: all 0.2s ease-in-out !important;
+}
+
+.math-highlight:hover {
+  background-color: #fdd835 !important;
+  box-shadow: 0 0 12px rgba(255, 235, 59, 0.8) !important;
+}
+
+// Global highlighting styles (not scoped to CSS modules)
+:global(.math-highlight) {
+  background-color: #ffeb3b !important;
+  box-shadow: 0 0 8px rgba(255, 235, 59, 0.6) !important;
+  border-radius: 2px !important;
+  transition: all 0.2s ease-in-out !important;
+}
+
+:global(.math-highlight:hover) {
+  background-color: #fdd835 !important;
+  box-shadow: 0 0 12px rgba(255, 235, 59, 0.8) !important;
+}

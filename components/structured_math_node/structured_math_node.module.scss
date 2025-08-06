@@ -704,3 +704,231 @@
     }
   }
 }
+
+// Variable Declaration Styles
+.variableDeclaration {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 10px;
+  background: #f8f9fa;
+  border-radius: 6px;
+  border-left: 3px solid #6c757d;
+  margin: 2px 0;
+  
+  .variableName {
+    font-weight: bold;
+    color: #2c3e50;
+    font-size: 1em;
+  }
+  
+  .variableSeparator {
+    color: #6c757d;
+    font-weight: bold;
+    font-size: 1.1em;
+  }
+  
+  .variableType {
+    color: #495057;
+    font-style: italic;
+    font-size: 0.95em;
+  }
+}
+
+// Quantified Variable Declaration Group Styles
+.quantifiedGroup {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 14px;
+  border-radius: 8px;
+  margin: 6px 0;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  
+  &.universal {
+    background: linear-gradient(135deg, #e3f2fd 0%, #f3e5f5 100%);
+    border-left: 4px solid #2196f3;
+    
+    .quantifier {
+      color: #1976d2;
+      font-weight: bold;
+      font-size: 1.3em;
+      background: rgba(33, 150, 243, 0.1);
+      padding: 4px 8px;
+      border-radius: 4px;
+      min-width: 30px;
+      text-align: center;
+    }
+    
+    .universalVariables {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+  }
+  
+  &.existential {
+    background: linear-gradient(135deg, #fff3e0 0%, #fce4ec 100%);
+    border-left: 4px solid #ff9800;
+    
+    .quantifier {
+      color: #f57c00;
+      font-weight: bold;
+      font-size: 1.3em;
+      background: rgba(255, 152, 0, 0.1);
+      padding: 4px 8px;
+      border-radius: 4px;
+      min-width: 30px;
+      text-align: center;
+    }
+  }
+  
+  &.uniqueExistential {
+    background: linear-gradient(135deg, #e8f5e8 0%, #f3e5f5 100%);
+    border-left: 4px solid #4caf50;
+    
+    .quantifier {
+      color: #388e3c;
+      font-weight: bold;
+      font-size: 1.3em;
+      background: rgba(76, 175, 80, 0.1);
+      padding: 4px 8px;
+      border-radius: 4px;
+      min-width: 30px;
+      text-align: center;
+    }
+  }
+}
+
+.unknownQuantifiedGroup {
+  border: 2px solid #f39c12;
+  border-radius: 6px;
+  padding: 12px;
+  background: #fff3cd;
+  margin: 8px 0;
+  
+  .unknownType {
+    color: #856404;
+    font-style: italic;
+  }
+}
+
+// Interactive Proof Styles
+.interactiveProof {
+  border: 2px solid #9c27b0;
+  border-radius: 8px;
+  padding: 16px;
+  background: linear-gradient(135deg, #f3e5f5 0%, #e8f5e8 100%);
+  margin: 12px 0;
+  
+  .proofHeader {
+    margin-bottom: 16px;
+    padding-bottom: 8px;
+    border-bottom: 1px solid #e1bee7;
+    
+    .proofTitle {
+      margin: 0;
+      color: #4a148c;
+      font-size: 1.3em;
+      font-weight: bold;
+    }
+  }
+  
+  .proofForest {
+    margin: 12px 0;
+    
+    .rootNodes {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+      
+      .proofNode {
+        border: 1px solid #ce93d8;
+        border-radius: 8px;
+        padding: 16px;
+        background: white;
+        box-shadow: 0 2px 4px rgba(156, 39, 176, 0.1);
+        
+        .nodeHeader {
+          display: flex;
+          align-items: center;
+          gap: 12px;
+          margin-bottom: 12px;
+          padding-bottom: 8px;
+          border-bottom: 2px solid #f3e5f5;
+          
+          .stepNumber {
+            color: #9c27b0;
+            font-weight: bold;
+            font-size: 1.1em;
+            background: #f3e5f5;
+            padding: 4px 8px;
+            border-radius: 4px;
+            min-width: 40px;
+            text-align: center;
+          }
+          
+          .tacticName {
+            font-weight: bold;
+            color: #2c3e50;
+            font-size: 1.1em;
+          }
+        }
+        
+        .contextSection {
+          margin: 12px 0;
+          
+          .contextVariables {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            
+            .contextVariable {
+              background: #e8f5e8;
+              padding: 6px 12px;
+              border-radius: 6px;
+              border-left: 3px solid #4caf50;
+              font-size: 0.9em;
+              color: #2e7d32;
+            }
+          }
+        }
+        
+        .goalSection {
+          margin: 12px 0;
+          padding: 12px;
+          background: #fff3e0;
+          border-radius: 6px;
+          border-left: 3px solid #ff9800;
+          
+          .goalLabel {
+            font-weight: bold;
+            color: #e65100;
+            display: block;
+            margin-bottom: 4px;
+            font-size: 0.9em;
+          }
+          
+          .goalStatement {
+            color: #f57c00;
+            font-size: 1em;
+          }
+        }
+        
+        .childrenSection {
+          margin-top: 12px;
+          padding: 8px 12px;
+          background: #e3f2fd;
+          border-radius: 6px;
+          border-left: 3px solid #2196f3;
+          
+          .childrenLabel {
+            color: #1976d2;
+            font-size: 0.9em;
+            font-weight: bold;
+          }
+        }
+      }
+    }
+  }
+}

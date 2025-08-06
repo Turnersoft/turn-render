@@ -9,7 +9,7 @@ pub trait ToMathDocument {
 }
 
 /// The main container for mathematical content with a unique ID and content type
-#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, TS)]
+#[derive(Debug, Clone, Serialize, Deserialize, TS)]
 #[ts(export)]
 pub struct MathDocument {
     pub id: String,
@@ -17,7 +17,7 @@ pub struct MathDocument {
 }
 
 /// Each variant represents a distinct document type with its own specialized structure and behavior
-#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, TS)]
+#[derive(Debug, Clone, Serialize, Deserialize, TS)]
 #[ts(export)]
 pub enum MathDocumentType {
     // --- Primary Knowledge Documents ---
@@ -54,7 +54,7 @@ pub enum MathDocumentType {
 
 // --- Primary Knowledge Document Structs ---
 
-#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, TS)]
+#[derive(Debug, Clone, Serialize, Deserialize, TS)]
 #[ts(export)]
 pub struct WikiPageContent {
     pub title: String,
@@ -66,7 +66,7 @@ pub struct WikiPageContent {
     pub relationships: DocumentRelationships,
 }
 
-#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, TS)]
+#[derive(Debug, Clone, Serialize, Deserialize, TS)]
 #[ts(export)]
 pub struct TextbookContent {
     pub title: String,
@@ -79,7 +79,7 @@ pub struct TextbookContent {
     pub relationships: DocumentRelationships,
 }
 
-#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, TS)]
+#[derive(Debug, Clone, Serialize, Deserialize, TS)]
 #[ts(export)]
 pub struct ScientificPaperContent {
     pub title: String,
@@ -92,7 +92,7 @@ pub struct ScientificPaperContent {
     pub relationships: DocumentRelationships,
 }
 
-#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, TS)]
+#[derive(Debug, Clone, Serialize, Deserialize, TS)]
 #[ts(export)]
 pub struct PersonalNotesContent {
     pub title: String,
@@ -103,7 +103,7 @@ pub struct PersonalNotesContent {
     pub relationships: DocumentRelationships,
 }
 
-#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, TS)]
+#[derive(Debug, Clone, Serialize, Deserialize, TS)]
 #[ts(export)]
 pub struct MathematicianNotesContent {
     pub title: String,
@@ -114,7 +114,7 @@ pub struct MathematicianNotesContent {
     pub relationships: DocumentRelationships,
 }
 
-#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, TS)]
+#[derive(Debug, Clone, Serialize, Deserialize, TS)]
 #[ts(export)]
 pub struct StudyNotesContent {
     pub title: String,
@@ -128,7 +128,7 @@ pub struct StudyNotesContent {
 
 // --- Derived/Simplified Content Structs ---
 
-#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, TS)]
+#[derive(Debug, Clone, Serialize, Deserialize, TS)]
 #[ts(export)]
 pub struct TooltipSummaryContent {
     pub summarization_level: SummarizationLevel,
@@ -140,7 +140,7 @@ pub struct TooltipSummaryContent {
     pub presentation_config: PresentationConfig,
 }
 
-#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, TS)]
+#[derive(Debug, Clone, Serialize, Deserialize, TS)]
 #[ts(export)]
 pub struct BlogPostContent {
     pub title: String,
@@ -154,7 +154,7 @@ pub struct BlogPostContent {
     pub academic_metadata: Option<AcademicMetadata>,
 }
 
-#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, TS)]
+#[derive(Debug, Clone, Serialize, Deserialize, TS)]
 #[ts(export)]
 pub struct AbstractSummaryContent {
     pub abstraction_level: u8, // L1-L4
@@ -165,7 +165,7 @@ pub struct AbstractSummaryContent {
     pub presentation_config: PresentationConfig,
 }
 
-#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, TS)]
+#[derive(Debug, Clone, Serialize, Deserialize, TS)]
 #[ts(export)]
 pub struct ConceptMapContent {
     pub central_concept: String,
@@ -178,7 +178,7 @@ pub struct ConceptMapContent {
 
 // --- Interactive/Dynamic Content Structs ---
 
-#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, TS)]
+#[derive(Debug, Clone, Serialize, Deserialize, TS)]
 #[ts(export)]
 pub struct AnimatedPresentationContent {
     pub title: String,
@@ -191,7 +191,7 @@ pub struct AnimatedPresentationContent {
     pub interaction_points: Vec<InteractionPoint>,
 }
 
-#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, TS)]
+#[derive(Debug, Clone, Serialize, Deserialize, TS)]
 #[ts(export)]
 pub struct InteractivePlaygroundContent {
     pub title: String,
@@ -204,7 +204,7 @@ pub struct InteractivePlaygroundContent {
     pub animation_timeline: Option<AnimationTimeline>,
 }
 
-#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, TS)]
+#[derive(Debug, Clone, Serialize, Deserialize, TS)]
 #[ts(export)]
 pub struct TypeMappingDisplayContent {
     pub title: String,
@@ -217,7 +217,7 @@ pub struct TypeMappingDisplayContent {
     pub control_bindings: Vec<ControlBinding>,
 }
 
-#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, TS)]
+#[derive(Debug, Clone, Serialize, Deserialize, TS)]
 #[ts(export)]
 pub struct ResourcePanelContent {
     pub title: String,
@@ -231,7 +231,7 @@ pub struct ResourcePanelContent {
 
 // --- Relational/Comparison Content Structs ---
 
-#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, TS)]
+#[derive(Debug, Clone, Serialize, Deserialize, TS)]
 #[ts(export)]
 pub struct ComparisonPageContent {
     pub title: String,
@@ -243,7 +243,7 @@ pub struct ComparisonPageContent {
     pub comparison_structure: ComparisonStructure,
 }
 
-#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, TS)]
+#[derive(Debug, Clone, Serialize, Deserialize, TS)]
 #[ts(export)]
 pub struct TransformationMappingContent {
     pub title: String,
@@ -270,7 +270,7 @@ pub struct ConceptAlignmentContent {
 
 // --- Embedded/Preview Content Structs ---
 
-#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, TS)]
+#[derive(Debug, Clone, Serialize, Deserialize, TS)]
 #[ts(export)]
 pub struct StaticPreviewContent {
     pub source_document_id: String,
@@ -335,7 +335,7 @@ pub struct ContentMetadata {
     pub content_hash: Option<String>,
 }
 
-#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, TS)]
+#[derive(Debug, Clone, Serialize, Deserialize, TS)]
 #[ts(export)]
 pub struct DocumentStructure {
     pub abstract_content: Option<Section>,
@@ -490,7 +490,7 @@ pub enum ConceptRelationType {
 
 // --- Simplified Content Structure for Derived/Embedded Content ---
 
-#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, TS)]
+#[derive(Debug, Clone, Serialize, Deserialize, TS)]
 #[ts(export)]
 pub struct SimplifiedContentStructure {
     pub key_points: Vec<KeyPoint>,
@@ -499,7 +499,7 @@ pub struct SimplifiedContentStructure {
     pub concept_relationships: Vec<ConceptRelationship>,
 }
 
-#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, TS)]
+#[derive(Debug, Clone, Serialize, Deserialize, TS)]
 #[ts(export)]
 pub struct KeyPoint {
     pub id: String,
@@ -517,7 +517,7 @@ pub enum ImportanceLevel {
     Supplementary,
 }
 
-#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, TS)]
+#[derive(Debug, Clone, Serialize, Deserialize, TS)]
 #[ts(export)]
 pub struct EssentialDefinition {
     pub term: String,
@@ -844,7 +844,7 @@ pub struct RelationshipMetadata {
     pub properties: std::collections::HashMap<String, String>,
 }
 
-#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, TS)]
+#[derive(Debug, Clone, Serialize, Deserialize, TS)]
 #[ts(export)]
 pub struct ComparisonStructure {
     pub comparison_type: String,
@@ -861,7 +861,7 @@ pub enum ComparisonLayout {
     Sequential,
 }
 
-#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, TS)]
+#[derive(Debug, Clone, Serialize, Deserialize, TS)]
 #[ts(export)]
 pub struct ComparisonSection {
     pub section_id: String,
@@ -980,7 +980,7 @@ pub struct SandboxPermission {
     pub restrictions: Option<Vec<String>>,
 }
 
-#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, TS)]
+#[derive(Debug, Clone, Serialize, Deserialize, TS)]
 #[ts(export)]
 pub struct CoreExample {
     pub example_id: String,
@@ -1117,7 +1117,7 @@ pub enum DependencyType {
     Contradicts,
 }
 
-#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, TS)]
+#[derive(Debug, Clone, Serialize, Deserialize, TS)]
 #[ts(export)]
 pub struct TransformationStep {
     pub step_number: usize,

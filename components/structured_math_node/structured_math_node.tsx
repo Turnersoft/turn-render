@@ -13,6 +13,9 @@ import type { CollapsibleBlockNode } from '../../bindings/CollapsibleBlockNode';
 import type { Judgement } from '../../bindings/Judgement';
 import type { LogicalNode } from '../../bindings/LogicalNode';
 import type { Solution } from '../../bindings/Solution';
+import type { VariableDeclaration } from '../../bindings/VariableDeclaration';
+import type { QuantifiedVariableDeclarationGroup } from '../../bindings/QuantifiedVariableDeclarationGroup';
+import type { InteractiveProofDisplay } from '../../bindings/InteractiveProofDisplay';
 
 import styles from './structured_math_node.module.scss';
 
@@ -47,6 +50,21 @@ export const SecondOrderMathNodeRenderer: React.FC<SecondOrderMathNodeProps> = (
     case 'Solution': {
       const { Solution } = secondOrderMath as Extract<SecondOrderMathNode, { Solution: Solution }>;
       return <SolutionRenderer solution={Solution} className={className} />;
+    }
+    
+    case 'VariableDeclaration': {
+      const { VariableDeclaration } = secondOrderMath as Extract<SecondOrderMathNode, { VariableDeclaration: VariableDeclaration }>;
+      return <VariableDeclarationRenderer variableDeclaration={VariableDeclaration} className={className} />;
+    }
+    
+    case 'QuantifiedVariableDeclarationGroup': {
+      const { QuantifiedVariableDeclarationGroup } = secondOrderMath as Extract<SecondOrderMathNode, { QuantifiedVariableDeclarationGroup: QuantifiedVariableDeclarationGroup }>;
+      return <QuantifiedVariableDeclarationGroupRenderer group={QuantifiedVariableDeclarationGroup} className={className} />;
+    }
+    
+    case 'InteractiveProof': {
+      const { InteractiveProof } = secondOrderMath as Extract<SecondOrderMathNode, { InteractiveProof: InteractiveProofDisplay }>;
+      return <InteractiveProofRenderer interactiveProof={InteractiveProof} className={className} />;
     }
     
     default:
@@ -156,7 +174,7 @@ const JudgementRenderer: React.FC<JudgementRendererProps> = ({ judgement, classN
               <div className={styles.universalGroup}>
                 {group.ForAll.map((variable, varIndex) => (
                   <div key={varIndex} className={styles.universalVariable}>
-                    ∀ {renderMathNode(variable.name)} : {renderMathNode(variable.type_info)}
+                    ∀ {renderMathNode(variable.name)} : <RichTextRenderer segments={variable.type_info.segments} />
                   </div>
                 ))}
               </div>
@@ -164,14 +182,14 @@ const JudgementRenderer: React.FC<JudgementRendererProps> = ({ judgement, classN
               // Existential quantifiers: single horizontal
               <div className={styles.existentialGroup}>
                 <span className={styles.existentialVariable}>
-                  ∃ {renderMathNode(group.Exists.name)} : {renderMathNode(group.Exists.type_info)}
+                  ∃ {renderMathNode(group.Exists.name)} : <RichTextRenderer segments={group.Exists.type_info.segments} />
                 </span>
               </div>
             ) : 'UniqueExists' in group ? (
               // Unique existential quantifiers: single horizontal
               <div className={styles.existentialGroup}>
                 <span className={styles.existentialVariable}>
-                  ∃! {renderMathNode(group.UniqueExists.name)} : {renderMathNode(group.UniqueExists.type_info)}
+                  ∃! {renderMathNode(group.UniqueExists.name)} : <RichTextRenderer segments={group.UniqueExists.type_info.segments} />
                 </span>
               </div>
             ) : null}
@@ -251,5 +269,144 @@ export const CollapsibleBlockRenderer: React.FC<CollapsibleBlockRendererProps> =
         ))}
       </div>
     </details>
+  </div>
+);
+
+// VariableDeclarationRenderer - handles VariableDeclaration
+interface VariableDeclarationRendererProps {
+  variableDeclaration: VariableDeclaration;
+  className?: string;
+}
+
+const VariableDeclarationRenderer: React.FC<VariableDeclarationRendererProps> = ({ 
+  variableDeclaration, 
+  className 
+}) => (
+  <div className={`${styles.variableDeclaration} ${className}`}>
+    <span className={styles.variableName}>
+      {renderMathNode(variableDeclaration.name)}
+    </span>
+    <span className={styles.variableSeparator}>:</span>
+    <span className={styles.variableType}>
+      <RichTextRenderer segments={variableDeclaration.type_info.segments} />
+    </span>
+  </div>
+);
+
+// QuantifiedVariableDeclarationGroupRenderer - handles QuantifiedVariableDeclarationGroup
+interface QuantifiedVariableDeclarationGroupRendererProps {
+  group: QuantifiedVariableDeclarationGroup;
+  className?: string;
+}
+
+const QuantifiedVariableDeclarationGroupRenderer: React.FC<QuantifiedVariableDeclarationGroupRendererProps> = ({ 
+  group, 
+  className 
+}) => {
+  const variantKey = Object.keys(group)[0] as keyof QuantifiedVariableDeclarationGroup;
+  
+  switch (variantKey) {
+    case 'Exists': {
+      const { Exists } = group as Extract<QuantifiedVariableDeclarationGroup, { Exists: VariableDeclaration }>;
+      return (
+        <div className={`${styles.quantifiedGroup} ${styles.existential} ${className}`}>
+          <span className={styles.quantifier}>∃</span>
+          <VariableDeclarationRenderer variableDeclaration={Exists} />
+        </div>
+      );
+    }
+    
+    case 'UniqueExists': {
+      const { UniqueExists } = group as Extract<QuantifiedVariableDeclarationGroup, { UniqueExists: VariableDeclaration }>;
+      return (
+        <div className={`${styles.quantifiedGroup} ${styles.uniqueExistential} ${className}`}>
+          <span className={styles.quantifier}>∃!</span>
+          <VariableDeclarationRenderer variableDeclaration={UniqueExists} />
+        </div>
+      );
+    }
+    
+    case 'ForAll': {
+      const { ForAll } = group as Extract<QuantifiedVariableDeclarationGroup, { ForAll: VariableDeclaration[] }>;
+      return (
+        <div className={`${styles.quantifiedGroup} ${styles.universal} ${className}`}>
+          <span className={styles.quantifier}>∀</span>
+          <div className={styles.universalVariables}>
+            {ForAll.map((variable, index) => (
+              <VariableDeclarationRenderer 
+                key={index} 
+                variableDeclaration={variable} 
+              />
+            ))}
+          </div>
+        </div>
+      );
+    }
+    
+    default:
+      return (
+        <div className={`${styles.unknownQuantifiedGroup} ${className}`}>
+          <span className={styles.unknownType}>
+            Unknown quantified group type: {variantKey}
+          </span>
+        </div>
+      );
+  }
+};
+
+// InteractiveProofRenderer - handles InteractiveProofDisplay
+interface InteractiveProofRendererProps {
+  interactiveProof: InteractiveProofDisplay;
+  className?: string;
+}
+
+const InteractiveProofRenderer: React.FC<InteractiveProofRendererProps> = ({ 
+  interactiveProof, 
+  className 
+}) => (
+  <div className={`${styles.interactiveProof} ${className}`}>
+    <div className={styles.proofHeader}>
+      <h3 className={styles.proofTitle}>{interactiveProof.title}</h3>
+    </div>
+    
+    <div className={styles.proofForest}>
+      <div className={styles.rootNodes}>
+        {interactiveProof.proof_forest.root_nodes.map((node, index) => (
+          <div key={index} className={styles.proofNode}>
+            <div className={styles.nodeHeader}>
+              <span className={styles.stepNumber}>#{node.step_number}</span>
+              <span className={styles.tacticName}>{node.tactic_display.tactic_name}</span>
+            </div>
+            
+            {node.goal_display.context_variables.length > 0 && (
+              <div className={styles.contextSection}>
+                <div className={styles.contextVariables}>
+                  {node.goal_display.context_variables.map((ctxVar, ctxIndex) => (
+                    <span key={ctxIndex} className={styles.contextVariable}>
+                      {renderMathNode(ctxVar.variable_name)} : <RichTextRenderer segments={ctxVar.variable_type.segments} />
+                    </span>
+                  ))}
+                </div>
+              </div>
+            )}
+            
+            {node.goal_display.goal_statement && (
+              <div className={styles.goalSection}>
+                <span className={styles.goalLabel}>Goal:</span>
+                <span className={styles.goalStatement}>
+                  {renderMathNode(node.goal_display.goal_statement)}
+                </span>
+              </div>
+            )}
+            
+            {node.children.length > 0 && (
+              <div className={styles.childrenSection}>
+                <span className={styles.childrenLabel}>→ {node.children.length} subgoals</span>
+              </div>
+            )}
+          </div>
+        ))}
+      </div>
+    </div>
   </div>
 );
