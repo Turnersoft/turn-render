@@ -2,7 +2,21 @@ use std::sync::Arc;
 
 use crate::subjects::math::formalism::location::Located;
 use crate::subjects::math::formalism::relations::MathRelation;
-use crate::turn_render::RichText;
+use crate::turn_render::{RichText, TextStyle};
+
+/// Simple text segments for mathematical expressions
+#[derive(Debug, Clone, Eq, PartialEq, Hash, Serialize, Deserialize, TS)]
+#[ts(export)]
+pub enum MathTextSegment {
+    Text(String),   // Plain text
+    Math(MathNode), // Mathematical content
+    StyledText {
+        // Styled text (bold, italic, etc.)
+        text: String,
+        styles: Vec<TextStyle>,
+    },
+}
+
 use serde::{Deserialize, Serialize};
 use serde_json::{Value, json};
 use ts_rs::TS;
@@ -80,7 +94,13 @@ pub enum MathNodeContent {
         rows: Vec<Vec<MathNode>>,
     },
 
-    // multinary operations/funcions
+    // Generalized binary operations (associative)
+    BinaryOperation {
+        operation_type: BinaryOperationType,
+        terms: Vec<(BinaryOperator, MathNode)>,
+    },
+
+    // Legacy variants (deprecated - use BinaryOperation instead)
     Multiplications {
         terms: Vec<(RefinedMulOrDivOperation, MathNode)>,
     },
@@ -93,6 +113,7 @@ pub enum MathNodeContent {
         style: DivisionStyle,
     },
 
+    // Specialized operations that need unique notation
     SumNotation {
         summand: Arc<MathNode>,
         variable: Option<MathNode>,
@@ -203,6 +224,15 @@ pub enum MathNodeContent {
         domain: Option<Arc<MathNode>>,    // Optional domain (the "∈ S" part)
         predicate: Option<Arc<MathNode>>, // Optional predicate (the ": P(x)" part)
     },
+
+    // Group Theory Operations now use BinaryOperation variant with appropriate BinaryOperationType
+    // Examples:
+    // - GroupQuotient: BinaryOperation { operation_type: GroupQuotient, terms: [(Slash, group), (None, normal_subgroup)] }
+    // - GroupDirectProduct: BinaryOperation { operation_type: GroupDirectProduct, terms: [(DirectProduct, group1), (DirectProduct, group2)] }
+    // - GroupSemidirectProduct: BinaryOperation { operation_type: GroupSemidirectProduct, terms: [(SemidirectProduct, left_group), (None, right_group)] }
+
+    // Rich text content that can contain both text and math
+    RichTextContent(Vec<MathTextSegment>),
 
     // logical connectives
     And(Vec<MathNode>),
@@ -362,16 +392,49 @@ pub enum QuantificationNode {
 
 #[derive(Debug, Clone, Eq, PartialEq, Hash, Serialize, Deserialize, TS)]
 #[ts(export)]
+pub enum BinaryOperationType {
+    // Standard arithmetic operations
+    Addition,
+    Multiplication,
+    Division,
+
+    // Group theory operations
+    GroupDirectProduct,
+    GroupSemidirectProduct,
+    GroupQuotient,
+
+    // Ring theory operations
+    RingDirectSum,
+    RingTensorProduct,
+
+    // Set theory operations
+    SetUnion,
+    SetIntersection,
+    SetCartesianProduct,
+
+    // Logic operations
+    LogicalAnd,
+    LogicalOr,
+    LogicalXor,
+
+    // Custom operation
+    Custom(String),
+}
+
+#[derive(Debug, Clone, Eq, PartialEq, Hash, Serialize, Deserialize, TS)]
+#[ts(export)]
 pub enum RefinedMulOrDivOperation {
     Multiplication(MulSymbol),
     Division(DivSymbol),
     None,
 }
 
-#[derive(Debug, Clone, Eq, PartialEq, Hash, Serialize, Deserialize)]
-pub enum AdditionOperator {
-    Plus,  // +
-    Minus, // -
+#[derive(Debug, Clone, Eq, PartialEq, Hash, Serialize, Deserialize, TS)]
+#[ts(export)]
+pub enum RefinedAddOrSubOperator {
+    Addition,
+    Subtraction,
+    None,
 }
 
 #[derive(Debug, Clone, Eq, PartialEq, Hash, Serialize, Deserialize, TS)]
@@ -384,10 +447,46 @@ pub enum DivisionStyle {
 
 #[derive(Debug, Clone, Eq, PartialEq, Hash, Serialize, Deserialize, TS)]
 #[ts(export)]
-pub enum RefinedAddOrSubOperator {
-    Addition,
-    Subtraction,
-    None,
+pub enum MulSymbol {
+    Times,       // \times for numbers
+    Dot,         // \, for symbols
+    LittleSpace, // \, for bracketed expressions
+}
+
+#[derive(Debug, Clone, Eq, PartialEq, Hash, Serialize, Deserialize, TS)]
+#[ts(export)]
+pub enum DivSymbol {
+    Slash,  // /
+    Divide, // ÷
+}
+
+#[derive(Debug, Clone, Eq, PartialEq, Hash, Serialize, Deserialize, TS)]
+#[ts(export)]
+pub enum BinaryOperator {
+    // Arithmetic operators
+    Plus,   // +
+    Minus,  // -
+    Times,  // ×
+    Dot,    // ·
+    Slash,  // /
+    Divide, // ÷
+
+    // Group theory operators
+    SemidirectProduct, // ⋊
+    DirectProduct,     // × (context-dependent)
+
+    // Set theory operators
+    Union,            // ∪
+    Intersection,     // ∩
+    CartesianProduct, // × (context-dependent)
+
+    // Logic operators
+    And, // ∧
+    Or,  // ∨
+    Xor, // ⊕
+
+    // Custom operator
+    Custom(String),
 }
 
 #[derive(Debug, Clone, Eq, PartialEq, Hash, Serialize, Deserialize, TS)]
@@ -410,20 +509,6 @@ pub enum BracketSize {
     Normal,
     Auto,      // \left \right
     Sized(u8), // \big, \Big, \bigg, \Bigg
-}
-
-#[derive(Debug, Clone, Eq, PartialEq, Hash, Serialize, Deserialize, TS)]
-#[ts(export)]
-pub enum MulSymbol {
-    Times,       // \times for numbers
-    Dot,         // \, for symbols
-    LittleSpace, // \, for bracketed expressions
-}
-#[derive(Debug, Clone, Eq, PartialEq, Hash, Serialize, Deserialize, TS)]
-#[ts(export)]
-pub enum DivSymbol {
-    Slash,  // /
-    Divide, // ÷
 }
 
 #[derive(Debug, Clone, Eq, PartialEq, Hash, Serialize, Deserialize, TS)]

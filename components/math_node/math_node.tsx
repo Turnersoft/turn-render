@@ -10,11 +10,11 @@ import { SpecialMiddleScriptContentTypeNode } from '../../bindings/SpecialMiddle
 import { UnaryRelationOperatorNode } from '../../bindings/UnaryRelationOperatorNode.ts';
 import { RelationOperatorNode } from '../../bindings/RelationOperatorNode.ts';
 import { ScriptNode } from '../../bindings/ScriptNode.ts';
+import { convertTextStylesToCSS } from '../rich_text/textStyleUtils';
 
 const hasMarginList = [
-    '÷',
-    '/',
-    '≌',
+    // '÷',
+    // '/',
     '≡',
     '⊥',
     '≤',
@@ -28,6 +28,10 @@ const hasMarginList = [
     '=',
     '×',
     '·',
+    '≅',
+    '∼',
+    '≈',
+    '≃',
     // Logical connectives
     '∧',
     '∨',
@@ -326,7 +330,6 @@ export const Mo = ({
 
     const hasMargin = () => {
         if (!content || !content.trim()) return false;
-        const contentText = moRef.current?.parentElement?.textContent || '';
         return hasMarginList.includes(content.trim()) && !isUnit;
     };
 
@@ -1267,6 +1270,50 @@ const UnderOver = ({
     return null;
 };
 
+// Helper function to render binary operators based on operator type
+const renderBinaryOperator = (operator: any): React.ReactNode => {
+    switch (operator) {
+        case 'Plus':
+            return <Component type="Mo">+</Component>;
+        case 'Minus':
+            return <Component type="Mo">−</Component>;
+        case 'Times':
+            return <Component type="Mo">×</Component>;
+        case 'Dot':
+            return <Component type="Mo">·</Component>;
+        case 'Slash':
+            return <Component type="Mo">/</Component>;
+        case 'Divide':
+            return <Component type="Mo">÷</Component>;
+        case 'SemidirectProduct':
+            return <Component type="Mo">⋊</Component>;
+        case 'DirectProduct':
+            // Use × for direct product, but could be styled differently
+            return <Component type="Mo">×</Component>;
+        case 'Union':
+            return <Component type="Mo">∪</Component>;
+        case 'Intersection':
+            return <Component type="Mo">∩</Component>;
+        case 'CartesianProduct':
+            return <Component type="Mo">×</Component>;
+        case 'And':
+            return <Component type="Mo">∧</Component>;
+        case 'Or':
+            return <Component type="Mo">∨</Component>;
+        case 'Xor':
+            return <Component type="Mo">⊕</Component>;
+        case 'Custom':
+            // For custom operators, we'd need to handle the string value
+            return <Component type="Mo">{operator.Custom || '?'}</Component>;
+        default:
+            // Handle case where operator might be a string or other type
+            if (typeof operator === 'string') {
+                return <Component type="Mo">{operator}</Component>;
+            }
+            return <Component type="Mo">?</Component>;
+    }
+};
+
 export const renderMathNode = (node: MathNode): React.ReactNode => {
     if (node.content === 'Empty') return null;
     const key = Object.keys(node.content)[0];
@@ -2094,6 +2141,209 @@ export const renderMathNode = (node: MathNode): React.ReactNode => {
                     {renderMathNode(FunctionDefinition.custom_function)}
                     {FunctionDefinition.definition && <Component type="Mo">=</Component>}
                     {FunctionDefinition.definition && renderMathNode(FunctionDefinition.definition)}
+                </Component>
+            );
+
+        // Group Theory Operations now use BinaryOperation variant with appropriate BinaryOperationType
+        // Examples:
+        // - GroupQuotient: BinaryOperation { operation_type: GroupQuotient, terms: [(Slash, group), (None, normal_subgroup)] }
+        // - GroupDirectProduct: BinaryOperation { operation_type: GroupDirectProduct, terms: [(DirectProduct, group1), (DirectProduct, group2)] }
+        // - GroupSemidirectProduct: BinaryOperation { operation_type: GroupSemidirectProduct, terms: [(SemidirectProduct, left_group), (None, right_group)] }
+
+        case 'BinaryOperation':
+            const { BinaryOperation } = node.content as Extract<
+                MathNodeContent,
+                { BinaryOperation: { operation_type: any; terms: Array<[any, MathNode]> } }
+            >;
+            return (
+                <Component
+                    type="Mrow"
+                    _props={{
+                        id: node.id,
+                        _classNames: styles.editable_span,
+                    }}
+                >
+                    {BinaryOperation.terms.map(([operator, operand], index) => (
+                        <Component type="Mrow" key={index}>
+                            {index > 0 && (
+                                <>
+                                    <Component
+                                        type="Mspace"
+                                        _props={{ width: '0.167' }}
+                                    ></Component>
+                                    {renderBinaryOperator(operator)}
+                                    <Component
+                                        type="Mspace"
+                                        _props={{ width: '0.167' }}
+                                    ></Component>
+                                </>
+                            )}
+                            {renderMathNode(operand)}
+                        </Component>
+                    ))}
+                </Component>
+            );
+
+        case 'RichTextContent':
+            // Cast to access the segments directly
+            const segments = (node.content as any).RichTextContent;
+            
+            // Add safety check for segments
+            if (!segments || !Array.isArray(segments)) {
+                console.warn('RichTextContent: Invalid segments data', segments);
+                return (
+                    <Component
+                        type="Mtext"
+                        _props={{
+                            id: node.id,
+                            _classNames: styles.editable_span,
+                            style: { 
+                                color: '#ff0000',
+                                fontStyle: 'italic'
+                            }
+                        }}
+                    >
+                        [Invalid RichTextContent: {JSON.stringify(segments)}]
+                    </Component>
+                );
+            }
+            
+            return (
+                <Component
+                    type="Mrow"
+                    _props={{
+                        id: node.id,
+                        _classNames: styles.editable_span,
+                    }}
+                >
+                    {segments.map((segment: any, index: number) => {
+                        if (!segment || typeof segment !== 'object') {
+                            console.warn('RichTextContent: Invalid segment', segment, 'at index', index);
+                            return (
+                                <Component 
+                                    type="Mtext" 
+                                    key={index}
+                                    _props={{
+                                        style: { 
+                                            color: '#ff0000',
+                                            fontStyle: 'italic'
+                                        }
+                                    }}
+                                >
+                                    [Invalid Segment]
+                                </Component>
+                            );
+                        }
+                        
+                        // Check for Text variant
+                        if ('Text' in segment) {
+                            return (
+                                <Component 
+                                    type="Mtext" 
+                                    key={index}
+                                    _props={{
+                                        style: { 
+                                            whiteSpace: 'pre',
+                                            display: 'inline'
+                                        }
+                                    }}
+                                >
+                                    {segment.Text || ''}
+                                </Component>
+                            );
+                        }
+                        
+                        // Check for Math variant
+                        if ('Math' in segment) {
+                            if (!segment.Math) {
+                                console.warn('RichTextContent: Math segment missing Math content', segment);
+                                return (
+                                    <Component 
+                                        type="Mtext" 
+                                        key={index}
+                                        _props={{
+                                            style: { 
+                                                color: '#ff0000',
+                                                fontStyle: 'italic'
+                                            }
+                                        }}
+                                    >
+                                        [Missing Math Content]
+                                    </Component>
+                                );
+                            }
+                            return (
+                                <Component 
+                                    type="Mrow" 
+                                    key={index}
+                                    _props={{
+                                        style: { display: 'inline' }
+                                    }}
+                                >
+                                    {renderMathNode(segment.Math)}
+                                </Component>
+                            );
+                        }
+                        
+                        // Check for StyledText variant
+                        if ('StyledText' in segment) {
+                            if (!segment.StyledText || !segment.StyledText.text) {
+                                console.warn('RichTextContent: StyledText segment missing content', segment);
+                                return (
+                                    <Component 
+                                        type="Mtext" 
+                                        key={index}
+                                        _props={{
+                                            style: { 
+                                                color: '#ff0000',
+                                                fontStyle: 'italic'
+                                            }
+                                        }}
+                                    >
+                                        [Missing StyledText Content]
+                                    </Component>
+                                );
+                            }
+                            
+                            // Convert TextStyle enum values to CSS styles using helper function
+                            const textStyles = convertTextStylesToCSS(segment.StyledText.styles);
+                            
+                            return (
+                                <Component 
+                                    type="Mtext" 
+                                    key={index}
+                                    _props={{ 
+                                        style: {
+                                            ...textStyles,
+                                            whiteSpace: 'pre',
+                                            display: 'inline'
+                                        }
+                                    }}
+                                >
+                                    {segment.StyledText.text}
+                                </Component>
+                            );
+                        }
+                        
+                        // Unknown segment type
+                        console.warn('RichTextContent: Unknown segment type', segment);
+                        return (
+                            <Component 
+                                type="Mtext" 
+                                key={index}
+                                _props={{
+                                    style: { 
+                                        fontStyle: 'italic',
+                                        color: '#666',
+                                        whiteSpace: 'pre',
+                                        display: 'inline'
+                                    }
+                                }}
+                            >
+                                [Unknown MathText Segment: {JSON.stringify(segment)}]
+                            </Component>
+                        );
+                    })}
                 </Component>
             );
 

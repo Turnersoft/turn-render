@@ -1,62 +1,24 @@
 import React from 'react';
-import type { RichTextSegment } from '../../bindings/RichTextSegment';
-import type { RichText } from '../../bindings/RichText';
-import { renderMathNode } from '../math_node/math_node.tsx';
-import LinkRenderer from '../../../link/LinkRenderer';
+import { RichTextSegment } from '../../bindings/RichTextSegment';
+import { RichText as RichTextType } from '../../bindings/RichText';
+import { convertTextStylesToCSS } from './textStyleUtils';
+import { renderMathNode } from '../math_node/math_node';
 import styles from './rich_text.module.scss';
 
-
-interface RichTextRendererProps {
+interface RichTextProps {
   segments: RichTextSegment[];
-  className?: string;
+  alignment?: string | null;
 }
 
-/**
- * RichTextRenderer that handles all types of RichTextSegment
- * including Text, StyledText, Math, Link, FootnoteReference, and CodeInline
- */
-export const RichTextRenderer: React.FC<RichTextRendererProps> = ({ 
-  segments, 
-  className 
-}) => {
+export const RichText: React.FC<RichTextProps> = ({ segments, alignment }) => {
   const renderSegment = (segment: RichTextSegment, index: number) => {
     if ('Text' in segment) {
       return <span key={index}>{segment.Text}</span>;
     }
     
     if ('StyledText' in segment) {
-      // Apply text styles
-      const styles = segment.StyledText.styles;
-      let style: React.CSSProperties = {};
-      
-      styles.forEach(styleType => {
-        if (styleType === 'Bold') {
-          style.fontWeight = 'bold';
-        } else if (styleType === 'Italic') {
-          style.fontStyle = 'italic';
-        } else if (styleType === 'Underline') {
-          style.textDecoration = 'underline';
-        } else if (styleType === 'Strikethrough') {
-          style.textDecoration = 'line-through';
-        } else if (styleType === 'Subscript') {
-          style.verticalAlign = 'sub';
-          style.fontSize = '0.8em';
-        } else if (styleType === 'Superscript') {
-          style.verticalAlign = 'super';
-          style.fontSize = '0.8em';
-        } else if (typeof styleType === 'object') {
-          // Handle object-based styles
-          if ('Color' in styleType) {
-            style.color = styleType.Color;
-          } else if ('BackgroundColor' in styleType) {
-            style.backgroundColor = styleType.BackgroundColor;
-          } else if ('FontSize' in styleType) {
-            style.fontSize = styleType.FontSize;
-          } else if ('FontFamily' in styleType) {
-            style.fontFamily = styleType.FontFamily;
-          }
-        }
-      });
+      // Apply text styles using shared utility
+      const style = convertTextStylesToCSS(segment.StyledText.styles);
       
       return (
         <span key={index} style={style}>
@@ -76,22 +38,17 @@ export const RichTextRenderer: React.FC<RichTextRendererProps> = ({
     
     if ('Link' in segment) {
       return (
-        <LinkRenderer
-          key={index}
-          content={segment.Link.content}
-          target={segment.Link.target}
-          tooltip={segment.Link.tooltip}
-        />
+        <a key={index} href="#" title={segment.Link.tooltip || undefined}>
+          {segment.Link.content.map((contentSegment, i) => renderSegment(contentSegment, i))}
+        </a>
       );
     }
     
     if ('FootnoteReference' in segment) {
       return (
-        <sup key={index} className="footnote-ref">
-          <a href={`#footnote-${segment.FootnoteReference}`}>
-            [{segment.FootnoteReference}]
-          </a>
-        </sup>
+        <span key={index} className="footnote-ref">
+          [{segment.FootnoteReference}]
+        </span>
       );
     }
     
@@ -109,21 +66,108 @@ export const RichTextRenderer: React.FC<RichTextRendererProps> = ({
       );
     }
     
+    if ('InteractiveVariable' in segment) {
+      return (
+        <span key={index} className="interactive-variable" title={segment.InteractiveVariable.tooltip_content ? JSON.stringify(segment.InteractiveVariable.tooltip_content) : undefined}>
+          {segment.InteractiveVariable.display_name}
+        </span>
+      );
+    }
+    
     // Fallback for unknown segment types
-    return <span key={index}>[Unknown segment type]</span>;
+    return <span key={index} className="unknown-segment">[Unknown segment type]</span>;
   };
 
-
-
   return (
-    <span className={className}>
+    <div className={`rich-text ${alignment ? `align-${alignment}` : ''}`}>
       {segments.map((segment, index) => renderSegment(segment, index))}
-    </span>
+    </div>
   );
 };
 
+// RichTextRenderer - handles RichText segments with className
+export const RichTextRenderer: React.FC<{ 
+  segments: RichTextSegment[]; 
+  className?: string;
+}> = ({ segments, className }) => (
+  <span className={className}>
+    {segments.map((segment, index) => {
+      if ('Text' in segment) {
+        return <span key={index}>{segment.Text}</span>;
+      }
+      
+      if ('StyledText' in segment) {
+        // Apply text styles using shared utility
+        const style = convertTextStylesToCSS(segment.StyledText.styles);
+        
+        return (
+          <span key={index} style={style}>
+            {segment.StyledText.text}
+          </span>
+        );
+      }
+      
+      if ('Math' in segment) {
+        // Render math content using the proper math renderer
+        return (
+          <span key={index} className="math-inline">
+            {renderMathNode(segment.Math)}
+          </span>
+        );
+      }
+      
+      if ('Link' in segment) {
+        return (
+          <a key={index} href="#" title={segment.Link.tooltip || undefined}>
+            {segment.Link.content.map((contentSegment) => {
+              if ('Text' in contentSegment) return contentSegment.Text;
+              if ('StyledText' in contentSegment) return contentSegment.StyledText.text;
+              return '[Link Content]';
+            })}
+          </a>
+        );
+      }
+      
+      if ('FootnoteReference' in segment) {
+        return (
+          <sup key={index} className="footnote-ref">
+            <a href={`#footnote-${segment.FootnoteReference}`}>
+              [{segment.FootnoteReference}]
+            </a>
+          </sup>
+        );
+      }
+      
+      if ('CodeInline' in segment) {
+        return (
+          <code key={index} style={{
+            backgroundColor: '#f5f5f5',
+            padding: '2px 4px',
+            borderRadius: '3px',
+            fontFamily: 'monospace',
+            fontSize: '0.9em'
+          }}>
+            {segment.CodeInline}
+          </code>
+        );
+      }
+      
+      if ('InteractiveVariable' in segment) {
+        return (
+          <span key={index} className="interactive-variable" title={segment.InteractiveVariable.tooltip_content ? JSON.stringify(segment.InteractiveVariable.tooltip_content) : undefined}>
+            {segment.InteractiveVariable.display_name}
+          </span>
+        );
+      }
+      
+      // Fallback for unknown segment types
+      return <span key={index}>[Unknown segment type]</span>;
+    })}
+  </span>
+);
+
 // ParagraphRenderer - handles RichText paragraphs with alignment
-export const ParagraphRenderer: React.FC<{ paragraph: RichText }> = ({ paragraph }) => (
+export const ParagraphRenderer: React.FC<{ paragraph: RichTextType }> = ({ paragraph }) => (
   <div className={`${styles.paragraph} ${paragraph.alignment ? styles[paragraph.alignment] : ''}`}>
     <RichTextRenderer segments={paragraph.segments} />
   </div>
